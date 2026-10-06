@@ -29,8 +29,16 @@ A binary condition stated in Fund Documentation that excludes a Client outright,
 _Avoid_: Constraint, criterion
 
 **Unmodelled Restriction**:
-A restriction found in Fund Documentation that fits no known kind of Hard Restriction; it is kept with its Citation and always leads to Needs Review.
+A restriction found in Fund Documentation that fits no known kind of Hard Restriction; it is kept with its Citation and leads to Needs Review unless the validator marks it Noted.
 _Avoid_: Other rule, free-text rule
+
+**Noted Restriction**:
+An Unmodelled Restriction the validator has judged to set no condition on the client (e.g. the board's right to reject applications or close a Share Class); it is shown in the Justification with its Citation but does not affect the Verdict. Its opposite is a Blocking Restriction.
+_Avoid_: Ignored rule, informational rule
+
+**Blocking Restriction**:
+An Unmodelled Restriction that sets a condition the client may not meet (e.g. "subscribing through Nordea Group"); it leads to Needs Review on every check. The default until a validator marks it Noted.
+_Avoid_: Open rule, unresolved rule
 
 **Fund Registration**:
 The record, from a regulator's register or the bank's fund list, that a Share Class may be offered to a given Investor Classification in a given country. Not part of the Rule Card.
