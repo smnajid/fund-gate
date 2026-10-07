@@ -191,14 +191,14 @@ Assumes [ADR 0003](../adr/0003-validator-marks-unmodelled-restrictions-noted.md)
 
 ### Anna Steinmann: same client, same fund, two portfolios (hero)
 
-An email names only the client. The system resolves her name to `LOC90000101` and `LOC90000102` and returns a Verdict for each (rows 1 and 2). The drafted reply suggests GCE-BP for portfolio 01 (row 3).
+The email lists two Portfolio References and no client data. The system runs one check per reference and returns a Verdict for each (rows 1 and 2). The drafted reply suggests GCE-BP for portfolio 01 (row 3).
 
 > **From:** Marc Aebi (relationship manager)
 > **To:** Fund dealing desk
-> **Subject:** Subscription Nordea Global Climate – A. Steinmann
+> **Subject:** Subscription Nordea Global Climate – LOC90000101, LOC90000102
 >
 > Hi desk,
-> Anna Steinmann would like to put EUR 80,000 into the Nordea Global Climate fund, institutional class. Can you confirm she can subscribe?
+> The client would like to put EUR 80,000 into the Nordea Global Climate fund, institutional class, from portfolios LOC90000101 and LOC90000102. Can you confirm they can subscribe?
 > Thanks, Marc
 
 ### Tom Whitfield: one client, three US Person definitions (closing flourish)
@@ -211,11 +211,22 @@ The email is in French and names the fund but no Share Class. That means "check 
 
 > **De :** Sophie Lentz (conseillère)
 > **À :** Fund dealing desk
-> **Objet :** Souscription Nordea Global Climate – C. Dupont
+> **Objet :** Souscription Nordea Global Climate – LUX90000301
 >
 > Bonjour,
-> Ma cliente Claire Dupont (LUX90000301) souhaite investir 20 000 EUR dans Nordea 1 Global Climate and Environment. Pouvez-vous valider ?
+> Ma cliente (LUX90000301) souhaite investir 20 000 EUR dans Nordea 1 Global Climate and Environment. Pouvez-vous valider ?
 > Merci, Sophie
+
+The advisory lane turns row 10's Needs Review into what the dealer should check and which evidence to file ([ADR 0005](../adr/0005-advisory-llm-lane-after-the-engine.md)).
+
+## Guard email (no coverage row)
+
+Requesters identify portfolios by Portfolio Reference only ([architecture](architecture.md)). This email breaks the convention, so the Privacy Gate finds a known client name, makes no LLM call, and the dealer enters the request by hand.
+
+> **From:** Marc Aebi
+> **Subject:** Nordea Global Climate for Anna Steinmann
+>
+> Hi desk, can Anna Steinmann (LOC90000101) subscribe EUR 80,000 to Nordea Global Climate BP-EUR?
 
 ## Coverage email (row 26)
 

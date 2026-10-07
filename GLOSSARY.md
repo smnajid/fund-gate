@@ -29,15 +29,15 @@ A binary condition stated in Fund Documentation that excludes a Client outright,
 _Avoid_: Constraint, criterion
 
 **Unmodelled Restriction**:
-A restriction found in Fund Documentation that fits no known kind of Hard Restriction; it is kept with its Citation and leads to Needs Review unless the validator marks it Noted.
+A restriction found in Fund Documentation that fits no known kind of Hard Restriction; it is kept with its Citation and leads to Needs Review unless the Rule Card Validator marks it Noted.
 _Avoid_: Other rule, free-text rule
 
 **Noted Restriction**:
-An Unmodelled Restriction the validator has judged to set no condition on the client (e.g. the board's right to reject applications or close a Share Class); it is shown in the Justification with its Citation but does not affect the Verdict. Its opposite is a Blocking Restriction.
+An Unmodelled Restriction the Rule Card Validator has judged to set no condition on the client (e.g. the board's right to reject applications or close a Share Class); it is shown in the Justification with its Citation but does not affect the Verdict. Its opposite is a Blocking Restriction.
 _Avoid_: Ignored rule, informational rule
 
 **Blocking Restriction**:
-An Unmodelled Restriction that sets a condition the client may not meet (e.g. "subscribing through Nordea Group"); it leads to Needs Review on every check. The default until a validator marks it Noted.
+An Unmodelled Restriction that sets a condition the client may not meet (e.g. "subscribing through Nordea Group"); it leads to Needs Review on every check. The default until a Rule Card Validator marks it Noted.
 _Avoid_: Open rule, unresolved rule
 
 **Fund Registration**:
@@ -99,3 +99,11 @@ _Avoid_: Tranche
 **Fund Dealer**:
 A member of the fund dealing desk who receives subscription requests and must answer and justify them.
 _Avoid_: Trader, operator, user
+
+**Requester**:
+The bank employee (relationship manager or portfolio manager) who asks the fund dealing desk whether one or more portfolios may subscribe to a fund, identifying them by Portfolio Reference only, never by client data.
+_Avoid_: RM, PM, advisor, sender
+
+**Rule Card Validator**:
+The person who reviews a drafted Rule Card against its Citations, corrects it, marks each Unmodelled Restriction Blocking or Noted, and validates it; typically compliance or a senior Fund Dealer, distinct from the Fund Dealer who uses the card.
+_Avoid_: Reviewer, approver, checker
