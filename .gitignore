@@ -3,3 +3,6 @@
 
 .claude/worktrees/
 *.swp
+
+# Bank client export at the event: humans only, never read by coding agents (see .claude/hooks/data-guard.py)
+data/bank/
