@@ -9,8 +9,6 @@ You audit the Fund Gate dealer app for one failure: client-identifying data reac
 
 Read first: `docs/adr/0004-two-runtimes-one-llm-egress.md`, `docs/adr/0005-advisory-llm-lane-after-the-engine.md`, the "Privacy boundary" section of `docs/playbook/architecture.md`, and `GLOSSARY.md` for the vocabulary.
 
-Never open files under the bank-data folder (`data/bank/`). Work from code, schemas and synthetic fixtures only.
-
 ## What to check
 
 1. **One egress.** Find every call to an LLM SDK or HTTP endpoint (Anthropic, `AnthropicFoundry`, Azure OpenAI, `fetch`/`RestClient`/`WebClient` to a model URL). Every one must sit inside the LLM egress client. Any other call site is a finding.

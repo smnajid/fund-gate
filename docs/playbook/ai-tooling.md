@@ -6,7 +6,6 @@ The team uses **Claude Code**, served from **Microsoft Foundry**. This page says
 
 ## What decided it
 
-- **Coding agents are an LLM egress too.** Anything Claude Code reads goes to the model. The organisers forbid client-identifying data reaching an external LLM, so the bank's hour-0 client export is off-limits to every agent, not only to our product (ADR 0004).
 - **Foundry, "Hosted on Azure" deployments only.** With this option, prompts and completions stay in Azure. "Hosted on Anthropic" deployments, and every Fable model, run on Anthropic's infrastructure. Foundry turns off telemetry by default.
 - **Foundry costs some features.** Claude in Chrome, Artifacts (so no Slides artifact), cloud sessions, `/schedule` and Routines are unavailable. Subagents, skills, plugins, hooks, MCP, worktrees, `/loop` and the sandbox all work.
 - **Context is the scarce resource, not money.** Budget is unlimited, but every always-loaded rule and MCP tool schema costs every turn, for 5 people, for 36 hours. MCP tool search is unsupported on Azure-hosted deployments, so each enabled MCP server's full tool list sits in context.
@@ -16,7 +15,6 @@ The team uses **Claude Code**, served from **Microsoft Foundry**. This page says
 
 | What | Where | Who uses it, when |
 |---|---|---|
-| **Data guard**: `permissions.deny` on `data/bank/**` plus a PreToolUse hook that blocks any tool call naming that folder | `.claude/settings.json`, `.claude/hooks/data-guard.py` | Everyone, always on |
 | **privacy-gate-auditor** subagent: one egress, gate-only input, fail closed, allow-list, logged (ADR 0004/0005) | `.claude/agents/` | Person 4 before each merge touching an LLM call, everyone before rehearsal |
 | **engine-purity-reviewer** subagent: no LLM, deterministic, Draft never decides, downgrade-only (ADR 0002/0003/0005) | `.claude/agents/` | Person 2 on every Rule Engine, Scale Mapping or reverse-lookup change |
 | **demo-flow-verifier** subagent: runs the coverage set and the hero flow, times each step | `.claude/agents/` | Person 5 at each integration checkpoint, after feature freeze, before each rehearsal |
@@ -28,9 +26,10 @@ The team uses **Claude Code**, served from **Microsoft Foundry**. This page says
 | **pr-review-toolkit** plugin: six focused review agents (silent failures, test gaps, type design, comments) | `enabledPlugins` | Everyone on PRs |
 | **playwright** plugin (MCP): Claude opens and checks its own screens through accessibility snapshots | opt-in per person | Person 3, and Person 5 for the demo verifier |
 | **document-skills** plugin (`pptx`): the pitch deck on the bank's template | opt-in per person | Person 5 |
+| **context7** plugin (MCP): current library docs on demand, so agents stop guessing framework APIs | opt-in per person | Anyone fighting a framework version |
 | **LSP plugin** (`jdtls-lsp` or `typescript-lsp`) | opt-in, once the stack is chosen | Everyone |
 
-Playwright and `document-skills` are opt-in because MCP tool schemas and large skills cost every person context on every turn. The other three people don't need them.
+Playwright, Context7 and `document-skills` are opt-in because MCP tool schemas and large skills cost every person context on every turn. The other three people don't need them.
 
 ## Who uses what
 
@@ -44,18 +43,23 @@ Playwright and `document-skills` are opt-in because MCP tool schemas and large s
 
 ## How we work with agents in the 36 hours
 
-- **One worktree per module owner**: `claude --worktree <module>`. `.claude/worktrees/` is already git-ignored. Never add `data/bank/` to `.worktreeinclude`.
+- **One worktree per module owner**: `claude --worktree <module>`. `.claude/worktrees/` is already git-ignored.
 - **Background agents for slow loops**: `/bg` a session that runs the coverage set or a long build. `/loop 10m` to rerun the demo-flow verifier during the last hours.
 - **Subagents for review, not for writing the core**: the Rule Engine and Privacy Gate are written test-first by their owner. Reviewers and verifiers report and never edit.
 - **Pin the models** in each person's environment (`ANTHROPIC_DEFAULT_OPUS_MODEL` and the Sonnet and Haiku equivalents). Otherwise the `opus` alias on Foundry resolves to an older model, or to one that isn't deployed.
 
-## Privacy rules for coding agents
+## Where the time goes, and which tool wins it back
 
-1. The bank's client export goes into `data/bank/` only, which is git-ignored. Better still, it goes to a machine or folder no Claude session can reach. A human converts it into the canonical Client Profile shape, and only pseudonymised or synthetic data enters the repo.
-2. The data guard is a seatbelt against accidents, not a wall. It stops Read, Edit, Grep, Glob, `@` mentions, `cat`-style Bash and any command naming the folder. It does not stop a script that builds the path at runtime, an MCP server, or a human pasting data in. For a stronger OS-level block, turn on the sandbox (see the kit guide), at the cost of friction with Docker and package downloads.
-3. No docs MCPs that store queries (Context7) on a machine that holds client data. The Microsoft Learn MCP is public docs only and fine.
-4. A Foundry deployment must be "Hosted on Azure", Opus 5.5 or Sonnet 5.5. No Fable on the event subscription.
-5. Demo, pitch and screenshots use synthetic data from [demo-dataset.md](demo-dataset.md) only.
+| Time sink in a 36-hour build | Tool |
+|---|---|
+| Broken build after a merge, dependency clash | `java-build-resolver` / `ts-build-resolver`: minimal-diff fixes, no refactoring |
+| "Does the demo still work?" after each integration | `demo-flow-verifier` and the generated `verify-fund-gate` skill, `/loop` in the last hours |
+| A Verdict that changed and nobody knows why | `engine-purity-reviewer`, then `blast-radius` on the suspect change |
+| Screens that look generic or break on stage | `frontend-design` for direction, Playwright so Claude checks its own screens |
+| Wrong framework API from stale model memory | Context7 or the Microsoft Learn MCP (Foundry, Azure SDKs) |
+| Review bottleneck with 5 people merging | `pr-review-toolkit` agents plus the stack reviewer, run by the author before asking a human |
+| Pitch deck and slide text at hour 34 | `pptx` skill on the bank template, `unslop` on the text |
+| Five people stepping on each other | one worktree per module owner, background sessions for slow loops |
 
 ## Considered and left out
 
@@ -67,15 +71,12 @@ Playwright and `document-skills` are opt-in because MCP tool schemas and large s
 | pstack `interrogate` (multi-model adversarial review) | Later, if someone owns it | Needs its reviewer step rewritten for the Agent tool. `pr-review-toolkit` covers most of it. |
 | Cursor Orchestrate, Advisor, Ralph Loop, Figma-to-UI | Skip | Cursor-only, or an autonomous loop we can't supervise in 36 hours, or a Figma step we won't have. |
 | `security-guidance` plugin | Optional | Runs an LLM review of the diff at the end of every turn. That is useful, but slow for 5 people iterating fast. Person 4 may turn it on for the Privacy Gate. |
-| `feature-dev`, `hookify`, `code-review` plugins | Skip | Overlap our `implement`, `to-tickets`, `code-review` skills and the hand-written data guard. |
-| Context7 | Skip | Stores model-written queries. |
+| `feature-dev`, `hookify`, `code-review` plugins | Skip | Overlap our `implement`, `to-tickets` and `code-review` skills. |
 | Claude in Chrome, Slides artifact | Not available | Not available on Foundry. Use Playwright and `pptx`. |
 | Figma MCP | Skip | Nobody designs in Figma first in 36 hours. Use `prototype` before the event instead. |
 
 ## Validation (2026-10-08)
 
-- **Hook, unit level:** 14 cases fed to `data-guard.py`. All 9 that should block did: relative, absolute and `../` paths, `cat`, `cd`, Grep path, Glob pattern, cwd inside the folder, MCP input. All 5 that should pass did: a fixture read, a doc edit mentioning the folder, a Grep for the text, an unrelated command, bad JSON.
-- **Hook, live:** as soon as `.claude/settings.json` existed, the authoring session itself was blocked when it tried to plant a probe file in the folder. A headless probe of all four routes (Read, `cat`, a Python script, Grep) is in the PR description. Script reads are expected to get through unless the sandbox is on.
 - **Subagents:** a headless session in a throwaway copy of the kit found both auditors by name. On a planted fixture they flagged every violation: the engine imports the SDK and asks the model for the Target Market, the engine never checks Draft cards or the regime, the parser sends the client name ungated, and a second SDK client sits outside the egress.
 - **Not done:** a timed with-and-without comparison on a real Rule Engine slice. Product code is not allowed before the event, so the first real measurement is the hour-0 rehearsal.
 

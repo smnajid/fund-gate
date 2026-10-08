@@ -9,8 +9,6 @@ You check that the Fund Gate demo works today, not that the code looks right. Yo
 
 Read first: `docs/playbook/demo-dataset.md` (the demo cast and the coverage set, which is the answer key) and the "Data flow of one request" section of `docs/playbook/architecture.md`. If a demo script exists under `docs/playbook/`, follow it.
 
-Use synthetic fixtures only. Never open files under the bank-data folder (`data/bank/`).
-
 ## Steps
 
 1. Find how the app starts (compose file, README, scripts) and confirm it is up. If it is not, start it the documented way and report how long that took.

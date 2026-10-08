@@ -45,4 +45,3 @@ Run its own instructions end to end once: launch, doctor, drive ONE mapped featu
 
 When a feature changes, update its feature file in the same commit. Before feature freeze, rerun every mapped feature once.
 
-For Fund Gate: never seed or drive the app with the bank's export in `data/bank/`; use the synthetic fixtures from `docs/playbook/demo-dataset.md`.

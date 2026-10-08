@@ -30,7 +30,6 @@ claude          # accept the trust prompt
 
 Trusting the folder loads `.claude/settings.json`:
 - the plugin marketplaces and the team plugins (`frontend-design`, `pr-review-toolkit`);
-- the data guard (deny rules plus the hook in `.claude/hooks/data-guard.py`, which needs `python3`);
 - the project subagents in `.claude/agents/` and the skills in `.claude/skills/`.
 
 Check: `/plugin` lists both plugins as enabled; `/agents` lists `privacy-gate-auditor`, `engine-purity-reviewer`, `demo-flow-verifier` and the stack reviewers; typing `/` shows `blast-radius`, `create-verification-skill` and `unslop`.
@@ -44,6 +43,7 @@ Personal choices go in `.claude/settings.local.json`, which is git-ignored:
   "enabledPlugins": {
     "playwright@claude-plugins-official": true,
     "document-skills@anthropic-agent-skills": true,
+    "context7@claude-plugins-official": true,
     "jdtls-lsp@claude-plugins-official": true
   }
 }
@@ -51,6 +51,7 @@ Personal choices go in `.claude/settings.local.json`, which is git-ignored:
 
 - `playwright`: Person 3 (UIs) and Person 5 (demo verifier).
 - `document-skills` (`pptx`): Person 5 (pitch deck).
+- `context7`: anyone who keeps hitting outdated framework APIs.
 - `jdtls-lsp` or `typescript-lsp`: everyone, once the stack is chosen.
 - `security-guidance`: Person 4 if wanted, for the Privacy Gate. It reviews every turn, which slows you down.
 
@@ -59,26 +60,7 @@ Personal choices go in `.claude/settings.local.json`, which is git-ignored:
 - Delete the reviewer and build-resolver pair we don't use (`java-*` or `typescript-reviewer` and `ts-build-resolver`) from `.claude/agents/`.
 - Add the LSP plugin to `enabledPlugins` in `.claude/settings.json` for the whole team.
 
-## 5. The bank's client export
-
-- It goes in `data/bank/` only (git-ignored). Better: a folder on a machine with no Claude session.
-- A human converts it into the canonical Client Profile shape. No agent reads it, including through scripts, MCP servers or copy-paste.
-- If an agent hits `Blocked by data-guard`, that is the guard working. Point the agent at the schemas and the synthetic fixtures instead.
-
-Strict mode, for whoever sits closest to the export: also turn on the OS sandbox in `.claude/settings.local.json`. It stops scripts and `grep -r` from reading the folder too. Expect prompts for Docker and package downloads.
-
-```json
-{
-  "sandbox": {
-    "enabled": true,
-    "allowUnsandboxedCommands": false,
-    "failIfUnavailable": true,
-    "filesystem": { "denyRead": ["./data/bank"] }
-  }
-}
-```
-
-## 6. Daily moves
+## 5. Daily moves
 
 | When | Do |
 |---|---|
