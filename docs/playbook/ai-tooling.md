@@ -38,7 +38,7 @@ Playwright, Context7 and `document-skills` are opt-in because MCP tool schemas a
 
 | Person | Owns (architecture.md) | Main tools |
 |---|---|---|
-| 1 | Rule Card pipeline (Java CLI: Anthropic Java SDK + PDFBox), Share Class catalog | `tdd`, `java-build-resolver`, `claude-api` skill for PDF + Citations calls, `blast-radius` on the quote-on-page check |
+| 1 | Rule Card pipeline (command-line mode of the Spring Boot app: Anthropic Java SDK + PDFBox), Share Class catalog | `tdd`, `java-build-resolver`, `claude-api` skill for PDF + Citations calls, `blast-radius` on the quote-on-page check |
 | 2 | Rule Engine, Scale Mapping, reverse lookup | `tdd` against the coverage set, `engine-purity-reviewer`, `blast-radius` |
 | 3 | Dealer UI, Validation UI (Angular) | `prototype` (before the event, issue #17), `angular-developer`, Angular CLI MCP, `frontend-design`, Playwright, `typescript-reviewer` |
 | 4 | Intake, Privacy Gate, egress, Parser, Reply Drafter, advisory lane | `privacy-gate-auditor` on every merge, `tdd` for the gate's fail-closed cases, `claude-api` skill for Foundry calls |

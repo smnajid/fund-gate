@@ -63,11 +63,22 @@ Gives the agent `ng` build, test and serve targets, Angular docs search and the 
 claude mcp add angular-cli -- npx -y @angular/cli mcp
 ```
 
-## 5. Daily moves
+## 5. Stack practices (set up at hour 0)
+
+The POC runs on Spring Boot 4 and Angular so that the team checks generated code in the language it knows best ([ADR 0006](../adr/0006-spring-boot-and-angular-python-only-for-real-added-value.md)). Three practices recover most of the speed of a single-language stack. Put them in the scaffold before anyone builds a feature.
+
+1. **Generated client types.** Add `springdoc-openapi` to the backend so it serves its OpenAPI spec. Generate the Angular types and HTTP client from that spec with `openapi-generator` (`typescript-angular`), and put the generate step in an npm script. Regenerate after every API change instead of editing DTOs by hand. Generated files are never edited.
+2. **One codebase.** The Rule Card pipeline is a command-line mode of the same Spring Boot app, for example a `pipeline` profile with an `ApplicationRunner`, not a second project. That gives one build, one image and shared domain types. It runs as its own process, with no Client Profile or CRM adapter wired in, so the offline and online runtimes stay separate (ADR 0004).
+3. **Fast loop, tests as the safety net.** Turn on `spring-boot-devtools` so a backend change restarts in seconds. Person 2 builds the Rule Engine test-first (`/tdd`) with one test per row of the coverage set in `docs/playbook/demo-dataset.md`. A wrong Verdict then fails a test even when a review misses it.
+
+Python only if a module needs something the JVM can't do well. Today none does.
+
+## 6. Daily moves
 
 | When | Do |
 |---|---|
 | Starting your module | `claude --worktree <module>`, one worktree per owner |
+| API changed | regenerate the Angular client from the OpenAPI spec, commit both sides together |
 | Build broken | `java-build-resolver` (Spring Boot) or `ts-build-resolver` (Angular) |
 | Before merging | the stack reviewer agent; `privacy-gate-auditor` if an LLM call or client field is touched; `engine-purity-reviewer` for the engine |
 | Risky change during integration | `/blast-radius` |
