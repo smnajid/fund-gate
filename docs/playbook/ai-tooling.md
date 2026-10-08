@@ -2,7 +2,7 @@
 
 Resolves [Which AI tools make the team faster during the 36 hours?](https://github.com/smnajid/fund-gate/issues/18).
 
-The team uses **Claude Code**, served from **Microsoft Foundry**. This page says what we bring, what each tool is for, and what we left out. The kit itself is committed in `.claude/` and `.agents/skills/`. Installing it takes about 10 minutes at hour 0: see [hackathon-kit.md](../agents/hackathon-kit.md). The evidence behind every claim is in two research notes: [Claude Code, plugins, Foundry](../research/ai-tools-claude-code.md) and [ECC, pstack, Cursor plugins](../research/ai-tools-ecc-pstack.md).
+The team uses **Claude Code**, served from **Microsoft Foundry**, on the bank's stack: **Spring Boot 4 and Angular**, with Python only where it adds real value ([ADR 0006](../adr/0006-spring-boot-and-angular-python-only-for-real-added-value.md)). This page says what we bring, what each tool is for, and what we left out. The kit itself is committed in `.claude/` and `.agents/skills/`. Installing it takes about 10 minutes at hour 0: see [hackathon-kit.md](../agents/hackathon-kit.md). The evidence behind every claim is in two research notes: [Claude Code, plugins, Foundry](../research/ai-tools-claude-code.md) and [ECC, pstack, Cursor plugins](../research/ai-tools-ecc-pstack.md).
 
 ## What decided it
 
@@ -18,7 +18,11 @@ The team uses **Claude Code**, served from **Microsoft Foundry**. This page says
 | **privacy-gate-auditor** subagent: one egress, gate-only input, fail closed, allow-list, logged (ADR 0004/0005) | `.claude/agents/` | Person 4 before each merge touching an LLM call, everyone before rehearsal |
 | **engine-purity-reviewer** subagent: no LLM, deterministic, Draft never decides, downgrade-only (ADR 0002/0003/0005) | `.claude/agents/` | Person 2 on every Rule Engine, Scale Mapping or reverse-lookup change |
 | **demo-flow-verifier** subagent: runs the coverage set and the hero flow, times each step | `.claude/agents/` | Person 5 at each integration checkpoint, after feature freeze, before each rehearsal |
-| **java-reviewer / java-build-resolver** or **typescript-reviewer / ts-build-resolver** (from ECC, trimmed). Delete the pair we don't use once the stack is chosen | `.claude/agents/` | Everyone: the resolver when the build breaks, the reviewer before merging |
+| **java-reviewer / java-build-resolver** (from ECC, trimmed) for Spring Boot | `.claude/agents/` | Persons 1, 2, 4, 5: the resolver when the build breaks, the reviewer before merging |
+| **typescript-reviewer / ts-build-resolver** (from ECC, rewritten for Angular: signals, `@if`/`@for`, `OnPush`, NG error codes) | `.claude/agents/` | Person 3 |
+| **angular-developer** skill (official, from `angular/skills`): current Angular practice for signals, Signal Forms, DI, routing, Aria, testing | `.claude/skills/` | Person 3; it loads only when Angular work comes up |
+| **jdtls-lsp** and **typescript-lsp** plugins: go-to-definition, references and compiler errors for the agent | `enabledPlugins` | Everyone (needs `jdtls` and `typescript-language-server` installed) |
+| **Angular CLI MCP** (`ng mcp`): build, test and serve targets, docs search, best-practices guide | opt-in per person | Person 3 |
 | **create-verification-skill** (ported from pstack): generates a `verify-fund-gate` skill that launches, checks and drives the real app, with a feature map | `.agents/skills/` | Person 5 once the app boots (around hour 6 to 10). Every agent uses the generated skill afterwards |
 | **blast-radius** (ported from pstack): finds the one fact a change is safe because of, and proves it by running code | `.agents/skills/` | Before merging Rule Engine or Privacy Gate changes during integration |
 | **unslop** (pstack): strips AI tells from prose | `.agents/skills/` | Pitch text, README, reply templates |
@@ -27,7 +31,6 @@ The team uses **Claude Code**, served from **Microsoft Foundry**. This page says
 | **playwright** plugin (MCP): Claude opens and checks its own screens through accessibility snapshots | opt-in per person | Person 3, and Person 5 for the demo verifier |
 | **document-skills** plugin (`pptx`): the pitch deck on the bank's template | opt-in per person | Person 5 |
 | **context7** plugin (MCP): current library docs on demand, so agents stop guessing framework APIs | opt-in per person | Anyone fighting a framework version |
-| **LSP plugin** (`jdtls-lsp` or `typescript-lsp`) | opt-in, once the stack is chosen | Everyone |
 
 Playwright, Context7 and `document-skills` are opt-in because MCP tool schemas and large skills cost every person context on every turn. The other three people don't need them.
 
@@ -35,9 +38,9 @@ Playwright, Context7 and `document-skills` are opt-in because MCP tool schemas a
 
 | Person | Owns (architecture.md) | Main tools |
 |---|---|---|
-| 1 | Rule Card pipeline, Share Class catalog | `tdd`, the stack resolver agent, `blast-radius` on the quote-on-page check |
+| 1 | Rule Card pipeline (Java CLI: Anthropic Java SDK + PDFBox), Share Class catalog | `tdd`, `java-build-resolver`, `claude-api` skill for PDF + Citations calls, `blast-radius` on the quote-on-page check |
 | 2 | Rule Engine, Scale Mapping, reverse lookup | `tdd` against the coverage set, `engine-purity-reviewer`, `blast-radius` |
-| 3 | Dealer UI, Validation UI | `prototype` (before the event, issue #17), `frontend-design`, Playwright |
+| 3 | Dealer UI, Validation UI (Angular) | `prototype` (before the event, issue #17), `angular-developer`, Angular CLI MCP, `frontend-design`, Playwright, `typescript-reviewer` |
 | 4 | Intake, Privacy Gate, egress, Parser, Reply Drafter, advisory lane | `privacy-gate-auditor` on every merge, `tdd` for the gate's fail-closed cases, `claude-api` skill for Foundry calls |
 | 5 | Adapters, Check Record, compose, pitch | `demo-flow-verifier`, `create-verification-skill`, `pptx`, `unslop` |
 
@@ -52,14 +55,28 @@ Playwright, Context7 and `document-skills` are opt-in because MCP tool schemas a
 
 | Time sink in a 36-hour build | Tool |
 |---|---|
-| Broken build after a merge, dependency clash | `java-build-resolver` / `ts-build-resolver`: minimal-diff fixes, no refactoring |
+| Broken build after a merge, dependency clash | `java-build-resolver` (Maven/Gradle, Spring) / `ts-build-resolver` (`ng build`): minimal-diff fixes, no refactoring |
+| Agent writing outdated Angular (decorators, `*ngIf`, NgModules) | `angular-developer` skill and the Angular CLI MCP's best-practices guide |
 | "Does the demo still work?" after each integration | `demo-flow-verifier` and the generated `verify-fund-gate` skill, `/loop` in the last hours |
 | A Verdict that changed and nobody knows why | `engine-purity-reviewer`, then `blast-radius` on the suspect change |
 | Screens that look generic or break on stage | `frontend-design` for direction, Playwright so Claude checks its own screens |
-| Wrong framework API from stale model memory | Context7 or the Microsoft Learn MCP (Foundry, Azure SDKs) |
+| Wrong framework API from stale model memory | the LSP plugins catch it at once; Context7 for Spring Boot 4 docs; the Microsoft Learn MCP for Foundry and Azure SDKs |
 | Review bottleneck with 5 people merging | `pr-review-toolkit` agents plus the stack reviewer, run by the author before asking a human |
 | Pitch deck and slide text at hour 34 | `pptx` skill on the bank template, `unslop` on the text |
 | Five people stepping on each other | one worktree per module owner, background sessions for slow loops |
+
+## Python: where it would add value
+
+None of the modules needs it (ADR 0006). The one candidate was the Rule Card pipeline, because the spike is in Python. Everything the spike used exists in Java:
+
+| Spike (Python) | Java equivalent |
+|---|---|
+| `anthropic` SDK, PDF document blocks with Citations | `com.anthropic:anthropic-java`: `DocumentBlockParam`, `Base64PdfSource`, `CitationsConfigParam`, `CitationPageLocation` |
+| `AnthropicFoundry` client | `com.anthropic:anthropic-java-foundry`: `FoundryBackend.fromEnv()` |
+| JSON-schema output for the Rule Card | structured outputs (`StructuredMessageCreateParams`, `OutputConfig`) |
+| `pypdf`: page selection, page text for the quote check | Apache PDFBox |
+
+Revisit only if hour-0 brings something the JVM handles badly, such as scanned PDFs that need OCR. Even then, Azure Document Intelligence has a Java SDK.
 
 ## Considered and left out
 

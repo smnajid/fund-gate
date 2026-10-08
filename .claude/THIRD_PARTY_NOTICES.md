@@ -1,13 +1,14 @@
 # Third-party notices
 
-Some agents and skills in this repo are copied from MIT-licensed projects and edited for Fund Gate. Each file names its source at the top.
+Some agents and skills in this repo are copied from MIT-licensed projects, most of them edited for Fund Gate. Each file names its source at the top.
 
 | Files | Source | Copyright |
 |---|---|---|
 | `.claude/agents/java-reviewer.md`, `java-build-resolver.md`, `typescript-reviewer.md`, `ts-build-resolver.md` (from `build-error-resolver.md`) | [affaan-m/ECC v2.2.3](https://github.com/affaan-m/ECC/tree/v2.2.3/agents) | (c) 2026 Affaan Mustafa |
 | `.agents/skills/create-verification-skill/`, `blast-radius/`, `unslop/` | [cursor/plugins pstack @ ccb5507](https://github.com/cursor/plugins/tree/ccb5507cec1546dc88135c1139c811e6c59115ba/pstack/skills) | (c) 2026 Lauren Tan |
+| `.claude/skills/angular-developer/` (unmodified, installed with `npx skills add`, hash in `skills-lock.json`) | [angular/skills](https://github.com/angular/skills) | (c) 2026 Google LLC |
 
-Both are under the MIT License:
+All three are under the MIT License:
 
 ```
 MIT License

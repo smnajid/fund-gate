@@ -29,8 +29,10 @@ claude          # accept the trust prompt
 ```
 
 Trusting the folder loads `.claude/settings.json`:
-- the plugin marketplaces and the team plugins (`frontend-design`, `pr-review-toolkit`);
-- the project subagents in `.claude/agents/` and the skills in `.claude/skills/`.
+- the plugin marketplaces and the team plugins (`frontend-design`, `pr-review-toolkit`, `jdtls-lsp`, `typescript-lsp`);
+- the project subagents in `.claude/agents/` and the skills in `.claude/skills/`, including the official `angular-developer` skill.
+
+The language plugins need their servers on your `PATH`: `brew install jdtls` (JDK 17+) and `npm install -g typescript-language-server typescript`.
 
 Check: `/plugin` lists both plugins as enabled; `/agents` lists `privacy-gate-auditor`, `engine-purity-reviewer`, `demo-flow-verifier` and the stack reviewers; typing `/` shows `blast-radius`, `create-verification-skill` and `unslop`.
 
@@ -43,8 +45,7 @@ Personal choices go in `.claude/settings.local.json`, which is git-ignored:
   "enabledPlugins": {
     "playwright@claude-plugins-official": true,
     "document-skills@anthropic-agent-skills": true,
-    "context7@claude-plugins-official": true,
-    "jdtls-lsp@claude-plugins-official": true
+    "context7@claude-plugins-official": true
   }
 }
 ```
@@ -52,20 +53,22 @@ Personal choices go in `.claude/settings.local.json`, which is git-ignored:
 - `playwright`: Person 3 (UIs) and Person 5 (demo verifier).
 - `document-skills` (`pptx`): Person 5 (pitch deck).
 - `context7`: anyone who keeps hitting outdated framework APIs.
-- `jdtls-lsp` or `typescript-lsp`: everyone, once the stack is chosen.
 - `security-guidance`: Person 4 if wanted, for the Privacy Gate. It reviews every turn, which slows you down.
 
-## 4. Once the stack is chosen
+## 4. Angular CLI MCP (Person 3)
 
-- Delete the reviewer and build-resolver pair we don't use (`java-*` or `typescript-reviewer` and `ts-build-resolver`) from `.claude/agents/`.
-- Add the LSP plugin to `enabledPlugins` in `.claude/settings.json` for the whole team.
+Gives the agent `ng` build, test and serve targets, Angular docs search and the best-practices guide:
+
+```bash
+claude mcp add angular-cli -- npx -y @angular/cli mcp
+```
 
 ## 5. Daily moves
 
 | When | Do |
 |---|---|
 | Starting your module | `claude --worktree <module>`, one worktree per owner |
-| Build broken | the `java-build-resolver` or `ts-build-resolver` agent |
+| Build broken | `java-build-resolver` (Spring Boot) or `ts-build-resolver` (Angular) |
 | Before merging | the stack reviewer agent; `privacy-gate-auditor` if an LLM call or client field is touched; `engine-purity-reviewer` for the engine |
 | Risky change during integration | `/blast-radius` |
 | App boots for the first time | `/create-verification-skill`, which generates `verify-fund-gate` |

@@ -1,6 +1,6 @@
 ---
 name: typescript-reviewer
-description: "TypeScript and JavaScript code reviewer: type safety, async correctness, Node and web security, React pitfalls. Use on TS/JS changes before merging. Reports findings, never edits."
+description: "TypeScript and Angular code reviewer: type safety, async correctness, web security, Angular signals, change detection and templates. Use on Angular/TS changes before merging. Reports findings, never edits."
 tools: Read, Grep, Glob, Bash
 model: inherit
 ---
@@ -53,7 +53,7 @@ You DO NOT refactor or rewrite code — you report findings only.
 - **Swallowed errors**: Empty `catch` blocks or `catch (e) {}` with no action
 - **`JSON.parse` without try/catch**: Throws on invalid input — always wrap
 - **Throwing non-Error objects**: `throw "message"` — always `throw new Error("message")`
-- **Missing error boundaries**: React trees without `<ErrorBoundary>` around async/data-fetching subtrees
+- **Unhandled HTTP errors**: `HttpClient` / `httpResource` calls with no error state shown to the user
 
 ### HIGH -- Idiomatic Patterns
 - **Mutable shared state**: Module-level mutable variables — prefer immutable data and pure functions
@@ -68,18 +68,21 @@ You DO NOT refactor or rewrite code — you report findings only.
 - **Unvalidated `process.env` access**: Access without fallback or startup validation
 - **`require()` in ESM context**: Mixing module systems without clear intent
 
-### MEDIUM -- React / Next.js (when applicable)
+### HIGH -- Angular
 
-- **Missing dependency arrays**: `useEffect`/`useCallback`/`useMemo` with incomplete deps — use exhaustive-deps lint rule
-- **State mutation**: Mutating state directly instead of returning new objects
-- **Key prop using index**: `key={index}` in dynamic lists — use stable unique IDs
-- **`useEffect` for derived state**: Compute derived values during render, not in effects
-- **Server/client boundary leaks**: Importing server-only modules into client components in Next.js
+Check the project's Angular version first (`ng version` or `package.json`); the `angular-developer` skill holds the current best practices.
+
+- **Signals misuse**: `effect()` used to derive state — use `computed()` or `linkedSignal()`; writing signals inside `computed()`
+- **Manual subscriptions**: `.subscribe()` in components without `takeUntilDestroyed()` or the `async` pipe — leaks; prefer `toSignal()` / `httpResource`
+- **Old patterns in new code**: `@Input()`/`@Output()` decorators instead of `input()`/`output()`, `*ngIf`/`*ngFor` instead of `@if`/`@for`, NgModules instead of standalone components
+- **`@for` without a stable `track`**: tracking by `$index` on lists that reorder
+- **Change detection**: components not `OnPush`, or heavy method calls in templates — move them to `computed()` or a pure pipe
+- **XSS bypass**: `bypassSecurityTrust*` or `[innerHTML]` with unsanitised data
+- **Logic in templates or components** that belongs in a service; HTTP calls made directly from components
 
 ### MEDIUM -- Performance
-- **Object/array creation in render**: Inline objects as props cause unnecessary re-renders — hoist or memoize
 - **N+1 queries**: Database or API calls inside loops — batch or use `Promise.all`
-- **Missing `React.memo` / `useMemo`**: Expensive computations or components re-running on every render
+- **Eager loading**: feature routes not lazy-loaded with `loadComponent` / `loadChildren`
 - **Large bundle imports**: `import _ from 'lodash'` — use named imports or tree-shakeable alternatives
 
 ### MEDIUM -- Best Practices
