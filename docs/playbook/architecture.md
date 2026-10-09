@@ -2,7 +2,7 @@
 
 Resolves [What is the reference architecture and its module boundaries?](https://github.com/smnajid/fund-gate/issues/9).
 
-The architecture is stack-neutral: the tech stack is chosen at team formation. Every module below is a seam with a typed interface, so one person can own it. Vocabulary: [GLOSSARY.md](../../GLOSSARY.md). Decisions: [ADR 0004](../adr/0004-two-runtimes-one-llm-egress.md) (shape and privacy boundary), [ADR 0005](../adr/0005-advisory-llm-lane-after-the-engine.md) (advisory lane), [ADR 0002](../adr/0002-no-llm-at-check-time.md) (the Verdict involves no LLM).
+Stack: Spring Boot 4 for both runtimes (the pipeline is a command-line mode of the same app, run as its own process) and Angular for both screens, with the Angular client generated from the backend's OpenAPI spec; Python only where it adds real value, which today is nowhere ([ADR 0006](../adr/0006-spring-boot-and-angular-python-only-for-real-added-value.md)). Every module below is a seam with a typed interface, so one person can own it. Vocabulary: [GLOSSARY.md](../../GLOSSARY.md). Decisions: [ADR 0004](../adr/0004-two-runtimes-one-llm-egress.md) (shape and privacy boundary), [ADR 0005](../adr/0005-advisory-llm-lane-after-the-engine.md) (advisory lane), [ADR 0002](../adr/0002-no-llm-at-check-time.md) (the Verdict involves no LLM).
 
 ## Shape
 
