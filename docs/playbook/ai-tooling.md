@@ -16,7 +16,7 @@ The team uses **Claude Code**, served from **Microsoft Foundry**, on the bank's 
 | What | Where | Who uses it, when |
 |---|---|---|
 | **privacy-gate-auditor** subagent: one egress, gate-only input, fail closed, allow-list, logged (ADR 0004/0005) | `.claude/agents/` | Person 4 before each merge touching an LLM call, everyone before rehearsal |
-| **engine-purity-reviewer** subagent: no LLM, deterministic, Draft never decides, downgrade-only (ADR 0002/0003/0005) | `.claude/agents/` | Person 2 on every Rule Engine, Scale Mapping or reverse-lookup change |
+| **engine-purity-reviewer** subagent: no LLM, deterministic, Draft never decides, Advisory Suggestions never change the Verdict (ADR 0002/0003/0005/0007) | `.claude/agents/` | Person 2 on every Rule Engine, Scale Mapping or reverse-lookup change |
 | **demo-flow-verifier** subagent: runs the coverage set and the hero flow, times each step | `.claude/agents/` | Person 5 at each integration checkpoint, after feature freeze, before each rehearsal |
 | **java-reviewer / java-build-resolver** (from ECC, trimmed) for Spring Boot | `.claude/agents/` | Persons 1, 2, 4, 5: the resolver when the build breaks, the reviewer before merging |
 | **typescript-reviewer / ts-build-resolver** (from ECC, rewritten for Angular: signals, `@if`/`@for`, `OnPush`, NG error codes) | `.claude/agents/` | Person 3 |

@@ -22,6 +22,18 @@ _Avoid_: Reason, explanation, rationale
 A pointer from a rule outcome to the exact passage of Fund Documentation (or field of Client Profile) it relies on.
 _Avoid_: Reference, source
 
+**Advisory Suggestion**:
+An AI-drafted hint attached to a Needs Review, telling the Fund Dealer what to check or which evidence to file; it never changes the Verdict. Each one is a Requester Question or a Dealer To-do, and the Fund Dealer accepts or dismisses it.
+_Avoid_: Recommendation, AI verdict, advice
+
+**Requester Question**:
+An Advisory Suggestion addressed to the Requester; once accepted, it is asked in the reply.
+_Avoid_: Clarification, query
+
+**Dealer To-do**:
+An Advisory Suggestion the Fund Dealer carries out themselves, such as filing evidence; it stays internal and never appears in the reply.
+_Avoid_: Task, action item
+
 ### The rules
 
 **Hard Restriction**:

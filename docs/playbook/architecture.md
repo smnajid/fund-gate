@@ -2,7 +2,7 @@
 
 Resolves [What is the reference architecture and its module boundaries?](https://github.com/smnajid/fund-gate/issues/9).
 
-Stack: Spring Boot 4 for both runtimes (the pipeline is a command-line mode of the same app, run as its own process) and Angular for both screens, with the Angular client generated from the backend's OpenAPI spec; Python only where it adds real value, which today is nowhere ([ADR 0006](../adr/0006-spring-boot-and-angular-python-only-for-real-added-value.md)). Every module below is a seam with a typed interface, so one person can own it. Vocabulary: [GLOSSARY.md](../../GLOSSARY.md). Decisions: [ADR 0004](../adr/0004-two-runtimes-one-llm-egress.md) (shape and privacy boundary), [ADR 0005](../adr/0005-advisory-llm-lane-after-the-engine.md) (advisory lane), [ADR 0002](../adr/0002-no-llm-at-check-time.md) (the Verdict involves no LLM).
+Stack: Spring Boot 4 for both runtimes (the pipeline is a command-line mode of the same app, run as its own process) and Angular for both screens, with the Angular client generated from the backend's OpenAPI spec; Python only where it adds real value, which today is nowhere ([ADR 0006](../adr/0006-spring-boot-and-angular-python-only-for-real-added-value.md)). Every module below is a seam with a typed interface, so one person can own it. Vocabulary: [GLOSSARY.md](../../GLOSSARY.md). Decisions: [ADR 0004](../adr/0004-two-runtimes-one-llm-egress.md) (shape and privacy boundary), [ADR 0005](../adr/0005-advisory-llm-lane-after-the-engine.md) and [ADR 0007](../adr/0007-advisory-suggestions-never-change-the-verdict.md) (advisory lane), [ADR 0002](../adr/0002-no-llm-at-check-time.md) (the Verdict involves no LLM).
 
 ## Shape
 
@@ -39,8 +39,8 @@ Two runtimes, split on whether they touch client data, sharing one store.
 | **Request Parser** | online | pseudonymised text → editable list of Subscription Requests (Portfolio Id, Share Class mention, amount, currency, client-initiated) | yes |
 | **Rule Engine** | online | Subscription Request + Validated Rule Card + Client Profile + Fund Registration + Scale Mapping → Verdict + Justification | **never** |
 | **Reverse lookup** | online | portfolio + amount → engine run against every Validated Share Class | no |
-| **Advisory lane** | online | Needs Review Justification + allow-listed facts → labelled "what to check / evidence to file" suggestions | yes |
-| **Reply Drafter** | online | Verdict + Justification + allow-listed facts → reply in the request's language; Portfolio Ids swapped back afterwards; template per Verdict as fallback | yes |
+| **Advisory lane** | online | Needs Review Justification + allow-listed facts → Advisory Suggestions, each a Requester Question or a Dealer To-do; never changes the Verdict | yes |
+| **Reply Drafter** | online | Verdict + Justification + accepted Requester Questions + allow-listed facts → reply in the request's language; Portfolio Ids swapped back afterwards; template per Verdict as fallback, listing accepted Requester Questions verbatim | yes |
 | **Check Record** | online | everything a check read and produced → append-only record | no |
 | **LLM egress client** | both | the only code that calls Foundry; the online side accepts only Privacy Gate output | — |
 | **Adapters** | online | Client Profile (bank's hour-0 export → canonical), CRM (Portfolio Reference ↔ Portfolio Id; mock), Fund Registration (static table) | no |
@@ -53,9 +53,9 @@ Interfaces are agreed at hour 0 as JSON schemas: **Rule Card**, **Client Profile
 2. The Privacy Gate swaps every `[A-Z]{3}\d{8}` match for its Portfolio Id through the CRM, then re-scans. If a known client name or a reference the CRM does not know is still there, **no LLM call is made** and the dealer fills the request form by hand.
 3. The Request Parser turns the pseudonymised text into Subscription Requests. The dealer sees them in an editable form; several references give several checks; anything unresolved becomes Needs Review "request unclear", never a guess.
 4. The Rule Engine runs each check, with no LLM. A Share Class with only a Draft card, or no card, gives Needs Review ("Rule Card not validated" / "Fund not covered"); a Draft card never gives Eligible or Not Eligible.
-5. On Needs Review, the advisory lane suggests what to check and which evidence to file. It may only **downgrade** a Verdict, never toward Eligible; its output is labelled AI-generated and a human accepts it.
-6. The Reply Drafter writes the reply. The Portfolio Ids are swapped back to Portfolio References locally.
-7. A Check Record is written.
+5. On Needs Review, the advisory lane drafts Advisory Suggestions: Requester Questions and Dealer To-dos. They are labelled AI-generated and **never change the Verdict** ([ADR 0007](../adr/0007-advisory-suggestions-never-change-the-verdict.md)). The dealer accepts or dismisses each one, optionally noting why on a dismissal.
+6. The Reply Drafter writes the reply: at once on checks without suggestions, and when the dealer clicks **Draft reply** on checks with suggestions, so accepted Requester Questions are asked in it. Undecided suggestions are left out with a warning; changing a decision afterwards offers a redraft that never overwrites the dealer's edits. The Portfolio Ids are swapped back to Portfolio References locally.
+7. A Check Record is written. The check ends when the reply is sent; the follow-up of a Needs Review happens outside the app.
 
 ## Privacy boundary
 
@@ -76,7 +76,7 @@ Interfaces are agreed at hour 0 as JSON schemas: **Rule Card**, **Client Profile
 
 ## Audit
 
-One append-only **Check Record** per Eligibility Check: the Subscription Request, Rule Card version, Scale Mapping version, snapshot of the Client Profile fields read, engine version, Verdict, Justification, and for every LLM call the gated prompt, the response and the model id. The dealer UI has a "View Check Record" panel showing exactly what the LLM saw. Replaying a past Verdict (deterministic engine + pinned versions) is mentioned on the production slide, not built.
+One append-only **Check Record** per Eligibility Check: the Subscription Request, Rule Card version, Scale Mapping version, snapshot of the Client Profile fields read, engine version, Verdict, Justification, every accept or dismiss of an Advisory Suggestion (who, when, optional note), and for every LLM call the gated prompt, the response and the model id. The dealer UI has a "View Check Record" panel showing exactly what the LLM saw. Replaying a past Verdict (deterministic engine + pinned versions) is mentioned on the production slide, not built.
 
 ## Roles
 
@@ -86,7 +86,7 @@ One append-only **Check Record** per Eligibility Check: the Subscription Request
 ## Runtime
 
 - **Demo**: runs locally on our laptops (one compose file: dealer app + store; the pipeline as a CLI against the same store). Claude on Microsoft Foundry through the egress client. Fallbacks by config switch: our own Anthropic key, then a recorded-responses mode for offline rehearsal.
-- **Production path (slide only)**: Container Apps, Entra ID SSO for dealers and validators, Key Vault, Foundry over a private endpoint, logs to Log Analytics, Check Record store as the audit source. Next lanes: NER-based redaction is not needed while Requesters send references only; advisory options (b) suggest Blocking/Noted per client and (c) propose facts from free-text KYC notes; Microsoft Graph mailbox intake.
+- **Production path (slide only)**: Container Apps, Entra ID SSO for dealers and validators, Key Vault, Foundry over a private endpoint, logs to Log Analytics, Check Record store as the audit source. Next lanes: NER-based redaction is not needed while Requesters send references only; advisory options (b) suggest Blocking/Noted per client and (c) propose facts from free-text KYC notes; a required reason list on dismissing an Advisory Suggestion (to measure how often the lane is wrong) and tracking a Needs Review to its final answer; Microsoft Graph mailbox intake.
 
 ## Ownership (5 people)
 

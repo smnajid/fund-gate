@@ -1,5 +1,5 @@
 ---
-status: accepted, amends ADR-0002 (no LLM at check time)
+status: accepted, amends ADR-0002 (no LLM at check time); amended by ADR-0007 (suggestions never change the Verdict)
 ---
 
 # An advisory LLM lane runs after the engine: downgrade-only, allow-listed facts
