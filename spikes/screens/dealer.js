@@ -15,8 +15,9 @@ const D = {
     this.s.dismissing = null; App.render();
   },
   startDismiss(key) { this.s.dismissing = key; App.render(); },
-  draft() {
-    if (this.s.reply.edited && !confirm('Redraft replaces your edits to the reply. Continue?')) return;
+  draft(force) {
+    if (this.s.reply.edited && !force) { this.s.reply.confirming = true; App.render(); return; }
+    this.s.reply.confirming = false;
     Object.assign(this.s.reply, { text: composeReply(this.sc), basis: basisKey(this.sc), drafted: true, edited: false, editing: false }); App.render();
   },
   scenario(k) { App.set({ scenario: k, dealer: freshDealer() }); },
@@ -51,12 +52,12 @@ function manualForm() {
       <label>Amount <input size="10" value="${esc(m.amount)}" oninput="D.manual('amount', this.value)"></label>
       <select onchange="D.manual('ccy', this.value)">${['EUR', 'CHF', 'USD'].map((c) => `<option ${m.ccy === c ? 'selected' : ''}>${c}</option>`).join('')}</select>
       <label><input type="checkbox" ${m.init ? 'checked' : ''} onchange="D.manual('init', this.checked)"> client initiated</label>
-      <button class="primary" onclick="alert('PROTOTYPE: would run the Rule Engine with no LLM. For LOC90000101 + GCE-BP + EUR 80,000 the answer is row 3: Eligible.')">Check</button>
-    </div></div>`;
+      <button class="primary" onclick="D.s.manualRan = true; App.render()">Check</button>
+    </div>${D.s.manualRan ? '<div class="small muted" style="margin-top:8px">Prototype: the real screen runs the Rule Engine here, with no AI. For LOC90000101, BP-EUR and EUR 80,000 the answer is coverage row 3: Eligible.</div>' : ''}</div>`;
 }
 
 function requestsTable(sc, compact) {
-  return `<table>
+  return `<div style="overflow-x:auto"><table>
     <tr><th>Portfolio</th><th>Share Class</th><th>Amount</th>${compact ? '' : '<th>Client initiated</th>'}</tr>
     ${sc.requests.map((r) => `<tr>
       <td class="mono" style="white-space:nowrap">${r.ref}</td>
@@ -64,14 +65,14 @@ function requestsTable(sc, compact) {
       <td style="white-space:nowrap"><input size="${compact ? 6 : 8}" value="${r.amount}"> ${r.ccy}</td>
       ${compact ? '' : `<td><input type="checkbox" ${r.init ? 'checked' : ''}></td>`}
     </tr>`).join('')}
-  </table>${sc.fanoutNote ? `<div class="small muted" style="margin-top:4px">${sc.fanoutNote}</div>` : ''}`;
+  </table></div>${sc.fanoutNote ? `<div class="small muted" style="margin-top:4px">${sc.fanoutNote}</div>` : ''}`;
 }
 
 function rulesList(c, dense) {
-  return `<table>${RULE_ORDER.filter((k) => c.rules[k]).map((k) => {
+  return `<div style="overflow-x:auto"><table>${RULE_ORDER.filter((k) => c.rules[k]).map((k) => {
     const r = c.rules[k];
     return `<tr><td style="width:30px">${oc(r.outcome)}</td><td style="width:${dense ? 130 : 170}px"><b>${RULE_LABELS[k]}</b></td><td>${esc(r.text)}</td><td style="width:150px">${cite(r.cite)}</td></tr>`;
-  }).join('')}</table>`;
+  }).join('')}</table></div>`;
 }
 
 function suggestionsOf(sc) {
@@ -139,7 +140,7 @@ function replyBlock(sc, big) {
   return `<div class="row"><span class="ai-tag">✦ Drafted by AI · edit before sending</span><span class="spacer"></span>
       <button class="ghost" onclick="D.editReply(${!editing})">${editing ? 'Done' : 'Edit'}</button>
       <button class="primary" onclick="D.copy()">Copy reply</button></div>
-    ${stale ? `<div class="row small" style="background:var(--rev-soft); padding:6px 8px; border-radius:6px; margin-top:6px">Your decisions changed since this draft.<span class="spacer"></span><button onclick="D.draft()">Redraft</button>${r.edited ? '<span class="muted">replaces your edits</span>' : ''}</div>` : ''}
+    ${stale ? `<div class="row small" style="background:var(--rev-soft); padding:6px 8px; border-radius:6px; margin-top:6px">Your decisions changed since this draft.<span class="spacer"></span>${r.confirming ? '<span>Redraft replaces your edits.</span><button class="primary" onclick="D.draft(true)">Replace my edits</button><button class="ghost" onclick="App.s.dealer.reply.confirming=false; App.render()">Keep editing</button>' : `<button onclick="D.draft()">Redraft</button>${r.edited ? '<span class="muted">replaces your edits</span>' : ''}`}</div>` : ''}
     ${warnUnd}
     ${r.copied ? `<div class="small gate-ok">Copied at ${r.copied}; recorded in the Check Record.</div>` : ''}
     ${editing
@@ -186,7 +187,7 @@ function dealerA() {
     if (s.stage === 'checked' && !sc.gate.ok) h += gateStop(sc) + manualForm();
     if (s.stage === 'checked' && sc.gate.ok) {
       h += `<section class="panel"><h2>2 · Subscription Requests <span class="small muted">parsed by AI, edit if wrong</span></h2>${requestsTable(sc)}</section>`;
-      h += `<section><h2 style="margin:6px 0 10px">3 · Verdicts</h2><div style="display:grid; gap:10px">${sc.checks.map((id) => {
+      h += `<section><h2 style="margin:6px 0 10px">3 · Verdicts</h2><div style="display:grid; grid-template-columns:minmax(0,1fr); gap:10px">${sc.checks.map((id) => {
         const c = CHECKS[id];
         return `<div class="panel bar-${vClass(c.verdict)}">
           <div class="row">${c.suggested ? '<span class="small muted">Alternative found ·</span>' : ''}<h3 style="margin:0">${checkTitle(c)}</h3><span class="spacer"></span>${verdict(c.verdict)}</div>
@@ -205,13 +206,13 @@ function reverseA(sc) {
   const r = sc.reverse;
   return `<section class="panel"><h2>What can this portfolio buy?</h2>
       <div class="row"><input class="mono" value="${r.ref}" size="14"><input value="${r.amount}" size="14"><button class="primary">Run</button><span class="small muted">Rule Engine against every Validated Share Class · no AI</span></div></section>
-    <section class="panel"><table>
+    <section class="panel" style="overflow-x:auto"><table>
       <tr><th>Share Class</th><th>ISIN</th><th>Verdict</th><th>Why</th><th>Citation</th></tr>
       ${r.checks.map((id) => { const c = CHECKS[id]; const d = c.rules[c.decisive];
         return `<tr class="clickable ${D.s.selected === id ? 'sel' : ''}" onclick="D.select(${D.s.selected === id ? 'null' : id})">
           <td><b>${clsName(c.cls)}</b></td><td class="mono small">${CLASSES[c.cls].isin}</td><td>${verdict(c.verdict)}</td>
           <td>${oc(d.outcome)} ${RULE_LABELS[c.decisive]}: ${esc(c.headline)}</td><td>${cite(d.cite)}</td></tr>
-          ${D.s.selected === id ? `<tr><td colspan="5" style="background:#fafbfc">${rulesList(c, true)}</td></tr>` : ''}`; }).join('')}
+          ${D.s.selected === id ? `<tr><td colspan="5" style="background:var(--bg)">${rulesList(c, true)}</td></tr>` : ''}`; }).join('')}
     </table></section>`;
 }
 
@@ -240,7 +241,7 @@ function dealerB() {
       ${s.stage === 'pasted' ? '<button class="primary" style="margin-top:8px" onclick="D.check()">Check</button>' : `<div style="margin-top:6px">${gateLine(sc)}</div>`}</div>
       ${s.stage === 'checked' && sc.gate.ok ? `<div><h4>Subscription Requests</h4>${requestsTable(sc, true)}</div>
         <div><h4>Checks</h4>${sc.checks.map((id) => { const c = CHECKS[id];
-          return `<div onclick="D.select(${id})" class="row bar-${vClass(c.verdict)}" style="padding:8px 10px; margin-bottom:6px; border-radius:6px; cursor:pointer; background:${s.selected === id ? 'var(--accent-soft)' : '#fff'}; border:1px solid var(--line)">
+          return `<div onclick="D.select(${id})" class="row bar-${vClass(c.verdict)}" style="padding:8px 10px; margin-bottom:6px; border-radius:6px; cursor:pointer; background:${s.selected === id ? 'var(--accent-soft)' : 'var(--panel)'}; border:1px solid var(--line)">
             <div><div class="mono small">${c.ref}</div><div>${CLASSES[c.cls].cls}${c.suggested ? ' <span class="small muted">(alternative)</span>' : ''}</div></div><span class="spacer"></span>${verdict(c.verdict)}</div>`; }).join('')}</div>` : ''}
     </div>`;
     if (s.stage === 'checked' && !sc.gate.ok) right = `<div style="padding:16px; display:grid; gap:12px">${gateStop(sc)}${manualForm()}</div>`;
@@ -248,7 +249,7 @@ function dealerB() {
     else right = '<div style="padding:40px" class="muted">Run the check to see Verdicts.</div>';
   }
   document.getElementById('root').innerHTML = `
-    <div style="display:grid; grid-template-columns: 240px 400px minmax(0,1fr); height: calc(100vh - 44px); background:#fff">
+    <div class="stack-md" style="display:grid; grid-template-columns: 240px 400px minmax(0,1fr); height: calc(100vh - 44px); background:var(--panel)">
       <nav style="border-right:1px solid var(--line); overflow:auto"><div style="padding:10px 12px"><h4>Inbox · fund desk</h4></div>${inbox}</nav>
       <section style="border-right:1px solid var(--line); overflow:auto; background:var(--bg); min-width:0">${mid}</section>
       <section style="overflow:auto">${right}</section>
@@ -272,10 +273,10 @@ function detailB(sc) {
 function reverseMatrix(sc) {
   // Rules down, Share Classes across: the US Person row is the story.
   const ids = sc.reverse.checks;
-  return `<div style="padding:16px"><h3>${sc.reverse.ref} · ${sc.reverse.amount}</h3>
+  return `<div style="padding:16px; overflow-x:auto"><h3>${sc.reverse.ref} · ${sc.reverse.amount}</h3>
     <p class="small muted">Rules down, Share Classes across. Click a cell for its Citation.</p>
     <table><tr><th></th>${ids.map((id) => `<th style="text-align:center">${clsName(CHECKS[id].cls).replace('BNP Paribas (CH) Bonds CHF', 'BNP Bonds CHF').replace('Swiss Life iFunds (CH)', 'Swiss Life').replace('Nordea SIF – Global Private Equity', 'Nordea SIF PE')}</th>`).join('')}</tr>
-      ${RULE_ORDER.map((k) => `<tr ${k === 'US' ? 'style="background:#fffbea"' : ''}><td><b>${RULE_LABELS[k]}</b></td>${ids.map((id) => { const r = CHECKS[id].rules[k];
+      ${RULE_ORDER.map((k) => `<tr ${k === 'US' ? 'style="background:var(--mark-soft)"' : ''}><td><b>${RULE_LABELS[k]}</b></td>${ids.map((id) => { const r = CHECKS[id].rules[k];
         return `<td style="text-align:center">${r ? (r.cite ? `<span title="${esc(r.text)}">${oc(r.outcome)}</span><br>${cite(r.cite, 'src')}` : `<span title="${esc(r.text)}">${oc(r.outcome)}</span>`) : oc(null)}</td>`; }).join('')}</tr>`).join('')}
       <tr><td><b>Verdict</b></td>${ids.map((id) => `<td style="text-align:center">${verdict(CHECKS[id].verdict)}</td>`).join('')}</tr>
     </table></div>`;
@@ -293,11 +294,11 @@ function dealerC() {
   else {
     const from = sc.email.match(/(From|De) ?: ([^(\n]*)/)[2].trim();
     h += `<details class="panel"><summary><b>Request from ${esc(from)}</b> · ${gateLine(sc)}</summary><pre style="white-space:pre-wrap">${esc(sc.email)}</pre>${requestsTable(sc)}</details>`;
-    h += `<div style="display:grid; gap:6px">${sc.checks.map((id) => { const c = CHECKS[id];
+    h += `<div style="display:grid; grid-template-columns:minmax(0,1fr); gap:6px">${sc.checks.map((id) => { const c = CHECKS[id];
       const verb = { 'Eligible': 'can buy', 'Not Eligible': 'cannot buy', 'Needs Review': 'needs review for' }[c.verdict];
       return `<div class="panel bar-${vClass(c.verdict)}" style="padding:10px 14px; font-size:16px"><span class="mono">${c.ref}</span> <b>${verb}</b> ${clsName(c.cls)}${c.suggested ? ' <span class="small muted">(alternative)</span>' : ''}. <span class="muted">${esc(c.headline)}</span></div>`; }).join('')}</div>`;
     h += sc.checks.filter((id) => CHECKS[id].advisory).map((id) => advisoryBlock(CHECKS[id])).join('');
-    h += `<div style="display:grid; grid-template-columns: 1fr 300px; gap:14px; align-items:start">
+    h += `<div class="stack-md" style="display:grid; grid-template-columns: minmax(0,1fr) 300px; gap:14px; align-items:start">
       <div class="panel" style="padding:22px">${replyBlock(sc, true)}</div>
       <aside style="display:grid; gap:8px"><h4>Evidence for the reply</h4>${Object.entries(sc.replyCites).map(([n, [id, k]]) => { const r = CHECKS[id].rules[k];
         return `<div class="panel small"><div class="row"><b>[${n}]</b>${oc(r.outcome)}<span>${RULE_LABELS[k]} · ${CLASSES[CHECKS[id].cls].cls}</span></div>
@@ -326,8 +327,9 @@ function lookupRows(sc) {
   });
 }
 
-function lookupTable(rows) {
-  const head = `<tr><th style="position:sticky; top:0; background:#fff">Share Class</th>${RULE_ORDER.map((k) => `<th style="position:sticky; top:0; background:#fff; text-align:center; font-size:11px">${RULE_LABELS[k].replace(' subscription', '').replace(' restrictions', '').replace('Fund ', '')}</th>`).join('')}</tr>`;
+function lookupTable(rows) { return `<div style="overflow-x:auto">${lookupTableInner(rows)}</div>`; }
+function lookupTableInner(rows) {
+  const head = `<tr><th style="position:sticky; top:0; background:var(--panel)">Share Class</th>${RULE_ORDER.map((k) => `<th style="position:sticky; top:0; background:var(--panel); text-align:center; font-size:11px">${RULE_LABELS[k].replace(' subscription', '').replace(' restrictions', '').replace('Fund ', '')}</th>`).join('')}</tr>`;
   return `<table>${head}${rows.map((c) => {
     const k = CLASSES[c.cls];
     const cells = RULE_ORDER.map((r) => {
@@ -343,7 +345,7 @@ function lookupTable(rows) {
 function reverseC(sc) {
   const r = sc.reverse, L = lk(), rows = lookupRows(sc);
   const by = (v) => rows.filter((c) => c.verdict === v);
-  const groupHead = (key, label, n, v) => `<div class="row bar-${vClass(v)}" style="padding:10px 14px; background:#fff; border:1px solid var(--line); border-radius:8px; cursor:pointer" onclick="LK.toggle('${key}')">
+  const groupHead = (key, label, n, v) => `<div class="row bar-${vClass(v)}" style="padding:10px 14px; background:var(--panel); border:1px solid var(--line); border-radius:8px; cursor:pointer" onclick="LK.toggle('${key}')">
       <span>${L.open[key] ? '▾' : '▸'}</span><h3 style="margin:0">${label}</h3><span class="muted">${n}</span></div>`;
   let h = `<div class="panel" style="padding:20px"><div style="font-size:20px"><span class="mono">${r.ref}</span> with <b>${r.amount}</b>: what can it buy?</div>
       <div class="small muted">Rule Engine against every Validated Share Class · no AI · same answer every time</div>
@@ -363,9 +365,9 @@ function reverseC(sc) {
     h += groupHead('Not Eligible', 'Cannot buy', no.length, 'Not Eligible');
     if (L.open['Not Eligible']) {
       const reasons = [...new Set(no.map((c) => c.decisive))].sort((a, b) => no.filter((c) => c.decisive === b).length - no.filter((c) => c.decisive === a).length);
-      h += `<div style="display:grid; gap:6px; padding-left:18px">${reasons.map((k) => {
+      h += `<div style="display:grid; grid-template-columns:minmax(0,1fr); gap:6px; padding-left:18px">${reasons.map((k) => {
         const g = no.filter((c) => c.decisive === k), key = 'sub:' + k;
-        return `<div class="row" style="padding:8px 12px; background:#fff; border:1px solid var(--line); border-radius:8px; cursor:pointer" onclick="LK.toggle('${key}')">
+        return `<div class="row" style="padding:8px 12px; background:var(--panel); border:1px solid var(--line); border-radius:8px; cursor:pointer" onclick="LK.toggle('${key}')">
             <span>${L.open[key] ? '▾' : '▸'}</span>${oc('F')}<b>${RULE_LABELS[k]}</b><span class="muted">${g.length} Share Class${g.length > 1 ? 'es' : ''}</span></div>
           ${L.open[key] ? `<div class="panel" style="padding:4px 8px">${lookupTable(g)}</div>` : ''}`;
       }).join('')}</div>`;

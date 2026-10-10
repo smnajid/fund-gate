@@ -46,7 +46,7 @@ const App = {
     const q = new URLSearchParams({ screen: s.screen, variant: s.variant });
     if (s.screen === 'dealer') q.set('scenario', s.scenario);
     if (s.screen === 'dealer' && s.dealer.stage === 'checked') q.set('stage', 'checked');
-    history.replaceState(null, '', '?' + q);
+    try { history.replaceState(null, '', '?' + q); } catch (e) { /* sandboxed viewer: URL state is optional */ }
     closePop();
     document.getElementById('app-title').textContent = s.screen === 'dealer' ? 'Eligibility Checks' : 'Rule Card validation';
     document.getElementById('who').textContent = s.screen === 'dealer' ? 'Fund Dealer · P. Meier' : 'Rule Card Validator · J. Keller (Compliance)';

@@ -35,7 +35,7 @@ const conf = (c) => `<span class="small ${c < 0.7 ? '' : 'muted'}" style="${c < 
 function cardHeader() {
   const v = V.s.validated;
   return `<div class="panel row" style="${v ? 'border-color:var(--ok); background:var(--ok-soft)' : ''}">
-    <div><h2 style="margin:0">Nordea 1 – Global Climate and Environment · BI-EUR</h2>
+    <div style="flex:1 1 280px"><h2 style="margin:0">Nordea 1 – Global Climate and Environment · BI-EUR</h2>
     <div class="small muted">LU0348927095 · ${v ? `<b style="color:var(--ok)">Validated v1</b> by ${v.by} at ${v.at} · in force for Eligibility Checks` : '<b>Draft v1</b> · extracted 2026-11-01 from the prospectus (9 pages) and the KID · every quote verified on its page'}</div></div>
     <span class="spacer"></span>
     <div style="text-align:right"><div><b>${readyCount()}</b> / ${RULES.length} rules ready</div>
@@ -68,17 +68,23 @@ function quotes(r, onPick) {
   return r.citations.map((c, j) => `<blockquote ${onPick ? `style="cursor:pointer" onclick="V.page(${j})"` : ''}><span class="quote">${esc(c.quote)}</span><div class="small muted">${c.doc} p.${c.page} ${c.verified ? '· ✓ found on page' : '· ✗ NOT found on page'}</div></blockquote>`).join('');
 }
 
+function contradictionBanner() {
+  const open = RULES.map((r, i) => i).filter((i) => RULES[i].contradiction && !V.s.rules[i].resolution);
+  if (!open.length) return '';
+  return `<div class="panel" style="border-color:var(--rev); background:var(--rev-soft)"><b>${open.length} contradiction${open.length > 1 ? 's' : ''} need${open.length > 1 ? '' : 's'} a decision</b>: ${open.map((i) => `<a href="#" onclick="V.go(${i}); return false">${KIND_LABEL[RULES[i].kind]}${RULES[i].dimension ? ' · ' + RULES[i].dimension : ''}</a>`).join(', ')}. The prospectus says institutional only; the KID says all investors.</div>`;
+}
+
 // ---------- Variant A: document beside the rules ----------
 function validationA() {
   const i = V.s.cursor, r = RULES[i], cj = V.s.page ?? 0, c = r.citations[cj];
   const list = RULES.map((x, j) => `<tr class="clickable ${j === i ? 'sel' : ''}" onclick="V.go(${j})"><td style="width:28px">${statusIcon(j)}</td>
       <td><b>${KIND_LABEL[x.kind]}</b>${x.dimension ? ' · ' + x.dimension : ''}<div class="small muted">${esc(V.s.rules[j].value)}</div></td><td class="small muted">${scopeLabel(x)}</td></tr>`).join('');
-  const bars = (n, seed) => Array.from({ length: n }, (_, k) => `<div style="height:7px; margin:7px 0; background:#e9ebef; border-radius:3px; width:${60 + ((k * 37 + seed * 13) % 38)}%"></div>`).join('');
-  const page = `<div style="background:#fff; border:1px solid var(--line); box-shadow:0 2px 8px rgba(0,0,0,.06); padding:26px 30px; min-height:440px">
+  const bars = (n, seed) => Array.from({ length: n }, (_, k) => `<div style="height:7px; margin:7px 0; background:var(--line); border-radius:3px; width:${60 + ((k * 37 + seed * 13) % 38)}%"></div>`).join('');
+  const page = `<div style="background:var(--panel); border:1px solid var(--line); box-shadow:0 2px 8px rgba(0,0,0,.06); padding:26px 30px; min-height:440px">
       <div class="small muted row"><span>${c.doc === 'prospectus' ? 'Nordea 1, SICAV · Prospectus' : 'Key Information Document · BI-EUR'}</span><span class="spacer"></span><span>page ${c.page}</span></div>
-      ${bars(6, c.page)}<p style="font-family:Georgia, serif; font-size:14.5px"><span class="quote">${esc(c.quote)}</span></p>${bars(9, c.page + 1)}</div>`;
-  document.getElementById('root').innerHTML = `<div class="wrap" style="max-width:1400px">${cardHeader()}
-    <div style="display:grid; grid-template-columns: 320px 1fr 1fr; gap:14px; align-items:start">
+      ${bars(6, c.page)}<p style="font-family:Georgia, serif; font-size:14.5px; color:var(--ink)"><span class="quote">${esc(c.quote)}</span></p>${bars(9, c.page + 1)}</div>`;
+  document.getElementById('root').innerHTML = `<div class="wrap" style="max-width:1400px">${cardHeader()}${contradictionBanner()}
+    <div class="stack-md" style="display:grid; grid-template-columns: 320px minmax(0,1fr) minmax(0,1fr); gap:14px; align-items:start">
       <div class="panel" style="padding:6px 0"><table>${list}</table></div>
       <div><div class="row" style="margin-bottom:6px">${r.citations.map((x, j) => `<button class="${j === cj ? 'primary' : ''}" onclick="V.page(${j})">${x.doc} p.${x.page}</button>`).join('')}</div>${page}</div>
       <div class="panel"><h4>${KIND_LABEL[r.kind]} · ${scopeLabel(r)}</h4><h3>${esc(V.s.rules[i].value)}</h3>
@@ -110,14 +116,13 @@ function validationB() {
 
 // ---------- Variant C: dense table ----------
 function validationC() {
-  const open = RULES.map((r, i) => i).filter((i) => RULES[i].contradiction && !V.s.rules[i].resolution);
-  const rows = RULES.map((r, i) => `<tr ${RULES[i].contradiction && !V.s.rules[i].resolution ? 'style="background:#fffaf0"' : ''}>
+  const rows = RULES.map((r, i) => `<tr ${RULES[i].contradiction && !V.s.rules[i].resolution ? 'style="background:var(--rev-soft)"' : ''}>
       <td>${statusIcon(i)}</td><td><b>${KIND_LABEL[r.kind]}</b>${r.dimension ? '<div class="small muted">' + r.dimension + '</div>' : ''}</td><td class="small">${scopeLabel(r)}</td>
       <td style="min-width:320px">${decision(i, true)}</td><td>${conf(r.confidence)}</td>
       <td class="small">${r.citations.map((c) => cite({ doc: c.doc, page: c.page, quote: c.quote })).join('<br>')}</td>
       <td class="small muted" style="max-width:280px">${esc(r.summary.length > 160 ? r.summary.slice(0, 160) + '…' : r.summary)}</td></tr>`).join('');
   document.getElementById('root').innerHTML = `<div class="wrap" style="max-width:1500px">${cardHeader()}
-    ${open.length ? `<div class="panel" style="border-color:var(--rev); background:var(--rev-soft)"><b>${open.length} contradictions need a decision</b>: ${open.map((i) => KIND_LABEL[RULES[i].kind] + (RULES[i].dimension ? ' · ' + RULES[i].dimension : '')).join(', ')}. The prospectus says institutional only; the KID says all investors.</div>` : ''}
+    ${contradictionBanner()}
     <div class="panel" style="overflow-x:auto"><table>
       <tr><th></th><th>Rule</th><th>Scope</th><th>Decision</th><th>Conf.</th><th>Citations</th><th>Extractor note</th></tr>${rows}</table></div></div>`;
 }

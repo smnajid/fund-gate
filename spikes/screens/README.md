@@ -16,3 +16,15 @@ Scenarios come from the coverage set in [demo-dataset.md](../../docs/playbook/de
 Variant C's reverse lookup is the long-list shape: Share Classes as rows, the rule kinds as columns, grouped by Verdict, with Cannot buy sub-grouped by the deciding rule. A checkbox pads Tom's 6 real rows with 38 synthetic Share Classes ("(synthetic)", ISINs starting SYN) so you can see it long.
 
 Nothing is computed: Verdicts, replies and LLM traffic are hand-written.
+
+## Screenshots of the chosen design
+
+Decision: [`docs/playbook/screens.md`](../../docs/playbook/screens.md). Dealer screen = variant C, validation screen = variant A with the contradiction banner.
+
+| | |
+|---|---|
+| **Anna**: one sentence per Verdict, reply with evidence rail<br>![Anna](screenshots/1-dealer-anna.png) | **Claire**: Advisory Suggestions before the reply is drafted<br>![Claire suggestions](screenshots/2-dealer-claire-suggestions.png) |
+| **Claire**: two Requester Questions accepted, asked in the French reply<br>![Claire reply](screenshots/3-dealer-claire-reply.png) | **Check Record**: what the AI saw, and the dealer's decisions<br>![Check Record](screenshots/4-dealer-check-record.png) |
+| **Privacy Gate refusal**: no AI, manual form<br>![Privacy Gate](screenshots/5-dealer-privacy-gate.png) | **Tom**: reverse lookup over 44 Share Classes (38 synthetic)<br>![Tom lookup](screenshots/6-lookup-tom.png) |
+| **Tom**: Cannot buy, sub-grouped by deciding rule<br>![Tom cannot buy](screenshots/7-lookup-tom-cannot-buy.png) | **Validation**: Draft card, contradiction banner, quote on its page<br>![Validation draft](screenshots/8-validation-draft.png) |
+| **Validation**: card validated, who and when recorded<br>![Validation validated](screenshots/9-validation-validated.png) | |
