@@ -1,0 +1,32 @@
+<!doctype html>
+<!--
+  PROTOTYPE · throwaway · issue #17 "What should the dealer screen and the Rule Card validation screen look like?"
+  Three structurally different variants of each screen, switchable with ?screen=dealer|validation&variant=A|B|C
+  (and ?scenario=anna|claire|tom|guard on the dealer screen), or with the floating bar / ← → keys.
+  Plain HTML + JS, no build: the hackathon forbids pre-built product code, and the real screens are Angular (ADR 0006).
+  All data is hand-written from docs/playbook/demo-dataset.md and the extraction spike; nothing is computed.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fund Gate screens (prototype)</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="app-head">
+  <span class="logo">Fund Gate</span>
+  <span class="app-title" id="app-title"></span>
+  <span class="who" id="who"></span>
+</header>
+<main id="root"></main>
+<div id="proto-bar" class="proto-bar"></div>
+<pre id="proto-state" class="proto-state" hidden></pre>
+<script src="data.js"></script>
+<script src="rule-card.js"></script>
+<script src="app.js"></script>
+<script src="dealer.js"></script>
+<script src="validation.js"></script>
+<script>App.start();</script>
+</body>
+</html>
