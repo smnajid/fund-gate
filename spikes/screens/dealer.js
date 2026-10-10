@@ -7,10 +7,21 @@ const D = {
   check() { this.s.stage = 'checked'; this.s.selected = this.sc.checks[0] ?? null; App.render(); },
   select(id) { this.s.selected = id; App.render(); },
   record(open) { this.s.recordOpen = open; App.render(); },
-  advise(id, i, v) { this.s.advisory[id + ':' + i] = v; App.render(); },
+  // Advisory Suggestions (ADR 0007): every decision is appended to the log, which the Check Record shows.
+  decide(key, v, note) {
+    const at = new Date().toLocaleTimeString();
+    if (v) this.s.advisory[key] = { v, note, at }; else delete this.s.advisory[key];
+    this.s.log.push({ key, v: v || 'reopened', note, at, by: 'P. Meier' });
+    this.s.dismissing = null; App.render();
+  },
+  startDismiss(key) { this.s.dismissing = key; App.render(); },
+  draft() {
+    if (this.s.reply.edited && !confirm('Redraft replaces your edits to the reply. Continue?')) return;
+    Object.assign(this.s.reply, { text: composeReply(this.sc), basis: basisKey(this.sc), drafted: true, edited: false, editing: false }); App.render();
+  },
   scenario(k) { App.set({ scenario: k, dealer: freshDealer() }); },
   editReply(on) { this.s.reply.editing = on; App.render(); },
-  saveReply(t) { this.s.reply.text = t; },
+  saveReply(t) { this.s.reply.text = t; this.s.reply.edited = true; },
   manual(k, v) { this.s.manual[k] = v; },
   copy() { this.s.reply.copied = new Date().toLocaleTimeString(); App.render(); },
 };
@@ -63,24 +74,50 @@ function rulesList(c, dense) {
   }).join('')}</table>`;
 }
 
+function suggestionsOf(sc) {
+  return (sc.checks || []).flatMap((id) => (CHECKS[id].advisory || []).map((a, i) => ({ key: id + ':' + i, c: CHECKS[id], a })));
+}
+const needsDraft = (sc) => suggestionsOf(sc).length > 0;
+const acceptedQuestions = (sc) => suggestionsOf(sc).filter((x) => x.a.to === 'requester' && D.s.advisory[x.key]?.v === 'accepted');
+const undecided = (sc) => suggestionsOf(sc).filter((x) => !D.s.advisory[x.key]);
+const basisKey = (sc) => acceptedQuestions(sc).map((x) => x.key).join(',');
+function composeReply(sc) {
+  const qs = acceptedQuestions(sc);
+  return sc.reply.replace('{{questions}}', qs.length ? `${sc.questionsIntro}\n   – ${qs.map((x) => x.a.ask).join('\n   – ')}\n` : '');
+}
+function replyText(sc) {
+  if (D.s.reply.text != null) return D.s.reply.text;
+  return needsDraft(sc) ? null : sc.reply.replace('{{questions}}', '');
+}
+
+function suggestionRow(x) {
+  const st = D.s.advisory[x.key], k = x.key;
+  let right;
+  if (D.s.dismissing === k) right = `<input id="dn-${k}" placeholder="Why? (optional)" size="26"><button class="ghost" onclick="D.decide('${k}','dismissed', document.getElementById('dn-${k}').value)">Dismiss</button><button class="ghost" onclick="D.startDismiss(null)">Cancel</button>`;
+  else if (st) right = `<span class="small">${st.v === 'accepted' ? (x.a.to === 'requester' ? '✓ will be asked in the reply' : '✓ recorded as your to-do') : 'dismissed'}</span><button class="ghost" onclick="D.decide('${k}', null)">Change</button>`;
+  else right = `<button class="ghost" onclick="D.decide('${k}','accepted')">Accept</button><button class="ghost" onclick="D.startDismiss('${k}')">Dismiss</button>`;
+  return `<div style="margin-top:8px">
+    <div class="row"><b style="${st?.v === 'dismissed' ? 'opacity:.45; text-decoration:line-through' : ''}">${esc(x.a.what)}</b><span class="spacer"></span>${right}</div>
+    <div class="small" style="${st?.v === 'dismissed' ? 'opacity:.45' : ''}">${esc(x.a.why)}</div>
+    ${st?.v === 'dismissed' && st.note ? `<div class="small muted">Note: ${esc(st.note)}</div>` : ''}</div>`;
+}
+
 function advisoryBlock(c) {
   if (!c.advisory) return '';
+  const items = c.advisory.map((a, i) => ({ key: c.row + ':' + i, c, a }));
+  const group = (to, label, hint) => {
+    const g = items.filter((x) => x.a.to === to);
+    return g.length ? `<div style="margin-top:10px"><h4 style="margin:0">${label} <span class="small muted" style="text-transform:none; letter-spacing:0">· ${hint}</span></h4>${g.map(suggestionRow).join('')}</div>` : '';
+  };
   return `<div class="ai" style="margin-top:10px">
-    <div class="row"><span class="ai-tag">✦ AI suggestions · advisory lane</span><span class="spacer"></span><span class="small muted">Can keep or downgrade the Verdict, never upgrade it (ADR 0005)</span></div>
-    ${c.advisory.map((a, i) => {
-      const st = D.s.advisory[c.row + ':' + i];
-      return `<div style="margin-top:8px; ${st === 'dismissed' ? 'opacity:.4; text-decoration:line-through' : ''}">
-        <div class="row"><b>${esc(a.what)}</b><span class="spacer"></span>
-          ${st ? `<span class="small">${st === 'accepted' ? '✓ added to the dealer\'s to-do' : 'dismissed'}</span>` :
-            `<button class="ghost" onclick="D.advise(${c.row},${i},'accepted')">Accept</button><button class="ghost" onclick="D.advise(${c.row},${i},'dismissed')">Dismiss</button>`}
-        </div><div class="small">${esc(a.why)}</div></div>`;
-    }).join('')}
+    <div class="row"><span class="ai-tag">✦ AI suggestions · advisory lane</span><span class="spacer"></span><span class="small muted">Never change the Verdict (ADR 0007)</span></div>
+    ${group('requester', 'Ask the Requester', 'accepted ones are asked in the reply')}
+    ${group('dealer', 'Dealer to-do', 'internal, never in the reply')}
   </div>`;
 }
 
 function replyHtml(sc) {
-  const text = D.s.reply.text ?? sc.reply;
-  return esc(text).replace(/\[(\d+)\]/g, (m, n) => {
+  return esc(replyText(sc)).replace(/\[(\d+)\]/g, (m, n) => {
     const ref = sc.replyCites?.[n];
     if (!ref) return m;
     const r = CHECKS[ref[0]].rules[ref[1]];
@@ -90,13 +127,23 @@ function replyHtml(sc) {
 
 function replyBlock(sc, big) {
   if (!sc.reply) return '';
-  const editing = D.s.reply.editing;
+  const r = D.s.reply, und = undecided(sc).length;
+  const warnUnd = und ? `<div class="small" style="color:var(--rev)">${und} suggestion${und > 1 ? 's' : ''} undecided: left out of the reply.</div>` : '';
+  if (needsDraft(sc) && !r.drafted) {
+    return `<div class="row"><span class="ai-tag">✦ Reply</span></div>
+      <p class="muted">Decide on the suggestions first: accepted <b>Ask the Requester</b> items become questions in the reply, in the request's language.</p>
+      ${warnUnd}<button class="primary" style="margin-top:6px" onclick="D.draft()">Draft reply</button>`;
+  }
+  const stale = needsDraft(sc) && basisKey(sc) !== r.basis;
+  const editing = r.editing;
   return `<div class="row"><span class="ai-tag">✦ Drafted by AI · edit before sending</span><span class="spacer"></span>
       <button class="ghost" onclick="D.editReply(${!editing})">${editing ? 'Done' : 'Edit'}</button>
       <button class="primary" onclick="D.copy()">Copy reply</button></div>
-    ${D.s.reply.copied ? `<div class="small gate-ok">Copied at ${D.s.reply.copied}; recorded in the Check Record.</div>` : ''}
+    ${stale ? `<div class="row small" style="background:var(--rev-soft); padding:6px 8px; border-radius:6px; margin-top:6px">Your decisions changed since this draft.<span class="spacer"></span><button onclick="D.draft()">Redraft</button>${r.edited ? '<span class="muted">replaces your edits</span>' : ''}</div>` : ''}
+    ${warnUnd}
+    ${r.copied ? `<div class="small gate-ok">Copied at ${r.copied}; recorded in the Check Record.</div>` : ''}
     ${editing
-      ? `<textarea rows="12" oninput="D.saveReply(this.value)">${esc(D.s.reply.text ?? sc.reply)}</textarea>`
+      ? `<textarea rows="14" oninput="D.saveReply(this.value)">${esc(replyText(sc))}</textarea>`
       : `<div style="white-space:pre-wrap; margin-top:8px; ${big ? 'font-size:15.5px; line-height:1.6' : ''}">${replyHtml(sc)}</div>`}`;
 }
 
@@ -108,6 +155,8 @@ function recordContent(sc) {
       ${ids.map((id) => { const c = CHECKS[id]; return `<tr><td class="mono">${c.ref} × ${CLASSES[c.cls].cls}</td><td>${CLASSES[c.cls].card}</td><td>${verdict(c.verdict)}</td></tr>`; }).join('')}
     </table>
     <div class="small muted" style="margin:6px 0 14px">Engine 0.1.0 · Scale Mapping v1 · Client Profile fields read: classification, mandate type, residence, nationalities, US Person flags, risk profile, losses, horizon, knowledge (kept locally, never sent).</div>
+    ${needsDraft(sc) ? `<h4>Dealer decisions on Advisory Suggestions</h4>${D.s.log.length ? `<table class="small"><tr><th>When</th><th>Who</th><th>Suggestion</th><th>Decision</th></tr>${D.s.log.map((e) => { const x = suggestionsOf(sc).find((y) => y.key === e.key);
+      return `<tr><td>${e.at}</td><td>${e.by}</td><td>${esc(x.a.what)}</td><td>${e.v}${e.note ? ': ' + esc(e.note) : ''}</td></tr>`; }).join('')}</table>` : '<div class="small muted">None yet.</div>'}<div style="height:14px"></div>` : ''}
     <h4>What the LLM saw</h4>
     ${sc.llm.length ? sc.llm.map((l) => `<div class="panel" style="margin-bottom:10px">
       <div class="row"><b>${l.call}</b><span class="spacer"></span><span class="small muted">${l.model}</span></div>
@@ -247,13 +296,13 @@ function dealerC() {
     h += `<div style="display:grid; gap:6px">${sc.checks.map((id) => { const c = CHECKS[id];
       const verb = { 'Eligible': 'can buy', 'Not Eligible': 'cannot buy', 'Needs Review': 'needs review for' }[c.verdict];
       return `<div class="panel bar-${vClass(c.verdict)}" style="padding:10px 14px; font-size:16px"><span class="mono">${c.ref}</span> <b>${verb}</b> ${clsName(c.cls)}${c.suggested ? ' <span class="small muted">(alternative)</span>' : ''}. <span class="muted">${esc(c.headline)}</span></div>`; }).join('')}</div>`;
+    h += sc.checks.filter((id) => CHECKS[id].advisory).map((id) => advisoryBlock(CHECKS[id])).join('');
     h += `<div style="display:grid; grid-template-columns: 1fr 300px; gap:14px; align-items:start">
       <div class="panel" style="padding:22px">${replyBlock(sc, true)}</div>
       <aside style="display:grid; gap:8px"><h4>Evidence for the reply</h4>${Object.entries(sc.replyCites).map(([n, [id, k]]) => { const r = CHECKS[id].rules[k];
         return `<div class="panel small"><div class="row"><b>[${n}]</b>${oc(r.outcome)}<span>${RULE_LABELS[k]} · ${CLASSES[CHECKS[id].cls].cls}</span></div>
           <blockquote><span class="quote">${esc(r.cite.quote)}</span></blockquote><div class="muted">${esc(r.cite.doc)}${r.cite.page ? ' p.' + r.cite.page : ''}</div></div>`; }).join('')}
         <button onclick="D.record(true)">What the AI saw (Check Record)</button></aside></div>`;
-    h += sc.checks.filter((id) => CHECKS[id].advisory).map((id) => advisoryBlock(CHECKS[id])).join('');
     h += `<details class="panel"><summary><b>Full Justification</b> · every rule of every check</summary>${sc.checks.map((id) => `<h3 style="margin-top:12px">${checkTitle(CHECKS[id])} ${verdict(CHECKS[id].verdict)}</h3>${rulesList(CHECKS[id], true)}`).join('')}</details>`;
   }
   h += '</div>' + recordDrawer(sc);

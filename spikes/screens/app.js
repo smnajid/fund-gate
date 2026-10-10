@@ -59,7 +59,7 @@ const App = {
 };
 
 function freshDealer() {
-  return { stage: 'pasted', selected: null, recordOpen: false, advisory: {}, reply: {}, manual: { ref: '', cls: '', amount: '', ccy: 'EUR', init: false } };
+  return { stage: 'pasted', selected: null, recordOpen: false, advisory: {}, log: [], dismissing: null, reply: {}, manual: { ref: '', cls: '', amount: '', ccy: 'EUR', init: false } };
 }
 function freshValidation() {
   // Rule state per index: 'pending' | 'accepted' | 'corrected'. Unmodelled default Blocking (ADR 0003).

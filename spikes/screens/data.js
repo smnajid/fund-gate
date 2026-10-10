@@ -89,9 +89,11 @@ const CHECKS = {
           Reg: N1.regLU,
         },
         advisory: [
-          { what: 'Confirm the risk profile is current', why: 'The profile (2 Income) is one notch below the fund\'s SRI 4. If it was last reviewed more than 12 months ago, ask the adviser to re-run the risk questionnaire before anything else.' },
-          { what: 'Confirm the horizon', why: 'A 2-year horizon against a 5-year recommended holding period. Ask the adviser whether 2y is the portfolio horizon or this investment\'s.' },
-          { what: 'Evidence to file if the client proceeds', why: 'Written acknowledgement that the investment is outside her Target Market, plus the adviser\'s rationale, attached to this Check Record.' },
+          { to: 'requester', what: 'Is the risk profile current?', why: 'The profile (2 Income) is one notch below the fund\'s SRI 4. If it was last reviewed more than 12 months ago, the adviser should re-run the risk questionnaire.',
+            ask: 'le profil de risque de la cliente (Revenu) est-il à jour ? S\'il date de plus de 12 mois, merci de refaire le questionnaire ;' },
+          { to: 'requester', what: 'Which horizon is 2 years?', why: 'A 2-year horizon against a 5-year recommended holding period. Is 2y the horizon of the portfolio or of this investment?',
+            ask: 'l\'horizon de 2 ans s\'applique-t-il au portefeuille ou à cet investissement ?' },
+          { to: 'dealer', what: 'File the acknowledgement if she proceeds', why: 'Written acknowledgement that the investment is outside her Target Market, plus the adviser\'s rationale, attached to this Check Record.' },
         ] },
   11: { row: 11, ref: 'LUX90000301', pid: 'c71e4b09-2a6d-4f13-8e90-5d3b1a7c2f64', cls: 'GCE-BI', amount: 'EUR 20,000', verdict: 'Not Eligible',
         headline: 'Retail, and below EUR 75,000.',
@@ -155,16 +157,17 @@ Merci, Sophie`,
 
 Pour LUX90000301, Nordea 1 – Global Climate and Environment :
 
-• BP-EUR : à vérifier. Au Luxembourg le marché cible s'applique, et le profil de la cliente en sort sur trois points : risque 4/7 pour un profil Revenu, durée conseillée de 5 ans pour un horizon de 2 ans, perte totale possible [1]. Nous revenons vers vous après vérification.
+• BP-EUR : à vérifier. Au Luxembourg le marché cible s'applique, et le profil de la cliente en sort sur trois points : risque 4/7 pour un profil Revenu, durée conseillée de 5 ans pour un horizon de 2 ans, perte totale possible [1]. {{questions}}Nous revenons vers vous après vérification.
 • BI-EUR : non éligible. Classe réservée aux investisseurs institutionnels [2], minimum 75 000 EUR [3].
 
 Cordialement,
 Fund dealing desk`,
     replyCites: { 1: [10, 'TM'], 2: [11, 'Cat'], 3: [11, 'Min'] },
+    questionsIntro: 'Pour avancer, pourriez-vous nous confirmer :',
     llm: [
       { call: 'Request Parser', model: 'claude-sonnet-5-5 · Foundry', fields: [], sent: 'Objet : Souscription Nordea Global Climate – c71e4b09-…2f64\n\nBonjour,\nMa cliente (c71e4b09-…2f64) souhaite investir 20 000 EUR dans Nordea 1 Global Climate and Environment. Pouvez-vous valider ?\nMerci, Sophie', got: '[{portfolio_id: "c71e4b09-…", share_class_mention: "Nordea 1 Global Climate and Environment" (no class), amount: 20000, currency: "EUR"}]' },
       { call: 'Advisory lane', model: 'claude-sonnet-5-5 · Foundry', fields: ['Portfolio Id', 'Legal Entity (LUX)', 'Investor Classification: retail', 'risk profile: 2 Income', 'ability to bear losses: limited', 'horizon: 2y', 'knowledge (funds): basic'], sent: 'Needs Review Justification for GCE-BP (Target Market, 3 dimensions) + 7 allow-listed facts.', got: '3 suggestions (what to check, evidence to file). Verdict unchanged.' },
-      { call: 'Reply Drafter', model: 'claude-sonnet-5-5 · Foundry', fields: ['Portfolio Id', 'Legal Entity (LUX)', 'Verdict', 'Justification + Citations'], sent: 'Verdicts for GCE-BP (Needs Review) and GCE-BI (Not Eligible). Language: fr.', got: 'Drafted reply in French.' },
+      { call: 'Reply Drafter', model: 'claude-sonnet-5-5 · Foundry', fields: ['Portfolio Id', 'Legal Entity (LUX)', 'Verdict', 'Justification + Citations'], sent: 'Verdicts for GCE-BP (Needs Review) and GCE-BI (Not Eligible) + the Requester Questions the dealer accepted. Language: fr.', got: 'Drafted reply in French, accepted questions asked in it.' },
     ],
   },
   guard: {
