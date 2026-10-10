@@ -188,4 +188,49 @@ Hi desk, can Anna Steinmann (LOC90000101) subscribe EUR 80,000 to Nordea Global 
   },
 };
 
-window.PROTO = { CLASSES, RULE_LABELS, RULE_ORDER, CHECKS, SCENARIOS };
+// SYNTHETIC padding for Tom's reverse lookup: ~40 made-up Share Classes so the long-list layout can be judged.
+// Not in the coverage set; names say "(synthetic)", ISINs start with SYN, and none carries a Citation.
+const SYNTH_IDS = [];
+(function () {
+  const P = (t) => R('P', t), F = (t) => R('F', t), W = (t) => R('W', t);
+  const base = { Cat: P('Professional (HNWI opt-out) is admitted.'), US: P('US Person definition does not name citizenship.'), Min: P('CHF 2,000,000 meets the minimum.'),
+    KID: P('KID exists.'), Unm: P('Noted.'), TM: W('CH: Target Market is a warning only.'), Reg: P('Registered in CH.') };
+  const specs = [
+    // [fund, classes, regime, verdict, decisive rule, override text, Needs Review reason]
+    ['Alpine Bonds CHF', ['A', 'I', 'Q'], 'CH', 'Not Eligible', 'US', 'Excludes US citizens explicitly.'],
+    ['Lakeside Swiss Equity', ['A', 'B', 'I'], 'CH', 'Not Eligible', 'US', 'Excludes US citizens explicitly.'],
+    ['Matterhorn Real Estate CH', ['A', 'I'], 'CH', 'Not Eligible', 'US', 'IRC definition: any US citizen.'],
+    ['Rhine Money Market CHF', ['A', 'I', 'Z'], 'CH', 'Not Eligible', 'US', 'Excludes US citizens explicitly.'],
+    ['Jura Sustainable Mix', ['A', 'E'], 'CH', 'Not Eligible', 'US', 'Excludes US taxpayers.'],
+    ['Engadin Global Equity', ['A'], 'CH', 'Not Eligible', 'US', 'Excludes US citizens explicitly.'],
+    ['Danube Euro Credit', ['R-EUR', 'I-EUR', 'R-CHF'], 'LU UCITS', 'Not Eligible', 'Reg', 'Not registered for distribution in CH.'],
+    ['Moselle Emerging Debt', ['A-USD', 'A-EUR'], 'LU UCITS', 'Not Eligible', 'Reg', 'Not registered for distribution in CH.'],
+    ['Ardennes Infrastructure', ['W'], 'LU SIF', 'Not Eligible', 'Reg', 'No Swiss representative named.'],
+    ['Lux Prime Liquidity', ['I-EUR', 'I-USD', 'X-EUR'], 'LU UCITS', 'Not Eligible', 'Cat', 'Institutional investors only.'],
+    ['Geneva Systematic Equity', ['I', 'S'], 'CH', 'Not Eligible', 'Cat', 'Institutional investors only.'],
+    ['Zug Private Credit', ['M', 'M Dis'], 'CH', 'Not Eligible', 'Mand', 'Reserved to discretionary mandates with the manager.'],
+    ['Ticino Wealth Bonds', ['Z'], 'CH', 'Not Eligible', 'Mand', 'Reserved to the manager\'s mandate clients.'],
+    ['Basel Global Macro', ['F'], 'CH', 'Not Eligible', 'Min', 'Minimum CHF 5,000,000.'],
+    ['Lux Climate Transition', ['A-EUR', 'A-CHF H', 'I-EUR'], 'LU UCITS', 'Eligible'],
+    ['Lux Asia Dividend', ['A-USD', 'A-CHF H'], 'LU UCITS', 'Eligible'],
+    ['Lux Global Bond Aggregate', ['B-CHF H'], 'LU UCITS', 'Eligible'],
+    ['Bern Pension Mix', ['A'], 'CH', 'Needs Review', null, null, 'Only a Draft Rule Card exists.'],
+    ['Lux Frontier Markets', ['A-USD', 'A-EUR'], 'LU UCITS', 'Needs Review', 'Unm', 'Blocking: "subscriptions through the group\'s platform only".'],
+  ];
+  let n = 100;
+  for (const [fund, classes, regime, verdict, dec, text, nr] of specs) {
+    for (const cls of classes) {
+      const key = 'SYN-' + n;
+      CLASSES[key] = { fund: fund + ' (synthetic)', cls, isin: 'SYN' + String(n).padStart(9, '0'), regime, card: nr && !dec ? 'Draft v1 only' : 'v1 · synthetic', synthetic: true };
+      const rules = nr && !dec ? {} : { ...base };
+      if (regime.startsWith('LU')) rules.TM = P('Within the positive Target Market.');
+      if (dec === 'Unm') rules.Unm = R('R', nr);
+      else if (dec) rules[dec] = F(text);
+      CHECKS[n] = { row: n, ref: 'LOC90000201', cls: key, amount: 'CHF 2,000,000', verdict, decisive: dec || (nr ? 'card' : 'US'),
+        headline: dec ? (text || nr) : nr || 'All rules pass.', rules, synthetic: true };
+      SYNTH_IDS.push(n++);
+    }
+  }
+})();
+
+window.PROTO = { CLASSES, RULE_LABELS, RULE_ORDER, CHECKS, SCENARIOS, SYNTH_IDS };

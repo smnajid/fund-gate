@@ -13,4 +13,6 @@ Use the floating bar or `←` `→` to switch variants, the dropdown for the dea
 
 Scenarios come from the coverage set in [demo-dataset.md](../../docs/playbook/demo-dataset.md): **Anna** (rows 1–3), **Claire** (rows 10–11 + advisory lane), **Tom** (reverse lookup, rows 4–9), **Guard** (Privacy Gate refusal). The validation screen loads the real Draft card for Nordea 1 GCE BI-EUR from the extraction spike run (`rule-card.js`), including its two KID-vs-prospectus contradictions.
 
+Variant C's reverse lookup is the long-list shape: Share Classes as rows, the rule kinds as columns, grouped by Verdict, with Cannot buy sub-grouped by the deciding rule. A checkbox pads Tom's 6 real rows with 38 synthetic Share Classes ("(synthetic)", ISINs starting SYN) so you can see it long.
+
 Nothing is computed: Verdicts, replies and LLM traffic are hand-written.

@@ -309,15 +309,70 @@ function dealerC() {
   document.getElementById('root').innerHTML = h;
 }
 
-function reverseC(sc) {
-  const r = sc.reverse;
-  const groups = [['Eligible', 'Can buy'], ['Needs Review', 'Needs review'], ['Not Eligible', 'Cannot buy']];
-  return `<div class="panel" style="padding:22px"><div style="font-size:20px"><span class="mono">${r.ref}</span> with <b>${r.amount}</b>: what can it buy?</div>
-      <div class="small muted">Rule Engine against every Validated Share Class · no AI · same answer every time</div></div>
-    ${groups.map(([v, l]) => { const ids = r.checks.filter((id) => CHECKS[id].verdict === v); if (!ids.length) return '';
-      return `<div><h2 style="margin:8px 0">${l} <span class="muted">(${ids.length})</span></h2><div style="display:grid; gap:6px">${ids.map((id) => { const c = CHECKS[id], d = c.rules[c.decisive];
-        return `<div class="panel bar-${vClass(v)}" style="padding:10px 14px"><div style="font-size:15.5px"><b>${clsName(c.cls)}</b></div>
-          <div>${esc(c.headline)}</div>${d.cite ? `<blockquote><span class="quote">${esc(d.cite.quote)}</span> <span class="muted small">${esc(d.cite.doc)}${d.cite.page ? ' p.' + d.cite.page : ''}</span></blockquote>` : ''}</div>`; }).join('')}</div></div>`; }).join('')}`;
+// Reverse lookup, long-list shape: Share Classes as rows, the fixed rule kinds as columns,
+// grouped by Verdict; "Cannot buy" collapsed and sub-grouped by the deciding rule.
+function lk() { return D.s.lk ??= { q: '', regime: '', long: true, open: { Eligible: true, 'Needs Review': true } }; }
+const LK = {
+  set(k, v) { lk()[k] = v; lk().focus = k === 'q'; App.render(); },
+  toggle(g) { lk().open[g] = !lk().open[g]; App.render(); },
+};
+
+function lookupRows(sc) {
+  const L = lk(), q = L.q.trim().toLowerCase();
+  return [...sc.reverse.checks, ...(L.long ? window.PROTO.SYNTH_IDS : [])].map((id) => CHECKS[id]).filter((c) => {
+    const k = CLASSES[c.cls];
+    if (L.regime && !k.regime.startsWith(L.regime)) return false;
+    return !q || `${k.fund} ${k.cls} ${k.isin}`.toLowerCase().includes(q);
+  });
 }
 
-App.screens.dealer = { A: dealerA, B: dealerB, C: dealerC };
+function lookupTable(rows) {
+  const head = `<tr><th style="position:sticky; top:0; background:#fff">Share Class</th>${RULE_ORDER.map((k) => `<th style="position:sticky; top:0; background:#fff; text-align:center; font-size:11px">${RULE_LABELS[k].replace(' subscription', '').replace(' restrictions', '').replace('Fund ', '')}</th>`).join('')}</tr>`;
+  return `<table>${head}${rows.map((c) => {
+    const k = CLASSES[c.cls];
+    const cells = RULE_ORDER.map((r) => {
+      const x = c.rules[r];
+      const hot = r === c.decisive && x && 'FR'.includes(x.outcome) ? `outline:2px solid ${x.outcome === 'F' ? 'var(--no)' : 'var(--rev)'}; outline-offset:-3px; border-radius:6px;` : '';
+      const body = x ? (x.cite ? `<span title="${esc(x.text)}">${oc(x.outcome)}</span><br>${cite(x.cite, 'src')}` : `<span title="${esc(x.text)}">${oc(x.outcome)}</span>`) : oc(null);
+      return `<td style="text-align:center; ${hot}">${body}</td>`;
+    }).join('');
+    return `<tr><td><b>${esc(k.fund)}</b> ${esc(k.cls)}<div class="small muted"><span class="mono">${k.isin}</span> · ${k.regime} · ${esc(c.headline)}</div></td>${cells}</tr>`;
+  }).join('')}</table>`;
+}
+
+function reverseC(sc) {
+  const r = sc.reverse, L = lk(), rows = lookupRows(sc);
+  const by = (v) => rows.filter((c) => c.verdict === v);
+  const groupHead = (key, label, n, v) => `<div class="row bar-${vClass(v)}" style="padding:10px 14px; background:#fff; border:1px solid var(--line); border-radius:8px; cursor:pointer" onclick="LK.toggle('${key}')">
+      <span>${L.open[key] ? '▾' : '▸'}</span><h3 style="margin:0">${label}</h3><span class="muted">${n}</span></div>`;
+  let h = `<div class="panel" style="padding:20px"><div style="font-size:20px"><span class="mono">${r.ref}</span> with <b>${r.amount}</b>: what can it buy?</div>
+      <div class="small muted">Rule Engine against every Validated Share Class · no AI · same answer every time</div>
+      <div style="margin-top:8px; font-size:15px">${verdict('Eligible')} <b>${by('Eligible').length}</b> &nbsp; ${verdict('Needs Review')} <b>${by('Needs Review').length}</b> &nbsp; ${verdict('Not Eligible')} <b>${by('Not Eligible').length}</b></div>
+      <div class="row" style="margin-top:12px">
+        <input id="lk-q" placeholder="Search fund, class or ISIN" size="30" value="${esc(L.q)}" oninput="LK.set('q', this.value)">
+        <select onchange="LK.set('regime', this.value)">${[['', 'All regimes'], ['CH', 'CH'], ['LU', 'LU']].map(([v, l]) => `<option value="${v}" ${L.regime === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
+        <span class="spacer"></span>
+        <label class="small"><input type="checkbox" ${L.long ? 'checked' : ''} onchange="LK.set('long', this.checked)"> prototype: pad with ${window.PROTO.SYNTH_IDS.length} synthetic Share Classes</label>
+      </div></div>`;
+  for (const [v, label] of [['Eligible', 'Can buy'], ['Needs Review', 'Needs review']]) {
+    const g = by(v); if (!g.length) continue;
+    h += groupHead(v, label, g.length, v) + (L.open[v] ? `<div class="panel" style="padding:4px 8px">${lookupTable(g)}</div>` : '');
+  }
+  const no = by('Not Eligible');
+  if (no.length) {
+    h += groupHead('Not Eligible', 'Cannot buy', no.length, 'Not Eligible');
+    if (L.open['Not Eligible']) {
+      const reasons = [...new Set(no.map((c) => c.decisive))].sort((a, b) => no.filter((c) => c.decisive === b).length - no.filter((c) => c.decisive === a).length);
+      h += `<div style="display:grid; gap:6px; padding-left:18px">${reasons.map((k) => {
+        const g = no.filter((c) => c.decisive === k), key = 'sub:' + k;
+        return `<div class="row" style="padding:8px 12px; background:#fff; border:1px solid var(--line); border-radius:8px; cursor:pointer" onclick="LK.toggle('${key}')">
+            <span>${L.open[key] ? '▾' : '▸'}</span>${oc('F')}<b>${RULE_LABELS[k]}</b><span class="muted">${g.length} Share Class${g.length > 1 ? 'es' : ''}</span></div>
+          ${L.open[key] ? `<div class="panel" style="padding:4px 8px">${lookupTable(g)}</div>` : ''}`;
+      }).join('')}</div>`;
+    }
+  }
+  if (!rows.length) h += '<div class="panel muted">No Share Class matches.</div>';
+  return h;
+}
+
+App.screens.dealer = { A: dealerA, B: dealerB, C: () => { dealerC(); const L = D.s.lk, el = document.getElementById('lk-q'); if (L?.focus && el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } } };
