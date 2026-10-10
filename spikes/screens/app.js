@@ -14,7 +14,8 @@ const App = {
   start() {
     const q = new URLSearchParams(location.search);
     const screen = VARIANTS[q.get('screen')] ? q.get('screen') : 'dealer';
-    const variant = VARIANTS[screen][q.get('variant')] ? q.get('variant') : 'A';
+    const chosen = { dealer: 'C', validation: 'A' };  // the #17 decision
+    const variant = VARIANTS[screen][q.get('variant')] ? q.get('variant') : chosen[screen];
     const scenario = SCENARIOS[q.get('scenario')] ? q.get('scenario') : 'anna';
     this.s = {
       screen, variant, scenario,
@@ -22,7 +23,7 @@ const App = {
       validation: freshValidation(),
       showState: false,
     };
-    if (q.get('stage') === 'checked') { this.s.dealer.stage = 'checked'; this.s.dealer.selected = SCENARIOS[scenario].checks?.[0] ?? null; }
+    if (q.get('stage') === 'checked' || !q.get('screen')) { this.s.dealer.stage = 'checked'; this.s.dealer.selected = SCENARIOS[scenario].checks?.[0] ?? null; }
     document.addEventListener('keydown', (e) => {
       const t = e.target;
       if (t.matches('input, textarea, select, [contenteditable]')) return;
@@ -79,11 +80,11 @@ function renderBar() {
     ? `<span class="sep"></span><select onchange="App.set({scenario:this.value, dealer: freshDealer()})">${Object.entries(SCENARIOS).map(([k, x]) => `<option value="${k}" ${k === s.scenario ? 'selected' : ''}>${x.label}</option>`).join('')}</select>`
     : '';
   document.getElementById('proto-bar').innerHTML = `
-    <button class="${s.screen === 'dealer' ? 'on' : ''}" onclick="App.set({screen:'dealer', variant:'A'})">Dealer</button>
+    <button class="${s.screen === 'dealer' ? 'on' : ''}" onclick="App.set({screen:'dealer', variant:'C'})">Dealer</button>
     <button class="${s.screen === 'validation' ? 'on' : ''}" onclick="App.set({screen:'validation', variant:'A'})">Validation</button>
     <span class="sep"></span>
     <button onclick="App.cycle(-1)" title="previous variant (←)">←</button>
-    <span class="lbl">${s.variant} · ${v[s.variant]}</span>
+    <span class="lbl">${s.variant} · ${v[s.variant]}${s.variant === { dealer: 'C', validation: 'A' }[s.screen] ? ' ✓ chosen' : ''}</span>
     <button onclick="App.cycle(1)" title="next variant (→)">→</button>
     ${scen}
     <span class="sep"></span>
