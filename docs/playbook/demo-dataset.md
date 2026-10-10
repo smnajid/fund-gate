@@ -207,7 +207,7 @@ There is no email. The dealer opens `LOC90000201` in the dealer screen with an a
 
 ### Claire Dupont: Target Market is binding in Luxembourg
 
-The email is in French and names the fund but no Share Class. That means "check every class of that fund" (rows 10 and 11). The reply recommends BP-EUR and lists what the dealer must review.
+The email is in French and names the fund but no Share Class. That means "check every class of that fund" (rows 10 and 11). The reply recommends BP-EUR and asks the Requester the questions the dealer accepted.
 
 > **De :** Sophie Lentz (conseillère)
 > **À :** Fund dealing desk
@@ -217,7 +217,7 @@ The email is in French and names the fund but no Share Class. That means "check 
 > Ma cliente (LUX90000301) souhaite investir 20 000 EUR dans Nordea 1 Global Climate and Environment. Pouvez-vous valider ?
 > Merci, Sophie
 
-The advisory lane turns row 10's Needs Review into what the dealer should check and which evidence to file ([ADR 0005](../adr/0005-advisory-llm-lane-after-the-engine.md)).
+The advisory lane turns row 10's Needs Review into Requester Questions (is the risk profile current? is 2 years the horizon of the portfolio or of this investment?) and a Dealer To-do (file the client's acknowledgement if she proceeds). The Verdict stays Needs Review ([ADR 0005](../adr/0005-advisory-llm-lane-after-the-engine.md), [ADR 0007](../adr/0007-advisory-suggestions-never-change-the-verdict.md)).
 
 ## Guard email (no coverage row)
 
