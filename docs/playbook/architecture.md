@@ -2,7 +2,7 @@
 
 Resolves [What is the reference architecture and its module boundaries?](https://github.com/smnajid/fund-gate/issues/9).
 
-Stack: Spring Boot 4 for both runtimes (the pipeline is a command-line mode of the same app, run as its own process) and Angular for both screens, with the Angular client generated from the backend's OpenAPI spec; Python only where it adds real value, which today is nowhere ([ADR 0006](../adr/0006-spring-boot-and-angular-python-only-for-real-added-value.md)). Every module below is a seam with a typed interface, so one person can own it. Vocabulary: [GLOSSARY.md](../../GLOSSARY.md). Decisions: [ADR 0004](../adr/0004-two-runtimes-one-llm-egress.md) (shape and privacy boundary), [ADR 0005](../adr/0005-advisory-llm-lane-after-the-engine.md) and [ADR 0007](../adr/0007-advisory-suggestions-never-change-the-verdict.md) (advisory lane), [ADR 0002](../adr/0002-no-llm-at-check-time.md) (the Verdict involves no LLM).
+Stack: Spring Boot 4 for both runtimes (the pipeline is a command-line mode of the same app, run as its own process) and Angular for both screens, with the Angular client generated from the backend's OpenAPI spec; Python only where it adds real value, which today is nowhere ([ADR 0006](../adr/0006-spring-boot-and-angular-python-only-for-real-added-value.md)). Screens: [screens.md](screens.md). Every module below is a seam with a typed interface, so one person can own it. Vocabulary: [GLOSSARY.md](../../GLOSSARY.md). Decisions: [ADR 0004](../adr/0004-two-runtimes-one-llm-egress.md) (shape and privacy boundary), [ADR 0005](../adr/0005-advisory-llm-lane-after-the-engine.md) and [ADR 0007](../adr/0007-advisory-suggestions-never-change-the-verdict.md) (advisory lane), [ADR 0002](../adr/0002-no-llm-at-check-time.md) (the Verdict involves no LLM).
 
 ## Shape
 
@@ -22,7 +22,7 @@ Two runtimes, split on whether they touch client data, sharing one store.
         │ Store        │◄─────────────────►│  → Reply Drafter (LLM, template fallback)       │
         │ Rule Cards,  │                   │  → Check Record (append-only)                   │
         │ Scale Mapping│                   │ Validation UI (Draft → Validated)               │
-        │ Check Records│                   │ Reverse lookup (engine × all Validated cards)   │
+        │ Check Records│                   │ Reverse lookup (engine × every catalog class)   │
         └──────────────┘                   │ LLM egress client: the only path to Foundry     │
                                            └─────────────────────────────────────────────────┘
 ```
@@ -32,13 +32,13 @@ Two runtimes, split on whether they touch client data, sharing one store.
 | Module | Runtime | Input → output | LLM? |
 |---|---|---|---|
 | **Rule Card pipeline** | offline CLI | Fund Documentation PDF → Draft Rule Card (cited), quotes checked on their page. Ported from the [extraction spike](https://github.com/smnajid/fund-gate/tree/prototype/rule-card-extraction/spikes/rule-card-extraction) | yes, public documents only |
-| **Share Class catalog** | online | fund/class mention or ISIN → Share Class(es); a fund named without a class fans out to all its classes | no |
+| **Share Class catalog** | online | fund/class mention or ISIN → Share Class(es); a fund named without a class fans out to all its classes. The same matcher serves the reverse-lookup search ([screens](screens.md#reverse-lookup-what-can-this-portfolio-buy)) | no |
 | **Validation UI** | online | Draft card → corrected, Validated card; Unmodelled Restrictions marked Blocking/Noted (ADR 0003); who and when kept per version | no |
 | **Intake** | online | pasted text or `.eml` → raw request text | no |
 | **Privacy Gate** | online | raw text → pseudonymised text + local Portfolio Reference ↔ Portfolio Id map; client facts → allow-listed fields for one call | no |
 | **Request Parser** | online | pseudonymised text → editable list of Subscription Requests (Portfolio Id, Share Class mention, amount, currency, client-initiated) | yes |
 | **Rule Engine** | online | Subscription Request + Validated Rule Card + Client Profile + Fund Registration + Scale Mapping → Verdict + Justification | **never** |
-| **Reverse lookup** | online | portfolio + amount → engine run against every Validated Share Class | no |
+| **Reverse lookup** | online | portfolio + amount → engine run against every Share Class in the catalog; Draft-only or card-less classes give Needs Review, as a single check would | no |
 | **Advisory lane** | online | Needs Review Justification + allow-listed facts → Advisory Suggestions, each a Requester Question or a Dealer To-do; never changes the Verdict | yes |
 | **Reply Drafter** | online | Verdict + Justification + accepted Requester Questions + allow-listed facts → reply in the request's language; Portfolio Ids swapped back afterwards; template per Verdict as fallback, listing accepted Requester Questions verbatim | yes |
 | **Check Record** | online | everything a check read and produced → append-only record | no |
