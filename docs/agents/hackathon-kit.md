@@ -50,12 +50,12 @@ Personal choices go in `.claude/settings.local.json`, which is git-ignored:
 }
 ```
 
-- `playwright`: Person 3 (UIs) and Person 5 (demo verifier).
-- `document-skills` (`pptx`): Person 5 (pitch deck).
+- `playwright`: Builder 3 (UIs) and the platform seat (demo verifier).
+- `document-skills` (`pptx`): the platform seat (pitch deck).
 - `context7`: anyone who keeps hitting outdated framework APIs.
-- `security-guidance`: Person 4 if wanted, for the Privacy Gate. It reviews every turn, which slows you down.
+- `security-guidance`: the platform seat if wanted, for the Privacy Gate. It reviews every turn, which slows you down.
 
-## 4. Angular CLI MCP (Person 3)
+## 4. Angular CLI MCP (Builder 3)
 
 Gives the agent `ng` build, test and serve targets, Angular docs search and the best-practices guide:
 
@@ -69,7 +69,7 @@ The POC runs on Spring Boot 4 and Angular so that the team checks generated code
 
 1. **Generated client types.** Add `springdoc-openapi` to the backend so it serves its OpenAPI spec. Generate the Angular types and HTTP client from that spec with `openapi-generator` (`typescript-angular`), and put the generate step in an npm script. Regenerate after every API change instead of editing DTOs by hand. Generated files are never edited.
 2. **One codebase.** The Rule Card pipeline is a command-line mode of the same Spring Boot app, for example a `pipeline` profile with an `ApplicationRunner`, not a second project. That gives one build, one image and shared domain types. It runs as its own process, with no Client Profile or CRM adapter wired in, so the offline and online runtimes stay separate (ADR 0004).
-3. **Fast loop, tests as the safety net.** Turn on `spring-boot-devtools` so a backend change restarts in seconds. Person 2 builds the Rule Engine test-first (`/tdd`) with one test per row of the coverage set in `docs/playbook/demo-dataset.md`. A wrong Verdict then fails a test even when a review misses it.
+3. **Fast loop, tests as the safety net.** Turn on `spring-boot-devtools` so a backend change restarts in seconds. Builder 2 builds the Rule Engine test-first (`/tdd`) with one test per row of the coverage set in `docs/playbook/demo-dataset.md`. A wrong Verdict then fails a test even when a review misses it.
 
 Python only if a module needs something the JVM can't do well. Today none does.
 
