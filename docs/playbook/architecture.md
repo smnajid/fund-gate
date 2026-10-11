@@ -90,12 +90,14 @@ One append-only **Check Record** per Eligibility Check: the Subscription Request
 
 ## Ownership (5 people)
 
-| Person | Owns |
-|---|---|
-| 1 | Rule Card pipeline (port the spike), Share Class catalog, seeding the 4 funds |
-| 2 | Rule Engine, Scale Mapping, reverse lookup, test-first against the coverage set |
-| 3 | Dealer UI and Validation UI |
-| 4 | Intake, Privacy Gate, LLM egress, Request Parser, Reply Drafter, advisory lane |
-| 5 | Adapters, Check Record, compose/deployment, pitch and production slide |
+The team is five including a member of the fund dealing desk, the subject's sponsor. Whether the organisers count the sponsor's member in the five is unconfirmed; we plan for the tighter case ([pitch](pitch.md#team-we-need)).
 
-Person 4 carries the most; the advisory lane is cut first if time runs short. The hour-by-hour plan belongs to [How does a team of 5 run the 36 hours?](https://github.com/smnajid/fund-gate/issues/11).
+| Seat | Owns |
+|---|---|
+| Builder 1 | Rule Card pipeline (port the spike), Share Class catalog, seeding the 4 funds, cited dealing cut-off |
+| Builder 2 | Rule Engine, Scale Mapping, reverse lookup, ELI5 templates, form checklist logic, "what would make it eligible" re-runs; test-first against the coverage set |
+| Builder 3 | Dealer UI and Validation UI, LLM egress, Request Parser, Reply Drafter, advisory lane, Q&A |
+| Pitch and platform (Mohamed) | Adapters, Intake, Privacy Gate, Check Record, compose/deployment, pitch and production slide |
+| Domain (dealing desk) | Plain-language wording, form checklist content, accepting the coverage set, co-presenting the demo |
+
+Builder 3 carries the most. If time runs short, cut in this order: Q&A, the advisory lane, then the LLM polish on ELI5 (the templates alone meet the requirement). If the organisers allow a sixth person, split Builder 3's LLM lane back out. The hour-by-hour plan belongs to [How does a team of 5 run the 36 hours?](https://github.com/smnajid/fund-gate/issues/11).

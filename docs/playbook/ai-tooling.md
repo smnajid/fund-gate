@@ -15,21 +15,21 @@ The team uses **Claude Code**, served from **Microsoft Foundry**, on the bank's 
 
 | What | Where | Who uses it, when |
 |---|---|---|
-| **privacy-gate-auditor** subagent: one egress, gate-only input, fail closed, allow-list, logged (ADR 0004/0005) | `.claude/agents/` | Person 4 before each merge touching an LLM call, everyone before rehearsal |
-| **engine-purity-reviewer** subagent: no LLM, deterministic, Draft never decides, Advisory Suggestions never change the Verdict (ADR 0002/0003/0005/0007) | `.claude/agents/` | Person 2 on every Rule Engine, Scale Mapping or reverse-lookup change |
-| **demo-flow-verifier** subagent: runs the coverage set and the hero flow, times each step | `.claude/agents/` | Person 5 at each integration checkpoint, after feature freeze, before each rehearsal |
+| **privacy-gate-auditor** subagent: one egress, gate-only input, fail closed, allow-list, logged (ADR 0004/0005) | `.claude/agents/` | The platform seat and Builder 3 before each merge touching an LLM call, everyone before rehearsal |
+| **engine-purity-reviewer** subagent: no LLM, deterministic, Draft never decides, Advisory Suggestions never change the Verdict (ADR 0002/0003/0005/0007) | `.claude/agents/` | Builder 2 on every Rule Engine, Scale Mapping or reverse-lookup change |
+| **demo-flow-verifier** subagent: runs the coverage set and the hero flow, times each step | `.claude/agents/` | The platform seat at each integration checkpoint, after feature freeze, before each rehearsal |
 | **java-reviewer / java-build-resolver** (from ECC, trimmed) for Spring Boot | `.claude/agents/` | Persons 1, 2, 4, 5: the resolver when the build breaks, the reviewer before merging |
-| **typescript-reviewer / ts-build-resolver** (from ECC, rewritten for Angular: signals, `@if`/`@for`, `OnPush`, NG error codes) | `.claude/agents/` | Person 3 |
-| **angular-developer** skill (official, from `angular/skills`): current Angular practice for signals, Signal Forms, DI, routing, Aria, testing | `.claude/skills/` | Person 3; it loads only when Angular work comes up |
+| **typescript-reviewer / ts-build-resolver** (from ECC, rewritten for Angular: signals, `@if`/`@for`, `OnPush`, NG error codes) | `.claude/agents/` | Builder 3 |
+| **angular-developer** skill (official, from `angular/skills`): current Angular practice for signals, Signal Forms, DI, routing, Aria, testing | `.claude/skills/` | Builder 3; it loads only when Angular work comes up |
 | **jdtls-lsp** and **typescript-lsp** plugins: go-to-definition, references and compiler errors for the agent | `enabledPlugins` | Everyone (needs `jdtls` and `typescript-language-server` installed) |
-| **Angular CLI MCP** (`ng mcp`): build, test and serve targets, docs search, best-practices guide | opt-in per person | Person 3 |
-| **create-verification-skill** (ported from pstack): generates a `verify-fund-gate` skill that launches, checks and drives the real app, with a feature map | `.agents/skills/` | Person 5 once the app boots (around hour 6 to 10). Every agent uses the generated skill afterwards |
+| **Angular CLI MCP** (`ng mcp`): build, test and serve targets, docs search, best-practices guide | opt-in per person | Builder 3 |
+| **create-verification-skill** (ported from pstack): generates a `verify-fund-gate` skill that launches, checks and drives the real app, with a feature map | `.agents/skills/` | The platform seat once the app boots (around hour 6 to 10). Every agent uses the generated skill afterwards |
 | **blast-radius** (ported from pstack): finds the one fact a change is safe because of, and proves it by running code | `.agents/skills/` | Before merging Rule Engine or Privacy Gate changes during integration |
 | **unslop** (pstack): strips AI tells from prose | `.agents/skills/` | Pitch text, README, reply templates |
-| **frontend-design** plugin: design direction so the screens don't look like a stock AI dashboard | `enabledPlugins` | Person 3 |
+| **frontend-design** plugin: design direction so the screens don't look like a stock AI dashboard | `enabledPlugins` | Builder 3 |
 | **pr-review-toolkit** plugin: six focused review agents (silent failures, test gaps, type design, comments) | `enabledPlugins` | Everyone on PRs |
-| **playwright** plugin (MCP): Claude opens and checks its own screens through accessibility snapshots | opt-in per person | Person 3, and Person 5 for the demo verifier |
-| **document-skills** plugin (`pptx`): the pitch deck on the bank's template | opt-in per person | Person 5 |
+| **playwright** plugin (MCP): Claude opens and checks its own screens through accessibility snapshots | opt-in per person | Builder 3, and the platform seat for the demo verifier |
+| **document-skills** plugin (`pptx`): the pitch deck on the bank's template | opt-in per person | The platform seat |
 | **context7** plugin (MCP): current library docs on demand, so agents stop guessing framework APIs | opt-in per person | Anyone fighting a framework version |
 
 Playwright, Context7 and `document-skills` are opt-in because MCP tool schemas and large skills cost every person context on every turn. The other three people don't need them.
@@ -87,7 +87,7 @@ Revisit only if hour-0 brings something the JVM handles badly, such as scanned P
 | **pstack as a whole** (`poteto-mode`, `arena`, `architect`, principles) | Skip | Built for Cursor: custom modes, Grok routing, Cursor's question tool. `architect` overlaps `codebase-design` and `prototype`. We ported the three skills that work anywhere. |
 | pstack `interrogate` (multi-model adversarial review) | Later, if someone owns it | Needs its reviewer step rewritten for the Agent tool. `pr-review-toolkit` covers most of it. |
 | Cursor Orchestrate, Advisor, Ralph Loop, Figma-to-UI | Skip | Cursor-only, or an autonomous loop we can't supervise in 36 hours, or a Figma step we won't have. |
-| `security-guidance` plugin | Optional | Runs an LLM review of the diff at the end of every turn. That is useful, but slow for 5 people iterating fast. Person 4 may turn it on for the Privacy Gate. |
+| `security-guidance` plugin | Optional | Runs an LLM review of the diff at the end of every turn. That is useful, but slow for 5 people iterating fast. The platform seat may turn it on for the Privacy Gate. |
 | `feature-dev`, `hookify`, `code-review` plugins | Skip | Overlap our `implement`, `to-tickets` and `code-review` skills. |
 | Claude in Chrome, Slides artifact | Not available | Not available on Foundry. Use Playwright and `pptx`. |
 | Figma MCP | Skip | Nobody designs in Figma first in 36 hours. Use `prototype` before the event instead. |
