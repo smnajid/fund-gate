@@ -1,4 +1,4 @@
-# AI tooling for the 36 hours
+# AI tooling for the 20 build hours
 
 Resolves [Which AI tools make the team faster during the 36 hours?](https://github.com/smnajid/fund-gate/issues/18).
 
@@ -8,7 +8,7 @@ The team uses **Claude Code**, served from **Microsoft Foundry**, on the bank's 
 
 - **Foundry, "Hosted on Azure" deployments only.** With this option, prompts and completions stay in Azure. "Hosted on Anthropic" deployments, and every Fable model, run on Anthropic's infrastructure. Foundry turns off telemetry by default.
 - **Foundry costs some features.** Claude in Chrome, Artifacts (so no Slides artifact), cloud sessions, `/schedule` and Routines are unavailable. Subagents, skills, plugins, hooks, MCP, worktrees, `/loop` and the sandbox all work.
-- **Context is the scarce resource, not money.** Budget is unlimited, but every always-loaded rule and MCP tool schema costs every turn, for 5 people, for 36 hours. MCP tool search is unsupported on Azure-hosted deployments, so each enabled MCP server's full tool list sits in context.
+- **Context is the scarce resource, not money.** Budget is unlimited, but every always-loaded rule and MCP tool schema costs every turn, for 5 people, for 20 build hours. MCP tool search is unsupported on Azure-hosted deployments, so each enabled MCP server's full tool list sits in context.
 - **We already have a good base.** About 37 Matt Pocock skills: `tdd`, `prototype`, `diagnosing-bugs`, `codebase-design`, `code-review`, `to-tickets`, `handoff` and others. A new tool has to add something these don't.
 
 ## The kit
@@ -44,7 +44,7 @@ Playwright, Context7 and `document-skills` are opt-in because MCP tool schemas a
 | 4 | Intake, Privacy Gate, egress, Parser, Reply Drafter, advisory lane | `privacy-gate-auditor` on every merge, `tdd` for the gate's fail-closed cases, `claude-api` skill for Foundry calls |
 | 5 | Adapters, Check Record, compose, pitch | `demo-flow-verifier`, `create-verification-skill`, `pptx`, `unslop` |
 
-## How we work with agents in the 36 hours
+## How we work with agents in the 20 build hours
 
 - **One worktree per module owner**: `claude --worktree <module>`. `.claude/worktrees/` is already git-ignored.
 - **Background agents for slow loops**: `/bg` a session that runs the coverage set or a long build. `/loop 10m` to rerun the demo-flow verifier during the last hours.
@@ -53,7 +53,7 @@ Playwright, Context7 and `document-skills` are opt-in because MCP tool schemas a
 
 ## Where the time goes, and which tool wins it back
 
-| Time sink in a 36-hour build | Tool |
+| Time sink in a 20-hour build | Tool |
 |---|---|
 | Broken build after a merge, dependency clash | `java-build-resolver` (Maven/Gradle, Spring) / `ts-build-resolver` (`ng build`): minimal-diff fixes, no refactoring |
 | Agent writing outdated Angular (decorators, `*ngIf`, NgModules) | `angular-developer` skill and the Angular CLI MCP's best-practices guide |
@@ -86,11 +86,11 @@ Revisit only if hour-0 brings something the JVM handles badly, such as scanned P
 | ECC `nutrient-document-processing` | Never | Sends documents to an outside API. |
 | **pstack as a whole** (`poteto-mode`, `arena`, `architect`, principles) | Skip | Built for Cursor: custom modes, Grok routing, Cursor's question tool. `architect` overlaps `codebase-design` and `prototype`. We ported the three skills that work anywhere. |
 | pstack `interrogate` (multi-model adversarial review) | Later, if someone owns it | Needs its reviewer step rewritten for the Agent tool. `pr-review-toolkit` covers most of it. |
-| Cursor Orchestrate, Advisor, Ralph Loop, Figma-to-UI | Skip | Cursor-only, or an autonomous loop we can't supervise in 36 hours, or a Figma step we won't have. |
+| Cursor Orchestrate, Advisor, Ralph Loop, Figma-to-UI | Skip | Cursor-only, or an autonomous loop we can't supervise in 20 hours, or a Figma step we won't have. |
 | `security-guidance` plugin | Optional | Runs an LLM review of the diff at the end of every turn. That is useful, but slow for 5 people iterating fast. The platform seat may turn it on for the Privacy Gate. |
 | `feature-dev`, `hookify`, `code-review` plugins | Skip | Overlap our `implement`, `to-tickets` and `code-review` skills. |
 | Claude in Chrome, Slides artifact | Not available | Not available on Foundry. Use Playwright and `pptx`. |
-| Figma MCP | Skip | Nobody designs in Figma first in 36 hours. Use `prototype` before the event instead. |
+| Figma MCP | Skip | Nobody designs in Figma first in 20 hours. Use `prototype` before the event instead. |
 
 ## Validation (2026-10-08)
 
