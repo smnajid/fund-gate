@@ -1,6 +1,6 @@
 # Hackathon kit: install at hour 0
 
-The Claude Code setup every teammate runs in the 36 hours. Why each piece is here: [ai-tooling.md](../playbook/ai-tooling.md). Target time: 10 minutes.
+The Claude Code setup every teammate runs in the 20 build hours ([team-plan.md](../playbook/team-plan.md)). Why each piece is here: [ai-tooling.md](../playbook/ai-tooling.md). Target time: 10 minutes.
 
 ## 1. Point Claude Code at Foundry
 

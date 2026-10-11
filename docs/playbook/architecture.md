@@ -94,10 +94,10 @@ The team is five including a member of the fund dealing desk, the subject's spon
 
 | Seat | Owns |
 |---|---|
-| Builder 1 | Rule Card pipeline (port the spike), Share Class catalog, seeding the 4 funds, cited dealing cut-off |
+| Builder 1 | Rule Card pipeline (port the spike), Share Class catalog, seeding the 4 funds, cited dealing cut-off, deadline alert, adapters and Intake |
 | Builder 2 | Rule Engine, Scale Mapping, reverse lookup, ELI5 templates, form checklist logic, "what would make it eligible" re-runs; test-first against the coverage set |
-| Builder 3 | Dealer UI and Validation UI, LLM egress, Request Parser, Reply Drafter, advisory lane, Q&A |
-| Pitch and platform (Mohamed) | Adapters, Intake, Privacy Gate, Check Record, compose/deployment, pitch and production slide |
-| Domain (dealing desk) | Plain-language wording, form checklist content, accepting the coverage set, co-presenting the demo |
+| Builder 3 | Dealer UI and Validation UI, LLM egress, Request Parser, Reply Drafter, replay mode |
+| Lead and platform (Mohamed) | Skeleton app, Privacy Gate, Check Record, merging, pitch and production slide |
+| Domain (dealing desk) | Bank data mapping, Rule Card validation, plain-language wording, form checklist content, accepting the coverage set, co-presenting the demo |
 
-Builder 3 carries the most. If time runs short, cut in this order: Q&A, the advisory lane, then the LLM polish on ELI5 (the templates alone meet the requirement). If the organisers allow a sixth person, split Builder 3's LLM lane back out. The hour-by-hour plan belongs to [How does a team of 5 run the 36 hours?](https://github.com/smnajid/fund-gate/issues/11).
+The build window is 20 hours, so the advisory lane, free-text Q&A and LLM polish on ELI5 are cut up front and shown on the production slide only; "what would make it eligible" stays as a thin Q&A that re-runs the engine. If the organisers allow a sixth person, give them Builder 3's LLM lane. Scope tiers, the hour-by-hour plan and merge rules: [team-plan.md](team-plan.md).
