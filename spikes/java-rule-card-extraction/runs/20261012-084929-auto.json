@@ -1,0 +1,559 @@
+{
+  "label" : "auto",
+  "drafter" : "claude-plan claude-opus-5-5",
+  "selected_pages" : [ 2, 3, 4, 5, 16, 110, 112, 116, 117, 119, 121, 123, 124, 129, 131, 134, 135, 137, 138, 140, 148, 193, 248, 396, 483, 576, 682 ],
+  "usage" : [ {
+    "model" : "claude-opus-5-5 (claude -p)",
+    "seconds" : 131.4,
+    "input" : 8,
+    "output" : 8195,
+    "cache_write" : 204336,
+    "cache_read" : 61332,
+    "usd" : 1.8108864
+  } ],
+  "total_seconds" : 131.4,
+  "total_usd" : 1.8109,
+  "card" : {
+    "fund" : "Nordea 1 – Global Climate and Environment Fund",
+    "share_classes" : {
+      "BP-EUR" : "LU0348926287",
+      "BI-EUR" : "LU0348927095"
+    },
+    "status" : "draft",
+    "rules" : [ {
+      "share_class" : "BP-EUR",
+      "scope" : "share_class",
+      "kind" : "investor_category",
+      "allowed_categories" : [ "all" ],
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.93,
+      "summary" : "BP-EUR is core class P (the 'B' prefix means accumulating). Core class P is available to all investors, and the management company sets no requirements for it.",
+      "citations" : [ {
+        "doc" : "prospectus",
+        "page" : 123,
+        "pages" : [ 123 ],
+        "quote" : "P All investors. Yes None None",
+        "verified" : true
+      }, {
+        "doc" : "prospectus",
+        "page" : 124,
+        "pages" : [ 124 ],
+        "quote" : "For all other classes, shares that DO contain the prefix “B” are accumulation shares.",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "BI-EUR",
+      "scope" : "share_class",
+      "kind" : "investor_category",
+      "allowed_categories" : [ "institutional" ],
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.9,
+      "summary" : "BI-EUR is core class I (accumulating), which is reserved for institutional investors. The prospectus defines institutional investors by reference to article 174 of the 2010 Law. They include credit institutions and other financial professionals investing for themselves or for other investors, including retail clients under a discretionary management agreement, as well as insurance companies, pension funds and other UCIs.",
+      "citations" : [ {
+        "doc" : "prospectus",
+        "page" : 123,
+        "pages" : [ 123 ],
+        "quote" : "Institutional investors. Yes None",
+        "verified" : true
+      }, {
+        "doc" : "prospectus",
+        "page" : 5,
+        "pages" : [ 5 ],
+        "quote" : "institutional investors Investors within the meaning of article 174 of the 2010 Law, such as credit institutions and other financial professionals investing on the behalf of themselves or other investors (whether retail in connection with a discretionary management agreement or institutional), as well as insurance companies, pension funds, or other UCIs.",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "*",
+      "scope" : "fund",
+      "kind" : "us_person_exclusion",
+      "allowed_categories" : null,
+      "us_person_definition" : "mixed",
+      "excludes_us_citizens" : false,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.85,
+      "summary" : "Unless the board or the management company decides otherwise, US persons may not subscribe, and shares may not be offered or sold in the USA. The definition of US person is mixed: it is a list modelled on Regulation S (residency or place of organisation, ending with a catch-all for Rule 902 of Regulation S), with a carve-out for 'Non-United States persons' under CFTC Rule 4.7. US citizenship or US taxpayer status alone does not exclude: US taxpayers may subscribe as long as they are not US persons.",
+      "citations" : [ {
+        "doc" : "prospectus",
+        "page" : 3,
+        "pages" : [ 3 ],
+        "quote" : "The shares in the SICAV may not be directly or indirectly offered or sold in the USA. Unless otherwise decided by the board or the management company, US persons may not subscribe for shares in the SICAV.",
+        "verified" : true
+      }, {
+        "doc" : "prospectus",
+        "page" : 3,
+        "pages" : [ 3 ],
+        "quote" : "Therefore, US taxpayers, as defined for US federal income tax purposes, may subscribe for shares in the SICAV as long as they do not qualify as US persons.",
+        "verified" : true
+      }, {
+        "doc" : "prospectus",
+        "page" : 5,
+        "pages" : [ 5 ],
+        "quote" : "any other U.S. person defined by US Rule 902 of Regulation S",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "BP-EUR",
+      "scope" : "share_class",
+      "kind" : "minimum_initial_subscription",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : 0.0,
+      "currency" : "EUR",
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.9,
+      "summary" : "Core class P has no minimum initial investment.",
+      "citations" : [ {
+        "doc" : "prospectus",
+        "page" : 123,
+        "pages" : [ 123 ],
+        "quote" : "P All investors. Yes None None",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "BI-EUR",
+      "scope" : "share_class",
+      "kind" : "minimum_initial_subscription",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : 75000.0,
+      "currency" : "EUR",
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.9,
+      "summary" : "Core class I has a minimum initial investment of EUR 75,000 or the equivalent in other currencies. The minimum applies per share class of each fund and includes initial investments made by switches.",
+      "citations" : [ {
+        "doc" : "prospectus",
+        "page" : 123,
+        "pages" : [ 123 ],
+        "quote" : "EUR 75,000 or equivalent in other currencies",
+        "verified" : true
+      }, {
+        "doc" : "prospectus",
+        "page" : 124,
+        "pages" : [ 124 ],
+        "quote" : "Amounts apply for each share class of each fund, and include initial investments made by switches",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "BP-EUR",
+      "scope" : "share_class",
+      "kind" : "mandate_only_class",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : false,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.85,
+      "summary" : "Class P is not reserved for discretionary-mandate clients. It is open to all investors, with no written agreement or other management-company requirement.",
+      "citations" : [ {
+        "doc" : "prospectus",
+        "page" : 123,
+        "pages" : [ 123 ],
+        "quote" : "P All investors. Yes None None",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "BI-EUR",
+      "scope" : "share_class",
+      "kind" : "mandate_only_class",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : false,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.7,
+      "summary" : "Class I is not a mandate-only class; it is open to institutional investors. Under the prospectus definition, retail clients can reach it only indirectly, through a financial professional investing for them under a discretionary management agreement.",
+      "citations" : [ {
+        "doc" : "prospectus",
+        "page" : 5,
+        "pages" : [ 5 ],
+        "quote" : "institutional investors Investors within the meaning of article 174 of the 2010 Law, such as credit institutions and other financial professionals investing on the behalf of themselves or other investors (whether retail in connection with a discretionary management agreement or institutional), as well as insurance companies, pension funds, or other UCIs.",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "BP-EUR",
+      "scope" : "share_class",
+      "kind" : "kid_required_for_retail",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : true,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.95,
+      "summary" : "A PRIIPs KID exists for BP-EUR (LU0348926287), published 20/05/2026.",
+      "citations" : [ {
+        "doc" : "kid-BP-EUR",
+        "page" : 1,
+        "pages" : [ 1 ],
+        "quote" : "Nordea 1 – Global Climate and Environment Fund - BP - EUR Share Class",
+        "verified" : true
+      }, {
+        "doc" : "kid-BP-EUR",
+        "page" : 1,
+        "pages" : [ 1 ],
+        "quote" : "ISIN: LU0348926287",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "BI-EUR",
+      "scope" : "share_class",
+      "kind" : "kid_required_for_retail",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : true,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.95,
+      "summary" : "A PRIIPs KID exists for BI-EUR (LU0348927095), published 20/05/2026.",
+      "citations" : [ {
+        "doc" : "kid-BI-EUR",
+        "page" : 1,
+        "pages" : [ 1 ],
+        "quote" : "Nordea 1 – Global Climate and Environment Fund - BI - EUR Share Class",
+        "verified" : true
+      }, {
+        "doc" : "kid-BI-EUR",
+        "page" : 1,
+        "pages" : [ 1 ],
+        "quote" : "ISIN: LU0348927095",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "BP-EUR",
+      "scope" : "share_class",
+      "kind" : "target_market",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : "client_type",
+      "value" : "all",
+      "contradiction" : false,
+      "confidence" : 0.9,
+      "summary" : "Target market client type is all investors. The prospectus fund description and the BP-EUR KID both say the fund is suitable for all types of investors through all distribution channels.",
+      "citations" : [ {
+        "doc" : "prospectus",
+        "page" : 16,
+        "pages" : [ 16 ],
+        "quote" : "Suitability The fund is suitable for all types of investors through all distribution channels.",
+        "verified" : true
+      }, {
+        "doc" : "kid-BP-EUR",
+        "page" : 1,
+        "pages" : [ 1 ],
+        "quote" : "The fund is suitable for all types of investors through all distribution channels.",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "BI-EUR",
+      "scope" : "share_class",
+      "kind" : "target_market",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : "client_type",
+      "value" : "all",
+      "contradiction" : true,
+      "confidence" : 0.6,
+      "summary" : "The BI-EUR KID (and the fund-level suitability text in the prospectus) states the client type as all investors through all distribution channels. The prospectus share-class table restricts core class I to institutional investors only. This contradiction is left for a human validator to resolve.",
+      "citations" : [ {
+        "doc" : "kid-BI-EUR",
+        "page" : 1,
+        "pages" : [ 1 ],
+        "quote" : "The fund is suitable for all types of investors through all distribution channels.",
+        "verified" : true
+      }, {
+        "doc" : "prospectus",
+        "page" : 123,
+        "pages" : [ 123 ],
+        "quote" : "Institutional investors. Yes None",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "BI-EUR",
+      "scope" : "share_class",
+      "kind" : "target_market",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : "client_type",
+      "value" : "institutional",
+      "contradiction" : true,
+      "confidence" : 0.6,
+      "summary" : "The prospectus share-class table makes core class I (BI-EUR) available only to institutional investors. This contradicts the BI-EUR KID, which says the product is suitable for all types of investors through all distribution channels. A human validator decides which applies.",
+      "citations" : [ {
+        "doc" : "prospectus",
+        "page" : 123,
+        "pages" : [ 123 ],
+        "quote" : "Institutional investors. Yes None",
+        "verified" : true
+      }, {
+        "doc" : "kid-BI-EUR",
+        "page" : 1,
+        "pages" : [ 1 ],
+        "quote" : "The fund is suitable for all types of investors through all distribution channels.",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "*",
+      "scope" : "fund",
+      "kind" : "target_market",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : "knowledge_experience",
+      "value" : "basic",
+      "contradiction" : false,
+      "confidence" : 0.6,
+      "summary" : "Knowledge and experience is basic. The fund is for all investor types who understand its risks, and who accept that its value follows the underlying investments and can fluctuate. No advanced knowledge or experience is required. This value is inferred; the documents do not use an explicit knowledge label.",
+      "citations" : [ {
+        "doc" : "prospectus",
+        "page" : 16,
+        "pages" : [ 16 ],
+        "quote" : "Investor profile Investors who understand the risks of the fund and plan to invest for at least 5 years.",
+        "verified" : true
+      }, {
+        "doc" : "kid-BP-EUR",
+        "page" : 1,
+        "pages" : [ 1 ],
+        "quote" : "The fund is intended for investors who accept and understand that the value of the fund is directly linked to the value of underlying investments, will fluctuate over time and that the invested amount can be lost entirely.",
+        "verified" : true
+      }, {
+        "doc" : "kid-BI-EUR",
+        "page" : 1,
+        "pages" : [ 1 ],
+        "quote" : "The fund is intended for investors who accept and understand that the value of the fund is directly linked to the value of underlying investments, will fluctuate over time and that the invested amount can be lost entirely.",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "*",
+      "scope" : "fund",
+      "kind" : "target_market",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : "loss_bearing",
+      "value" : "full_loss",
+      "contradiction" : false,
+      "confidence" : 0.9,
+      "summary" : "Investors must be able to bear the loss of their entire investment. There is no capital protection.",
+      "citations" : [ {
+        "doc" : "kid-BP-EUR",
+        "page" : 1,
+        "pages" : [ 1 ],
+        "quote" : "This product does not include any protection from future market performance so you could lose some or all of your investment.",
+        "verified" : true
+      }, {
+        "doc" : "kid-BI-EUR",
+        "page" : 1,
+        "pages" : [ 1 ],
+        "quote" : "This product does not include any protection from future market performance so you could lose some or all of your investment.",
+        "verified" : true
+      }, {
+        "doc" : "prospectus",
+        "page" : 3,
+        "pages" : [ 3 ],
+        "quote" : "The value of your investment can go up and down, and you could lose some or all of your invested money.",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "*",
+      "scope" : "fund",
+      "kind" : "target_market",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : "risk_sri",
+      "value" : "4",
+      "contradiction" : false,
+      "confidence" : 0.95,
+      "summary" : "The summary risk indicator is 4 out of 7 (medium risk) in both the BP-EUR and BI-EUR KIDs.",
+      "citations" : [ {
+        "doc" : "kid-BP-EUR",
+        "page" : 1,
+        "pages" : [ 1 ],
+        "quote" : "We have classified this Fund as 4 out of 7, which is a medium risk class.",
+        "verified" : true
+      }, {
+        "doc" : "kid-BI-EUR",
+        "page" : 1,
+        "pages" : [ 1 ],
+        "quote" : "We have classified this Fund as 4 out of 7, which is a medium risk class.",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "*",
+      "scope" : "fund",
+      "kind" : "target_market",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : "horizon_years",
+      "value" : "5",
+      "contradiction" : false,
+      "confidence" : 0.95,
+      "summary" : "The recommended holding period is at least 5 years. The prospectus investor profile and both KIDs agree.",
+      "citations" : [ {
+        "doc" : "prospectus",
+        "page" : 16,
+        "pages" : [ 16 ],
+        "quote" : "Investor profile Investors who understand the risks of the fund and plan to invest for at least 5 years.",
+        "verified" : true
+      }, {
+        "doc" : "kid-BP-EUR",
+        "page" : 3,
+        "pages" : [ 3 ],
+        "quote" : "This product has no required minimum holding period but is designed for long-term investment; you should be prepared to stay invested for at least 5 years.",
+        "verified" : true
+      }, {
+        "doc" : "kid-BI-EUR",
+        "page" : 3,
+        "pages" : [ 3 ],
+        "quote" : "This product has no required minimum holding period but is designed for long-term investment; you should be prepared to stay invested for at least 5 years.",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "*",
+      "scope" : "fund",
+      "kind" : "unmodelled_restriction",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : "jurisdiction_registration",
+      "contradiction" : false,
+      "confidence" : 0.8,
+      "summary" : "Shares may be offered or bought only where they are registered for public sale or where local law does not prohibit the sale. Some share classes may not be available in certain jurisdictions. The client's country of residence and the class's registration status must be checked.",
+      "citations" : [ {
+        "doc" : "prospectus",
+        "page" : 3,
+        "pages" : [ 3 ],
+        "quote" : "Distributing this prospectus, offering these shares for sale, or investing in these shares is legal only where the shares are registered for public sale or where sale is not prohibited by local law or regulation.",
+        "verified" : true
+      }, {
+        "doc" : "prospectus",
+        "page" : 123,
+        "pages" : [ 123 ],
+        "quote" : "Also, some funds or share classes that are available in certain jurisdictions may not be available in others.",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "*",
+      "scope" : "fund",
+      "kind" : "unmodelled_restriction",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : "soft_hard_closure_and_rejection",
+      "contradiction" : false,
+      "confidence" : 0.7,
+      "summary" : "The SICAV may reject any subscription in whole or in part. It may also soft-close (to new investors) or hard-close (to all further investment) a fund or share class without notice. The board decides eligibility requirements and ownership restrictions, and may compulsorily redeem shares held by ineligible holders.",
+      "citations" : [ {
+        "doc" : "prospectus",
+        "page" : 138,
+        "pages" : [ 138 ],
+        "quote" : "A closure may apply only to new investors (soft closure) or to further investments from existing shareholders as well (hard closure).",
+        "verified" : true
+      }, {
+        "doc" : "prospectus",
+        "page" : 138,
+        "pages" : [ 138 ],
+        "quote" : "Reject or cancel any application to open an account or any request to subscribe for or transfer shares We can reject the entire amount or part of it.",
+        "verified" : true
+      }, {
+        "doc" : "prospectus",
+        "page" : 140,
+        "pages" : [ 140 ],
+        "quote" : "determining eligibility requirements and ownership restrictions for investors in any fund or share class, and what steps may be taken in the case of any violation",
+        "verified" : true
+      } ]
+    } ]
+  }
+}

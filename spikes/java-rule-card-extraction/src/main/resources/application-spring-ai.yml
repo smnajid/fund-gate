@@ -1,0 +1,10 @@
+# Live API run: export ANTHROPIC_API_KEY (or ANTHROPIC_BASE_URL + key for Microsoft Foundry).
+spring:
+  ai:
+    model:
+      chat: anthropic
+    anthropic:
+      chat:
+        model: claude-sonnet-5-5
+fundgate:
+  drafter: spring-ai
