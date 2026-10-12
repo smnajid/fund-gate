@@ -69,3 +69,31 @@ rule pages 3, 5, 123, 124, 138 plus its own description page.
 - Small documents barely shrink (BNP 26 of 34 pages, Swiss Life 14 of 47, SIF 18 of 63); selection only pays on umbrellas.
 - `QuoteCheck` normalised whitespace with Java `\s`, which misses the no-break spaces French typesetting uses
   ("1 000 000", "n’y a pas"); true French quotes failed. Now `[\s\p{Z}]`.
+
+### 20 unseen fund documents (ticket #32, follow-up)
+
+`page-recall-key-unseen.json`: 22 documents downloaded into `docs/x-*.pdf` (not committed; URLs in `unseen-sources.txt`),
+12 publishers (Allianz GI, Amundi/Lyxor, BlackRock ×2, Candriam EN+FR, UBP, Swiss Rock, DWS ×2, JPMorgan ×2,
+La Française, M&G, Pictet DE, Robeco DE, Vontobel CH+LU, Swisscanto KID DE, Schroders, Goldman Sachs). One sub-fund
+per umbrella; per rule kind (description, US Person, share-class eligibility, minimum, sometimes Target Market) the
+page with a quote verified on it, plus `alt` pages that state the same rule. Key pages were found with different,
+multilingual searches from the selector's keywords and confirmed by reading the snippet.
+
+| | v1 (`PageSelection`, Nordea-tuned) | v2 (`spike/PageSelectionV2`, `--v2`) |
+|---|---|---|
+| unseen, 19 docs with text, 74 rules | **40/74**; 7 docs stop at the name guard | **72/74** at 40 pages |
+| demo set, 9 docs, 35 rules | 35/35 | 35/35 |
+| scope, unseen | 10–40 | 3–40 (median ~28) |
+
+- v1 is Nordea-tuned: "own page" = name in the first 400 chars next to English "investment objective"; DE/FR and
+  other layouts never match, and its English keywords miss "Minimum Subscription", "Class X … reserved",
+  "Mindestzeichnung".
+- v2: front matter; sub-fund section = first page where the name is followed by an objective/currency heading
+  (EN/DE/FR), plus 3 pages; the 10 pages naming it most; then pages ranked by the number of **distinct** EN/DE/FR
+  rule keywords (counting occurrences let AGIF's repeated "Investment Restrictions" table crowd out the rule pages).
+  Designed after seeing v1's failures on this set, so 72/74 is optimistic.
+- Nordea 1 sweep with v2: 89/89 sub-funds, 40 pages each.
+- v2 misses: AGIF p.26 "3.3 Minimum Investment Amount" (one keyword only) and BlackRock BGF's description page (no
+  heading after the name; its rule pages were all found).
+- 2 of 21 PDFs have **no text layer** (Schroders 1,428 pp, GS supplement): no keyword selection and no quote check is
+  possible; they need OCR first (Document Intelligence, #13's pass 0).

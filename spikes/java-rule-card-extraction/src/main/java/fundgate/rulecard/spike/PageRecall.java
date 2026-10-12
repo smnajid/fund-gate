@@ -18,7 +18,12 @@ import fundgate.rulecard.domain.QuoteCheck;
  */
 public final class PageRecall {
 
-    record Expect(String kind, int page, String quote) {
+    /** {@code alt}: other pages that state the same rule just as well; a hit on any of them counts. */
+    record Expect(String kind, int page, String quote, List<Integer> alt) {
+
+        boolean hit(java.util.Set<Integer> selected) {
+            return selected.contains(page) || (alt != null && alt.stream().anyMatch(selected::contains));
+        }
     }
 
     record Doc(String doc, String subFund, List<Expect> rules) {
@@ -27,33 +32,46 @@ public final class PageRecall {
     private PageRecall() {
     }
 
-    public static void run(FundDocuments documents, Path key, int maxPages) {
+    public static void run(FundDocuments documents, Path key, int maxPages, boolean v2) {
         List<Doc> docs = JsonMapper.builder().build().readValue(key.toFile(), new TypeReference<List<Doc>>() {
         });
         int hitAll = 0;
         int all = 0;
         for (var d : docs) {
             var doc = documents.load(d.doc());
-            var selected = new TreeSet<>(PageSelection.select(doc, d.subFund(), maxPages));
-            var expected = new TreeSet<Integer>();
-            d.rules().forEach(r -> expected.add(r.page()));
-            int hit = (int) expected.stream().filter(selected::contains).count();
+            int chars = doc.pages().stream().mapToInt(String::length).sum();
+            if (chars < 300 * doc.pages().size()) {
+                System.out.printf("%n== %s (%d pp): NO TEXT LAYER, %d chars/page, needs OCR%n", d.doc(),
+                        doc.pages().size(), chars / Math.max(1, doc.pages().size()));
+                continue;
+            }
+            TreeSet<Integer> selected;
+            try {
+                selected = new TreeSet<>(v2 ? PageSelectionV2.select(doc, d.subFund(), maxPages)
+                        : PageSelection.select(doc, d.subFund(), maxPages));
+            } catch (IllegalStateException e) {
+                System.out.printf("%n== %s (%d pp): GUARD %s%n", d.doc(), doc.pages().size(), e.getMessage());
+                all += d.rules().size();
+                continue;
+            }
+            int hit = (int) d.rules().stream().filter(r -> r.hit(selected)).count();
             hitAll += hit;
-            all += expected.size();
-            System.out.printf("%n== %s (%d pp), sub-fund \"%s\": selected %d pages, page recall %d/%d%n", d.doc(),
-                    doc.pages().size(), d.subFund(), selected.size(), hit, expected.size());
+            all += d.rules().size();
+            System.out.printf("%n== %s (%d pp), sub-fund \"%s\": selected %d pages, rule recall %d/%d%n", d.doc(),
+                    doc.pages().size(), d.subFund(), selected.size(), hit, d.rules().size());
             System.out.printf("   selected: %s%n", selected);
             for (var r : d.rules()) {
                 var keyOk = r.quote() == null || QuoteCheck.norm(doc.page(r.page())).contains(QuoteCheck.norm(r.quote()));
-                System.out.printf("   %-4s %-5s p.%-3d %-26s %s%n", selected.contains(r.page()) ? "ok" : "MISS",
+                System.out.printf("   %-4s %-5s p.%-3d %-26s %s%n", r.hit(selected) ? "ok" : "MISS",
                         keyOk ? "" : "KEY?", r.page(), r.kind(), r.quote() == null ? "" : '"' + r.quote() + '"');
             }
         }
-        System.out.printf("%nTOTAL page recall %d/%d%n", hitAll, all);
+        System.out.printf("%nTOTAL rule recall %d/%d%n", hitAll, all);
     }
 
     /** Every sub-fund of one umbrella against the shared rule pages plus its own description page (TOC page). */
-    public static void sweep(FundDocuments documents, String docId, Path subFunds, List<Integer> shared, int maxPages) {
+    public static void sweep(FundDocuments documents, String docId, Path subFunds, List<Integer> shared, int maxPages,
+            boolean v2) {
         record SubFund(String name, int page) {
         }
         List<SubFund> funds = JsonMapper.builder().build().readValue(subFunds.toFile(),
@@ -62,7 +80,8 @@ public final class PageRecall {
         var doc = documents.load(docId);
         int complete = 0;
         for (var f : funds) {
-            var selected = new TreeSet<>(PageSelection.select(doc, f.name(), maxPages));
+            var selected = new TreeSet<>(v2 ? PageSelectionV2.select(doc, f.name(), maxPages)
+                    : PageSelection.select(doc, f.name(), maxPages));
             var expected = new TreeSet<>(shared);
             expected.add(f.page());
             var missing = new TreeSet<>(expected);
