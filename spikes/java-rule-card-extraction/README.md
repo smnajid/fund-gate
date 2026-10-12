@@ -51,3 +51,21 @@ fundgate.rulecard
 - PDFBox replaces pypdf: all 24 gold quotes found on their page, 944 pages to text in 5.5 s, auto scope = 27 pages, as in Python.
 - The Spring AI adapter compiles and wires (`spring-ai` profile) but was **not run live**: no API credits.
 - Spring AI 2.0.1's Anthropic module sits on the official Anthropic Java SDK and supports PDF documents with Citations (`AnthropicCitationDocument`) and structured output (`outputSchema`). But `ChatModel` joins all text blocks and returns citations as one flat metadata list, so it loses which passage supports which statement. Pass 1 therefore calls `AnthropicChatModel.getAnthropicClient()` (the SDK client Spring AI configured) directly; pass 2 uses `ChatModel`.
+
+## Page recall on unseen documents (ticket #32, 2026-10-12, no LLM)
+
+`./run.sh --recall` scores `PageSelection` against `page-recall-key.json` (page plus a quote that must sit on it, per
+Hard Restriction; the funds' PDFs are downloaded into `docs/` from the URLs in `docs/research/sample-funds.md` on
+`research/sample-funds`). `./run.sh --sweep` runs every Nordea 1 sub-fund (`nordea1-subfunds.json`) against the shared
+rule pages 3, 5, 123, 124, 138 plus its own description page.
+
+- Before the fixes: 25/26 pages over 9 documents (Nordea 1, Nordea SIF GPE, BNP (CH) Bonds CHF in EN and FR, 4 KIDs,
+  Swiss Life iFunds). The one miss: Swiss Life p.2, the FINMA exemption that says there is no KID (no Target Market
+  source). The French prospectus scored 4/4 with English keywords (fund name + "restrict"); the KIDs are 3 pages.
+- Sweep: 89/89 Nordea 1 sub-funds keep every expected page, 25–32 pages each.
+- Fund-name spelling is the real weak point: "Global Climate & Environment Fund" or a share-class suffix silently drops
+  the sub-fund's own description page. Now a hard error on documents over 100 pages.
+- Front matter (pages 1–5) is now always kept: it fixes the Swiss Life miss. After both fixes: 26/26.
+- Small documents barely shrink (BNP 26 of 34 pages, Swiss Life 14 of 47, SIF 18 of 63); selection only pays on umbrellas.
+- `QuoteCheck` normalised whitespace with Java `\s`, which misses the no-break spaces French typesetting uses
+  ("1 000 000", "n’y a pas"); true French quotes failed. Now `[\s\p{Z}]`.

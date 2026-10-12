@@ -15,6 +15,7 @@ import fundgate.rulecard.application.port.in.DraftRuleCard;
 import fundgate.rulecard.application.port.out.FundDocuments;
 import fundgate.rulecard.domain.PageSelection;
 import fundgate.rulecard.spike.GoldScorer;
+import fundgate.rulecard.spike.PageRecall;
 
 /**
  * Inbound adapter. Usage (see run.sh):
@@ -22,6 +23,8 @@ import fundgate.rulecard.spike.GoldScorer;
  *   --pages=3,5,16,123 --label=gold-pages   extract, then score against the gold card
  *   --dry-run                               page selection only, no LLM
  *   --score[=runs/x.json]                   score a run (default: latest)
+ *   --recall[=page-recall-key.json]         page recall on unseen documents (ticket #32), no LLM
+ *   --sweep                                 every Nordea 1 sub-fund against the shared rule pages (ticket #32)
  *   --check-gold                            every gold quote on its page, and auto scope covers gold pages
  * </pre>
  */
@@ -53,6 +56,15 @@ class PipelineCommand implements ApplicationRunner {
             var given = opt(args, "score", "");
             var run = given.isBlank() ? latestRun() : Path.of(given);
             System.out.println(scorer.score(run));
+            return;
+        }
+        if (args.containsOption("recall")) {
+            var given = opt(args, "recall", "");
+            PageRecall.run(documents, Path.of(given.isBlank() ? "page-recall-key.json" : given), maxPages);
+            return;
+        }
+        if (args.containsOption("sweep")) {
+            PageRecall.sweep(documents, fund.prospectus(), Path.of("nordea1-subfunds.json"), List.of(3, 5, 123, 124, 138), maxPages);
             return;
         }
         if (args.containsOption("dry-run")) {

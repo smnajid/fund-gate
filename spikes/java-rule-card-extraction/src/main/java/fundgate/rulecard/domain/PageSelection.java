@@ -18,6 +18,8 @@ public final class PageSelection {
             "not be (directly or indirectly )?offered", "reject", "restrict")
             .stream().map(k -> Pattern.compile(k, Pattern.CASE_INSENSITIVE)).toList();
 
+    private static final int FRONT_MATTER = 5;
+
     private PageSelection() {
     }
 
@@ -27,11 +29,17 @@ public final class PageSelection {
         record Scored(int score, int page) {
         }
         var scored = new ArrayList<Scored>();
+        // ticket #32: front matter holds who-can-invest, definitions and (CH) the FINMA exemptions
+        for (int i = 1; i <= Math.min(FRONT_MATTER, prospectus.pages().size()); i++) {
+            chosen.add(i);
+        }
+        boolean ownPage = false;
         for (int i = 1; i <= prospectus.pages().size(); i++) {
             var text = prospectus.page(i);
             var all = QuoteCheck.norm(text);
             if (QuoteCheck.norm(head(text, 400)).contains(fund) && all.contains("investmentobjective")) {
                 chosen.add(i);
+                ownPage = true;
                 continue;
             }
             if (QuoteCheck.norm(head(text, 600)).contains("investmentobjectiveandpolicy")) {
@@ -44,6 +52,10 @@ public final class PageSelection {
             if (score >= 2) {
                 scored.add(new Scored(score, i));
             }
+        }
+        if (!ownPage && prospectus.pages().size() > 100) {
+            // ticket #32: a fund name that doesn't match the prospectus silently drops the description page
+            throw new IllegalStateException("no description page for sub-fund '" + subFund + "' in " + prospectus.id());
         }
         scored.sort((a, b) -> a.score() != b.score() ? b.score() - a.score() : b.page() - a.page());
         for (var s : scored) {

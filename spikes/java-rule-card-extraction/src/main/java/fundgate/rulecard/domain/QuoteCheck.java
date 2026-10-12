@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
  */
 public final class QuoteCheck {
 
-    private static final Pattern WHITESPACE = Pattern.compile("\\s+");
+    private static final Pattern WHITESPACE = Pattern.compile("[\\s\\p{Z}]+");
 
     private QuoteCheck() {
     }
