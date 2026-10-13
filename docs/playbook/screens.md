@@ -42,6 +42,7 @@ Three columns, so the validator sees the rule, the passage and the decision at o
 Above the columns:
 - **Card header**: fund, Share Class, ISIN, Draft version, extraction date, "every quote verified on its page", the count of rules ready, and **Validate card**, disabled until every rule is reviewed and every contradiction settled. Validating records who and when, and the header turns to "Validated v1 by … at … · in force for Eligibility Checks".
 - **Contradiction banner**, from variant C: "2 contradictions need a decision: Investor category, Target Market client type. The prospectus says institutional only; the KID says all investors." It is the strongest moment of the validation demo, so it is the first thing on screen.
+- **"Possibly missed" warning**, from [Does page selection find every needed page on fund documents it wasn't tuned on?](https://github.com/smnajid/fund-gate/issues/32): when a large prospectus was sent as selected pages, a Share Class with no rule for a core rule kind (investor classification, US Person, distribution, minimum) shows "No minimum found for BI-EUR: pages 6–122 and 149–944 were not read" with those page ranges to open. Until the validator adds the rule or confirms there is none, that Share Class gives Needs Review. A page the selection misses fails silently otherwise: the quote check only catches quotes that are wrong, not rules that are absent.
 
 ## Demo reading check
 
