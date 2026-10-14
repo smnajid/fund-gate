@@ -11,7 +11,7 @@
         <relativePath/>
     </parent>
 
-    <groupId>fundgate.spike</groupId>
+    <groupId>fundeli5.spike</groupId>
     <artifactId>java-rule-card-extraction</artifactId>
     <version>0.0.1-PROTOTYPE</version>
 

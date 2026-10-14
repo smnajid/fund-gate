@@ -6,5 +6,5 @@ spring:
     anthropic:
       chat:
         model: claude-sonnet-5-5
-fundgate:
+fundeli5:
   drafter: spring-ai

@@ -12,7 +12,7 @@ logging:
     org.apache.pdfbox: error
     org.apache.fontbox: error
 
-fundgate:
+fundeli5:
   drafter: claude-plan    # claude-plan | spring-ai
   docs-dir: docs
   runs-dir: runs

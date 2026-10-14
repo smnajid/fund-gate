@@ -7,14 +7,14 @@ trap 'echo "FAILED at line $LINENO" | tee FAILED' ERR
 echo "== $(date) start"
 
 # 1. Elasticsearch, single node, trial licence (RRF retriever), no security on localhost only
-if ! docker ps --format '{{.Names}}' | grep -q '^fundgate-es-prototype$'; then
-  if docker ps -a --format '{{.Names}}' | grep -q '^fundgate-es-prototype$'; then
-    docker start fundgate-es-prototype
+if ! docker ps --format '{{.Names}}' | grep -q '^fundeli5-es-prototype$'; then
+  if docker ps -a --format '{{.Names}}' | grep -q '^fundeli5-es-prototype$'; then
+    docker start fundeli5-es-prototype
   else
-    docker run -d --name fundgate-es-prototype -p 127.0.0.1:9200:9200 \
+    docker run -d --name fundeli5-es-prototype -p 127.0.0.1:9200:9200 \
       -e discovery.type=single-node -e xpack.security.enabled=false \
       -e xpack.license.self_generated.type=trial -e node.store.allow_mmap=false \
-      -e ES_JAVA_OPTS="-Xms3g -Xmx3g" -v fundgate-es-prototype-data:/usr/share/elasticsearch/data \
+      -e ES_JAVA_OPTS="-Xms3g -Xmx3g" -v fundeli5-es-prototype-data:/usr/share/elasticsearch/data \
       docker.elastic.co/elasticsearch/elasticsearch:8.17.0
   fi
 fi

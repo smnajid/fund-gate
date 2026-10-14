@@ -6,7 +6,7 @@ import json, os, re, sys, time, urllib.request
 import numpy as np
 
 ES = os.environ.get("ES", "http://127.0.0.1:9200")
-INDEX = "fundgate-passages-prototype"
+INDEX = "fundeli5-passages-prototype"
 MODEL = os.environ.get("MODEL", "intfloat/multilingual-e5-small")
 BUDGETS = [int(b) for b in os.environ.get("BUDGETS", "40,25").split(",")]
 FRONT, WIN, STRIDE, TOPN = 5, 1000, 800, 300

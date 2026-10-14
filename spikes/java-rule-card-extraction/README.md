@@ -19,7 +19,7 @@ Each run writes `runs/<stamp>-<label>.json` (the Draft Rule Card plus usage) and
 ## Shape
 
 ```
-fundgate.rulecard
+fundeli5.rulecard
 ├── domain                      pure Java: RuleCard (always DRAFT out of extraction), Rule, Citation,
 │                               FundDocument, PageSelection, QuoteCheck
 ├── application                 DraftRuleCardService: select pages → drafter → quote check → Draft card
