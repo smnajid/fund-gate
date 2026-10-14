@@ -7,7 +7,7 @@ Can this client buy this fund? A cited answer in seconds, explained in plain wor
 
 ## The problem
 
-Every subscription request sends the fund dealing desk through a 200-page prospectus, two regulators' rules (Swiss FinSA/CISA, Luxembourg MiFID II/UCITS/AIF) and the client file, to answer one question: may this portfolio buy this Share Class? Then the relationship manager still has to explain the "no" to the client.
+Every subscription request sends the fund dealing desk through a prospectus of about 400 pages, two regulators' rules (Swiss FinSA/CISA, Luxembourg MiFID II/UCITS/AIF) and the client file, to answer one question: may this portfolio buy this Share Class? Then the relationship manager still has to explain the "no" to the client.
 <!-- TODO #14: requests per day and minutes per request, from the desk interview. Never invent them. -->
 
 ## What you'll see
