@@ -4,7 +4,7 @@ Answers [#17](https://github.com/smnajid/fund-gate/issues/17): what should the d
 
 **Run:** `open spikes/screens/index.html` (double-click works too).
 
-**Online (private, click-through):** [Fund Gate Screens](https://claude.ai/artifact/QV8zQiySq2uSbspuPxFaeF) on claude.ai, the same prototype bundled into one page. It opens on the chosen design; only people the owner shares it with can open it.
+**Online (private, click-through):** [FundEli5 Screens](https://claude.ai/artifact/QV8zQiySq2uSbspuPxFaeF) on claude.ai, the same prototype bundled into one page. It opens on the chosen design; only people the owner shares it with can open it.
 
 Use the floating bar or `←` `→` to switch variants, the dropdown for the dealer scenario, **reset** to start over and **state** to see the in-memory state. Every view has a shareable URL, e.g. `index.html?screen=dealer&variant=B&scenario=claire&stage=checked`.
 
