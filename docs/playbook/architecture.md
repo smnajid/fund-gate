@@ -94,7 +94,7 @@ The team is five including a member of the fund dealing desk, the subject's spon
 
 | Seat | Owns |
 |---|---|
-| Builder 1 | Rule Card pipeline (port the spike), Share Class catalog, seeding the 4 funds, cited dealing cut-off, deadline alert, adapters and Intake |
+| Builder 1 | Rule Card pipeline (port the spike), Share Class catalog, seeding the 4 funds, adapters and Intake |
 | Builder 2 | Rule Engine, Scale Mapping, reverse lookup, ELI5 templates, form checklist logic, "what would make it eligible" re-runs; test-first against the coverage set |
 | Builder 3 | Dealer UI and Validation UI, LLM egress, Request Parser, Reply Drafter, replay mode |
 | Lead and platform (Mohamed) | Skeleton app, Privacy Gate, Check Record, merging, pitch and production slide |

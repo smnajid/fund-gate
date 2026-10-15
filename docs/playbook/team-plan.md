@@ -18,16 +18,16 @@ The test for every request: does it show in the 5-minute demo? If not, it waits.
 | Tier | What | Rule |
 |---|---|---|
 | **Must** | Anna's flow: request → cited Verdict → plain-language explanation from templates → drafted reply. Privacy Gate, Check Record, minimal Rule Card validation screen. | Done by 18:00 day 1 |
-| **Should** | Form checklist, deadline alert, Tom's reverse lookup, "what would make her eligible?" (thin Q&A: re-run the engine, no chat) | Picked at 21:30 day 1, done by the 11:00 freeze |
+| **Should** | Form checklist, Tom's reverse lookup, "what would make her eligible?" (thin Q&A: re-run the engine, no chat) | Picked at 21:30 day 1, done by the 11:00 freeze |
 | **Cut** | Advisory lane, free-text Q&A, LLM polish of the explanation | Production slide only |
 
-All four organiser capabilities (explanation, form, deadlines, questions) still appear on stage.
+Three of the four organiser capabilities (explanation, form, questions) appear on stage. Deadline alerts are out of scope, agreed with the sponsor on 2026-10-15 ([#24](https://github.com/smnajid/fund-gate/issues/24)).
 
 ## Seats
 
 | Seat | Owns |
 |---|---|
-| Builder 1 | Rule Card pipeline, Share Class catalog, seeding the 4 funds, cited dealing cut-off, deadline alert, adapters and Intake (maps the bank's data with the desk member at 9:30) |
+| Builder 1 | Rule Card pipeline, Share Class catalog, seeding the 4 funds, adapters and Intake (maps the bank's data with the desk member at 9:30) |
 | Builder 2 | Rule Engine, Scale Mapping, reverse lookup, plain-language templates, form checklist logic, "what would make her eligible?"; test-first against the coverage set |
 | Builder 3 | Dealer screen, validation screen, LLM egress client, Request Parser, Reply Drafter, replay mode |
 | Lead (Mohamed) | Skeleton app, Privacy Gate, Check Record, all merges after 18:00 day 1, pitch and production slide |
