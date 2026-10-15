@@ -7,11 +7,11 @@
 
 | Must (18:00 today) | Should (by 11:00 tomorrow) | Cut |
 |---|---|---|
-| Anna: request → cited Verdict → plain explanation → reply · Privacy Gate · Check Record · validation screen | Form checklist · deadline alert · Tom's reverse lookup · "what would make her eligible?" | Advisory lane · free-text Q&A · LLM polish |
+| Anna: request → cited Verdict → plain explanation → reply · Privacy Gate · Check Record · validation screen | Form checklist · Tom's reverse lookup · "what would make her eligible?" | Advisory lane · free-text Q&A · LLM polish |
 
 | Seat | Owns |
 |---|---|
-| Builder 1 | Pipeline, 4 funds, cut-off + deadline, bank data adapters |
+| Builder 1 | Pipeline, 4 funds, bank data adapters |
 | Builder 2 | Rule Engine, reverse lookup, templates, checklist, what-if (test-first) |
 | Builder 3 | Both screens, LLM client, parser, reply drafter, replay mode |
 | Mohamed | Skeleton, Privacy Gate, Check Record, merges, pitch |

@@ -7,8 +7,9 @@ Can this client buy this fund? A cited answer in seconds, explained in plain wor
 
 ## The problem
 
-Every subscription request sends the fund dealing desk through a 200-page prospectus, two regulators' rules (Swiss FinSA/CISA, Luxembourg MiFID II/UCITS/AIF) and the client file, to answer one question: may this portfolio buy this Share Class? Then the relationship manager still has to explain the "no" to the client.
-<!-- TODO #14: requests per day and minutes per request, from the desk interview. Never invent them. -->
+Every subscription request sends the fund dealing desk through a prospectus of about 400 pages, two regulators' rules (Swiss FinSA/CISA, Luxembourg MiFID II/UCITS/AIF) and the client file, to answer one question: may this portfolio buy this Share Class? Then the relationship manager still has to explain the "no" to the client.
+The desk handles about 10,000 subscriptions a year, roughly 40 a working day (sponsor, 2026-10-15).
+<!-- TODO #14: minutes per request, from the desk interview. Never invent it. -->
 
 ## What you'll see
 
@@ -17,7 +18,6 @@ A relationship manager emails the desk: put EUR 80,000 from two of Anna's portfo
 - **Not Eligible** for the advisory portfolio: it is not an institutional investor. **Eligible** for the discretionary mandate. Every reason cites the prospectus page.
 - **Explained like you're five**: a short paragraph the RM can forward to the client, with a suggested class she *can* buy.
 - **Form guided**: a checklist of the declarations and documents the subscription needs, pre-filled from the client's facts.
-- **Deadline flagged**: the fund's dealing cut-off, cited, and any client document about to lapse.
 - **Questions answered**: "why not the I class?", "what would make her eligible?"
 
 Closing: "which funds can Tom buy?" One US citizen, three funds, three different US Person definitions.
@@ -32,7 +32,7 @@ Closing: "which funds can Tom buy?" One US citizen, three funds, three different
  Privacy Gate: client identity never reaches the LLM. Every check audited.
 ```
 
-The AI drafts, a person validates, deterministic code decides. The explanation, the questions and the alerts never change a Verdict.
+The AI drafts, a person validates, deterministic code decides. The explanation and the questions never change a Verdict.
 
 ## Already de-risked
 
