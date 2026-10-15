@@ -17,6 +17,24 @@ The screen leads with the answer and keeps the evidence one click away. Top to b
 
 **Privacy Gate refusal.** A red panel replaces everything below the paste step ("No AI used for this email", what was found and where), followed by the manual Subscription Request form. The check runs as usual; a template reply replaces the drafted one.
 
+### The request form: what the dealer can edit
+
+**Rule: what the AI read is editable, what code found is not.** The AI drafts, the dealer corrects.
+
+| Field | Editable | Source |
+|---|---|---|
+| Portfolio Reference | no | Privacy Gate: a fixed pattern match plus a CRM lookup, no AI |
+| Share Class | yes, a dropdown of catalog classes | the AI's mention, matched by the Share Class catalog |
+| Amount | yes | AI |
+| Currency | yes | AI |
+| Client initiated | yes | AI |
+
+The Portfolio Reference stays fixed because it is the key to the Client Profile and the Check Record: an editable one would let a check run against a different client than the email names. A wrong reference means fixing the email and pasting it again. Currency is editable because a wrong one changes the Verdict (EUR 80,000 passes a EUR 75,000 minimum; CHF 80,000 may not). The prototype got this wrong and shows currency as plain text.
+
+**Open:**
+- **Does an edit rerun the check?** Either at once or with a **Re-check** button. In the prototype an edit changes nothing.
+- **Are edits recorded?** The Check Record should keep both the AI's parse and the dealer's correction, the way the validation screen tells "corrected" from "accepted". Otherwise an audit cannot tell whether the AI or the dealer chose the Share Class.
+
 ### Reverse lookup: "what can this portfolio buy?"
 
 Portfolio Reference and amount in, one engine run against **every Share Class in the catalog** out. A Share Class with only a Draft card gives Needs Review "Rule Card not validated", and one with no card gives "Fund not covered", exactly as a single Eligibility Check would.
