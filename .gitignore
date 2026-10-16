@@ -4,3 +4,7 @@
 .claude/worktrees/
 *.swp
 
+# Rule Card extraction spike: fund documents kept locally, build output
+spikes/java-rule-card-extraction/target/
+spikes/java-rule-card-extraction/docs/*.pdf
+spikes/java-rule-card-extraction/docs/*.pages.json
