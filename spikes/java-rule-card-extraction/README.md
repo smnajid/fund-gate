@@ -12,6 +12,7 @@ Throwaway spike for [ticket #31](https://github.com/smnajid/fund-gate/issues/31)
 ./run.sh --label=auto        # automatic page selection
 SPRING_PROFILES_ACTIVE=spring-ai ./run.sh --label=api   # Anthropic API / Foundry; needs ANTHROPIC_API_KEY
 ./run.sh --score             # rescore the latest run
+./run.sh --recall=page-recall-key-unseen.json --select=jev-page --max-pages=25   # Jev ranks the pages (#39); TYPESAFE_API_KEY
 ```
 
 Each run writes `runs/<stamp>-<label>.json` (the Draft Rule Card plus usage) and a `.md` score.
@@ -97,3 +98,49 @@ multilingual searches from the selector's keywords and confirmed by reading the 
   heading after the name; its rule pages were all found).
 - 2 of 21 PDFs have **no text layer** (Schroders 1,428 pp, GS supplement): no keyword selection and no quote check is
   possible; they need OCR first (Document Intelligence, #13's pass 0).
+
+## Page selection by Jev (ticket #39, 2026-10-16)
+
+[TypeSafe Jev](https://docs.typesafe.ai/introduction) ranks the pages for each of six rule kinds: the sub-fund's own
+description, US Person, investor eligibility, minimum, target market, other restriction. Then the same selection as the
+Elasticsearch prototype: pages 1–5, then round-robin over the six rankings until the budget is used. Documents no longer
+than the budget are sent whole. `spike/JevClient`, `spike/JevPageRanking`; rankings cached in `jev-rankings/`, so other
+budgets cost nothing.
+
+- **jev-page**: one request per page, one yes/no (noul) question per rule kind, the page as state. Scores compare across
+  the whole document. This is the pattern of JEV's own RAG-classification and re-ranking cookbooks.
+- **jev-choice**: per rule kind, a choice question whose options are the pages plus "none". A question holds about 20
+  pages (32k tokens), so the pages play a knockout: the top 3 of each batch go on until one batch is left.
+
+Rule recall (pages selected, summed over the documents with text):
+
+| budget | set | v2 (keywords) | jev-page | jev-choice |
+|---|---|---|---|---|
+| 40 | demo, 35 rules | 35/35 | 35/35 | 35/35 |
+| 40 | unseen, 74 rules | 72/74 | **74/74** | **74/74** |
+| 25 | demo | 35/35 (104 p) | 35/35 (137 p) | 35/35 (137 p) |
+| 25 | unseen | 69/74 (416 p) | 73/74 (453 p) | **74/74** (453 p) |
+| 15 | demo | 31/35 (82 p) | **35/35** (87 p) | 34/35 (87 p) |
+| 15 | unseen | 50/74 (279 p) | 69/74 (273 p) | **71/74** (273 p) |
+| 10 | demo | 29/35 (80 p) | **31/35** (62 p) | 30/35 (62 p) |
+| 10 | unseen | 36/74 (239 p) | 60/74 (183 p) | **67/74** (183 p) |
+
+| | jev-page | jev-choice |
+|---|---|---|
+| cost, all 27 documents (~8,000 pages) | $0.40 | $1.84 |
+| cost, Nordea prospectus (944 pages) | $0.05, 944 requests, 32 s | $0.20, 328 requests, 18 s |
+| tokens per page | ~1,250 (state counted once for 6 questions) | ~5,000 (6 questions, plus later rounds) |
+
+- Both Jev variants beat the keywords at every budget, and the gap grows as the budget shrinks: at 15 pages the
+  keywords lose 24 of 74 rules, Jev loses 3–5. v2 was tuned on the unseen set; the Jev questions were written once from
+  the rule kinds and not tuned. v2's fixed parts (front matter, 4 section pages, 10 name pages) eat a small budget.
+- German and French pages were not a problem at 25 pages or more, despite the docs saying English is Jev's best language.
+  Several of the 10-page misses are DE (Mindestzeichnung, Anlegerart).
+- **jev-choice** ranks better (74/74 at 25 pages), at about 4–5× the tokens of jev-page. At these prices both are noise
+  next to the Citations call ($1–2 per Nordea run).
+- **jev-page** misses at 25: JPMorgan p.45, the US Person page (not a selection hole for the Rule Card: the same rule is
+  on p.292 and p.303, listed as `alt` but not reached).
+- Remaining misses are tables that only make sense with their heading on the page before (JPMorgan p.280 "base share
+  classes", Amundi p.81 minimums) and Nordea p.138 at 10–15 pages.
+- No text layer still means no selection (Schroders, GS supplement): Jev reads text, OCR first.
+- Not yet tested: whether the Rule Card extracted from Jev's pages scores as well end to end (step 2 of #39).
