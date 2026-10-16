@@ -15,6 +15,8 @@ import fundeli5.rulecard.application.port.in.DraftRuleCard;
 import fundeli5.rulecard.application.port.out.FundDocuments;
 import fundeli5.rulecard.domain.PageSelection;
 import fundeli5.rulecard.spike.GoldScorer;
+import fundeli5.rulecard.spike.JevClient;
+import fundeli5.rulecard.spike.JevPageRanking;
 import fundeli5.rulecard.spike.PageRecall;
 
 /**
@@ -24,6 +26,8 @@ import fundeli5.rulecard.spike.PageRecall;
  *   --dry-run                               page selection only, no LLM
  *   --score[=runs/x.json]                   score a run (default: latest)
  *   --recall[=page-recall-key.json] [--v2]  page recall on unseen documents (ticket #32), no LLM
+ *   --recall[=...] --select=jev-choice|jev-page [--jev-model=jev-latest]
+ *                                           page recall with Jev ranking the pages (ticket #39); TYPESAFE_API_KEY
  *   --sweep                                 every Nordea 1 sub-fund against the shared rule pages (ticket #32)
  *   --check-gold                            every gold quote on its page, and auto scope covers gold pages
  * </pre>
@@ -60,8 +64,13 @@ class PipelineCommand implements ApplicationRunner {
         }
         if (args.containsOption("recall")) {
             var given = opt(args, "recall", "");
-            PageRecall.run(documents, Path.of(given.isBlank() ? "page-recall-key.json" : given), maxPages,
-                    args.containsOption("v2"));
+            var selector = opt(args, "select", args.containsOption("v2") ? "v2" : "v1");
+            var jev = selector.startsWith("jev")
+                    ? new JevPageRanking(new JevClient(opt(args, "jev-model", "jev-latest"),
+                            Integer.parseInt(opt(args, "jev-concurrency", "8"))), Path.of("jev-rankings"))
+                    : null;
+            PageRecall.run(documents, Path.of(given.isBlank() ? "page-recall-key.json" : given), maxPages, selector,
+                    jev);
             return;
         }
         if (args.containsOption("sweep")) {

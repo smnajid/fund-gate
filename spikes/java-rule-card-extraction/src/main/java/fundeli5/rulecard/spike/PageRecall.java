@@ -32,7 +32,8 @@ public final class PageRecall {
     private PageRecall() {
     }
 
-    public static void run(FundDocuments documents, Path key, int maxPages, boolean v2) {
+    /** {@code selector}: v1, v2, jev-choice or jev-page (ticket #39); {@code jev} only needed for the jev ones. */
+    public static void run(FundDocuments documents, Path key, int maxPages, String selector, JevPageRanking jev) {
         List<Doc> docs = JsonMapper.builder().build().readValue(key.toFile(), new TypeReference<List<Doc>>() {
         });
         int hitAll = 0;
@@ -47,8 +48,12 @@ public final class PageRecall {
             }
             TreeSet<Integer> selected;
             try {
-                selected = new TreeSet<>(v2 ? PageSelectionV2.select(doc, d.subFund(), maxPages)
-                        : PageSelection.select(doc, d.subFund(), maxPages));
+                selected = new TreeSet<>(switch (selector) {
+                    case "v2" -> PageSelectionV2.select(doc, d.subFund(), maxPages);
+                    case "jev-choice" -> jev.select(doc, d.subFund(), maxPages, JevPageRanking.Method.CHOICE);
+                    case "jev-page" -> jev.select(doc, d.subFund(), maxPages, JevPageRanking.Method.PAGE);
+                    default -> PageSelection.select(doc, d.subFund(), maxPages);
+                });
             } catch (IllegalStateException e) {
                 System.out.printf("%n== %s (%d pp): GUARD %s%n", d.doc(), doc.pages().size(), e.getMessage());
                 all += d.rules().size();
