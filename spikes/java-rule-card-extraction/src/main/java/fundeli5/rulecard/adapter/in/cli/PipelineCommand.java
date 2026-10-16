@@ -68,7 +68,7 @@ class PipelineCommand implements ApplicationRunner {
             var selector = opt(args, "select", args.containsOption("v2") ? "v2" : "v1");
             var jev = selector.startsWith("jev")
                     ? new JevPageRanking(new JevClient(opt(args, "jev-model", "jev-latest"),
-                            Integer.parseInt(opt(args, "jev-concurrency", "8"))), Path.of("jev-rankings"))
+                            Integer.parseInt(opt(args, "jev-concurrency", "8"))), Path.of(opt(args, "jev-cache", "jev-rankings")))
                     : null;
             PageRecall.run(documents, Path.of(given.isBlank() ? "page-recall-key.json" : given), maxPages, selector,
                     jev);
@@ -89,7 +89,7 @@ class PipelineCommand implements ApplicationRunner {
         if (pages.isEmpty() && opt(args, "select", "").equals("jev-choice")) {
             // ticket #39: Jev choice selects the pages; per-page scores check coverage
             var jev = new JevPageRanking(new JevClient(opt(args, "jev-model", "jev-latest"),
-                    Integer.parseInt(opt(args, "jev-concurrency", "8"))), Path.of("jev-rankings"));
+                    Integer.parseInt(opt(args, "jev-concurrency", "8"))), Path.of(opt(args, "jev-cache", "jev-rankings")));
             var prospectus = documents.load(fund.prospectus());
             pages = jev.select(prospectus, fund.name(), maxPages, JevPageRanking.Method.CHOICE);
             System.out.printf("jev choice: %d pages %s%ncoverage (jev per page):%n", pages.size(), pages);

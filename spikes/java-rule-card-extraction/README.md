@@ -188,3 +188,24 @@ choice's 25 pages, pass 1 Opus 5.5 with PDFs and Citations, pass 2 Sonnet 5.5 wi
 - Scorer change: BP's minimum came back as amount 0 with no currency, which is right (the prospectus says "None") but
   was scored wrong because gold expected "EUR". `gold-rule-card.json` now accepts no currency for that rule; every
   earlier run keeps its score.
+
+### Does Jev repeat itself? (2026-10-16)
+
+Every unseen document was ranked a second time (`jev-rankings-rerun/`, `--jev-cache=jev-rankings-rerun`, about $1.75 of
+Jev). The order of pages changes a little between runs (top 10 pages per rule kind mostly the same, swapped around), so
+recall moves at small budgets:
+
+| budget | jev-page run 1 / run 2 | jev-choice run 1 / run 2 |
+|---|---|---|
+| 25 | 73/74 / 73/74 | **74/74 / 74/74** |
+| 15 | 69/74 / 70/74 | 71/74 / 70/74 |
+| 10 | 60/74 / 62/74 | 67/74 / 63/74 |
+
+At 25 pages both runs agree exactly. Below that, choice's lead is partly noise: at 10 pages it is 7 rules in run 1 and
+1 rule in run 2.
+
+**BlackRock p.156, missed both times.** It is the only page saying "Class A Shares are available to all investors"
+(gold rule category-A). It ranks about #30–40 for investor eligibility in choice and #14 (score ~0.5) per page, in both
+runs. The page is mostly another sub-fund's description (World Technology Fund); the "Classes and Form of Shares"
+section starts at character 4,456 of 6,124. Jev judges the page as a whole, so a rule in the last quarter of a mixed
+page ranks low. Not a cut-off: pages are sent up to 6,000 characters (627 of 7,980 pages are longer and are cut).
