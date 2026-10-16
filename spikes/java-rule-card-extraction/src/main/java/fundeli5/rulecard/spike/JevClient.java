@@ -31,10 +31,8 @@ public final class JevClient {
     private final AtomicLong requests = new AtomicLong();
 
     public JevClient(String model, int concurrency) {
+        // checked on the first request, not here: cached rankings need no key
         this.key = System.getenv("TYPESAFE_API_KEY");
-        if (key == null || key.isBlank()) {
-            throw new IllegalStateException("TYPESAFE_API_KEY is not set");
-        }
         this.model = model;
         this.inFlight = new Semaphore(concurrency);
     }
@@ -57,6 +55,9 @@ public final class JevClient {
 
     /** Sends {state, questions} and returns the {@code answers} node. Retries 429/529/5xx with backoff. */
     public JsonNode ask(String state, ObjectNode questions) {
+        if (key == null || key.isBlank()) {
+            throw new IllegalStateException("TYPESAFE_API_KEY is not set and this ranking is not cached in jev-rankings/");
+        }
         ObjectNode body = json.createObjectNode();
         body.put("state", state);
         body.put("model", model);
