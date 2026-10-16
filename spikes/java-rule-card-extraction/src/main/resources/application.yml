@@ -18,14 +18,35 @@ fundeli5:
   runs-dir: runs
   extract-model: claude-opus-5-5
   normalise-model: claude-sonnet-5-5
-  fund:
-    name: Global Climate and Environment Fund
-    display-name: Nordea 1 – Global Climate and Environment Fund
-    prospectus: prospectus
-    prospectus-title: Nordea 1, SICAV prospectus June 2026
-    share-classes:
-      BP-EUR: LU0348926287
-      BI-EUR: LU0348927095
-    kids:
-      BP-EUR: kid-BP-EUR
-      BI-EUR: kid-BI-EUR
+  fund-id: nordea        # --fundeli5.fund-id=robeco | bgf (ticket #39)
+  funds:
+    nordea:
+      name: Global Climate and Environment Fund
+      display-name: Nordea 1 – Global Climate and Environment Fund
+      prospectus: prospectus
+      prospectus-title: Nordea 1, SICAV prospectus June 2026
+      gold: gold-rule-card.json
+      share-classes:
+        BP-EUR: LU0348926287
+        BI-EUR: LU0348927095
+      kids:
+        BP-EUR: kid-BP-EUR
+        BI-EUR: kid-BI-EUR
+    robeco:
+      name: RobecoSAM Smart Energy Equities
+      display-name: Robeco Capital Growth Funds – RobecoSAM Smart Energy Equities
+      prospectus: x-robeco-cgf-de
+      prospectus-title: Robeco Capital Growth Funds, Prospekt Mai 2022 (Deutsch)
+      gold: gold/robeco-smart-energy.json
+      share-classes:
+        D-EUR: Klasse D (thesaurierend, EUR)
+        I-EUR: Klasse I (thesaurierend, EUR)
+    bgf:
+      name: Global Allocation Fund
+      display-name: BlackRock Global Funds – Global Allocation Fund
+      prospectus: x-blk-bgf-en
+      prospectus-title: BlackRock Global Funds prospectus (English)
+      gold: gold/blackrock-global-allocation.json
+      share-classes:
+        A2-USD: Class A, non-distributing, USD
+        I2-USD: Class I, non-distributing, USD

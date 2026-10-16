@@ -174,7 +174,7 @@ public class GoldScorer {
     }
 
     private JsonNode gold() throws IOException {
-        return json.readTree(Path.of("gold-rule-card.json").toFile());
+        return json.readTree(props.fund().gold().toFile());
     }
 
     private static List<String> expand(JsonNode rule, List<String> classes) {
