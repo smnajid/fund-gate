@@ -143,6 +143,13 @@ Rule recall (pages selected, summed over the documents with text):
   classes", Amundi p.81 minimums) and Nordea p.138 at 10–15 pages.
 - No text layer still means no selection (Schroders, GS supplement): Jev reads text, OCR first.
 
+### Recommendation (2026-10-16)
+
+Adopt **Jev choice** to select the pages (best recall at every budget, the only variant tested end to end) and keep
+**Jev per page** as a cheap extra pass: per rule kind, the best per-page score among the selected pages; under 0.5 is a
+"possibly missed" candidate for the validation screen. Both: about $0.25 per 944-page prospectus.
+`./run.sh --select=jev-choice --max-pages=25` does both before extraction (`--dry-run` stops before the LLM).
+
 ### End to end on Nordea: Rule Card from Jev's pages (2026-10-16, Claude plan, Opus 5.5)
 
 Jev choice's 25 pages (`--pages=1,2,3,4,5,6,16,67,106,123,124,131,136,137,138,210,248,249,857,859,860,861,880,936,944
@@ -159,3 +166,25 @@ contradiction flagged). Jev's pages skip three of the nine hand-picked pages (13
 but the gold card cites none of them: it cites prospectus pages 3, 5, 123, 124 and 138, all in Jev's 25. This run cited
 those plus 16, 136 and 137, and KID pages 1 and 3. One run on one fund: the Citations API path (`spring-ai` profile) is still untested
 live.
+
+### End to end on the Citations API (2026-10-16, Anthropic API)
+
+`SPRING_PROFILES_ACTIVE=spring-ai ./run.sh --select=jev-choice --max-pages=25 --label=citations-jev-choice-25`: Jev
+choice's 25 pages, pass 1 Opus 5.5 with PDFs and Citations, pass 2 Sonnet 5.5 with structured output. First live run of
+`SpringAiCitationsDrafter`.
+
+| | Rules found | Correct values | Quotes on the cited page | Time | Cost |
+|---|---|---|---|---|---|
+| Citations API, Jev choice 25 pages | **18/18** | **18/18** | **45/45** | 149 s | $0.21 (cache read) |
+
+- Coverage pass flagged nothing: every rule kind has a selected page scoring 0.87–0.96.
+- Both traps handled (mandate-only BI avoided, KID-vs-prospectus contradiction flagged). Four Unmodelled Restrictions,
+  including market timing, which the Claude-plan runs did not list.
+- **First live run failed silently**: pass 1 cited 39 passages, pass 2 wrote 5.7k tokens, but the drafter parsed only
+  `getResult()` and saved a 0-rule card ($0.68, kept in `runs/` as `20261016-230854`). Fixed: every generation is
+  searched, and a missing card now fails with the raw text in `runs/pass2-unparsed.txt`.
+- The cost is real API billing. Pass 1 re-read the cached PDFs (100k tokens at the cache-read price), so a cold run
+  costs about $0.68: Opus pass 1 $0.61, Sonnet pass 2 $0.07.
+- Scorer change: BP's minimum came back as amount 0 with no currency, which is right (the prospectus says "None") but
+  was scored wrong because gold expected "EUR". `gold-rule-card.json` now accepts no currency for that rule; every
+  earlier run keeps its score.

@@ -217,7 +217,9 @@ public class GoldScorer {
                     }
                 }
                 case "currency" -> {
-                    if (!(have == null || have.isNull() ? "" : have.asString().toUpperCase()).equals(want.asString())) {
+                    // accept may list null: "no minimum" has no currency
+                    var h = have == null || have.isNull() ? null : have.asString().toUpperCase();
+                    if (accepted.stream().noneMatch(a -> a.isNull() ? h == null : a.asString().equals(h))) {
                         return false;
                     }
                 }

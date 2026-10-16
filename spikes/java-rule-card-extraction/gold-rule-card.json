@@ -46,7 +46,7 @@
       "scope": "share_class",
       "kind": "minimum_initial_subscription",
       "params": {"amount": 0, "currency": "EUR"},
-      "accept": {"amount": [0, null]},
+      "accept": {"amount": [0, null], "currency": ["EUR", null]},
       "citations": [{"doc": "prospectus", "page": 123, "quote": "P All investors. Yes None None"}]
     },
     {
