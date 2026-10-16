@@ -155,6 +155,7 @@ Jev choice's 25 pages (`--pages=1,2,3,4,5,6,16,67,106,123,124,131,136,137,138,21
 | **Jev choice, 25 pages** | 25 of 944 | **18/18** | **18/18** | **40/40** | 90 s | $1.00 + $0.20 Jev |
 
 \* Claude Code's list-price estimate, not a bill. Both traps handled (mandate-only BI avoided, KID-vs-prospectus
-contradiction flagged). Jev's pages skip three hand-picked pages (134, 139, 146); the card lost nothing, as the KIDs and
-pages 136–138 carry the same rules. One run on one fund: the Citations API path (`spring-ai` profile) is still untested
+contradiction flagged). Jev's pages skip three of the nine hand-picked pages (134, 139, 146),
+but the gold card cites none of them: it cites prospectus pages 3, 5, 123, 124 and 138, all in Jev's 25. This run cited
+those plus 16, 136 and 137, and KID pages 1 and 3. One run on one fund: the Citations API path (`spring-ai` profile) is still untested
 live.
