@@ -1,0 +1,33 @@
+{
+  "label" : "citations-jev-choice-25",
+  "drafter" : "spring-ai claude-opus-5-5 + claude-sonnet-5-5",
+  "selected_pages" : [ 1, 2, 3, 4, 5, 6, 16, 67, 106, 123, 124, 131, 136, 137, 138, 210, 248, 249, 857, 859, 860, 861, 880, 936, 944 ],
+  "usage" : [ {
+    "model" : "claude-opus-5-5",
+    "seconds" : 57.0,
+    "input" : 117,
+    "output" : 5761,
+    "cache_write" : 99739,
+    "cache_read" : 0,
+    "usd" : 0.614383
+  }, {
+    "model" : "claude-sonnet-5-5",
+    "seconds" : 33.8,
+    "input" : 5179,
+    "output" : 5727,
+    "cache_write" : null,
+    "cache_read" : null,
+    "usd" : 0.067628
+  } ],
+  "total_seconds" : 90.8,
+  "total_usd" : 0.682,
+  "card" : {
+    "fund" : "Nordea 1 – Global Climate and Environment Fund",
+    "share_classes" : {
+      "BP-EUR" : "LU0348926287",
+      "BI-EUR" : "LU0348927095"
+    },
+    "status" : "draft",
+    "rules" : [ ]
+  }
+}

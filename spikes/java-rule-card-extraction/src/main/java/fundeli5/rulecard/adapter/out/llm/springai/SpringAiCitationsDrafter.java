@@ -78,13 +78,48 @@ public class SpringAiCitationsDrafter implements RuleCardDrafter {
         var pass2Usage = new Usage(normaliseModel, round(seconds), in, out, null, null,
                 RuleCardPrompts.usd(normaliseModel, in, out, null, null));
 
-        var rules = RuleCardPrompts.rules(json.readTree(response.getResult().getOutput().getText()), r -> {
+        var rules = RuleCardPrompts.rules(cardJson(response), r -> {
             var cites = new ArrayList<Citation>();
             r.path("citation_ids").forEach(id -> cites.add(table.getOrDefault(id.asString(),
                     new Citation(null, null, List.of(), null, false))));
             return cites;
         });
         return new Draft(rules, List.of(pass1Usage, pass2Usage));
+    }
+
+    /**
+     * The structured-output JSON. Not just {@code getResult()}: with thinking on, the response can hold several
+     * generations, and the first one may not be the JSON. Fails loudly, keeping the raw text, rather than returning
+     * an empty card.
+     */
+    private tools.jackson.databind.JsonNode cardJson(org.springframework.ai.chat.model.ChatResponse response) {
+        var texts = new ArrayList<String>();
+        for (var g : response.getResults()) {
+            var text = g.getOutput().getText();
+            if (text == null || text.isBlank()) {
+                continue;
+            }
+            texts.add(text);
+            var start = text.indexOf('{');
+            if (start < 0) {
+                continue;
+            }
+            try {
+                var node = json.readTree(text.substring(start));
+                if (node.path("rules").isArray()) {
+                    return node;
+                }
+            } catch (RuntimeException e) {
+                // not this one
+            }
+        }
+        try {
+            var dump = java.nio.file.Files.writeString(java.nio.file.Path.of("runs", "pass2-unparsed.txt"),
+                    response.getResults().size() + " generations\n\n" + String.join("\n\n----\n\n", texts));
+            throw new IllegalStateException("pass 2 returned no Rule Card JSON; raw text in " + dump);
+        } catch (java.io.IOException e) {
+            throw new IllegalStateException("pass 2 returned no Rule Card JSON", e);
+        }
     }
 
     private MessageCreateParams pass1(Request req) {
