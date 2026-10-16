@@ -52,6 +52,8 @@ public final class PageRecall {
                     case "v2" -> PageSelectionV2.select(doc, d.subFund(), maxPages);
                     case "jev-choice" -> jev.select(doc, d.subFund(), maxPages, JevPageRanking.Method.CHOICE);
                     case "jev-page" -> jev.select(doc, d.subFund(), maxPages, JevPageRanking.Method.PAGE);
+                    case "jev-choice-prev" -> jev.select(doc, d.subFund(), maxPages, JevPageRanking.Method.CHOICE, true);
+                    case "jev-page-prev" -> jev.select(doc, d.subFund(), maxPages, JevPageRanking.Method.PAGE, true);
                     default -> PageSelection.select(doc, d.subFund(), maxPages);
                 });
             } catch (IllegalStateException e) {

@@ -56,6 +56,7 @@ public final class JevPageRanking {
     }
 
     private static final int FRONT_MATTER = 5;
+    private static final int PREVIOUS_ROUNDS = 2;
     /** Characters of page text sent per page; longer pages (big tables) are cut. */
     private static final int PAGE_CHARS = 6000;
     /** Characters of page text per choice question, about 22k tokens of the 32k per-question limit. */
@@ -75,6 +76,15 @@ public final class JevPageRanking {
 
     /** Pages within budget: everything for a small document, else front matter then round-robin over rule kinds. */
     public List<Integer> select(FundDocument doc, String subFund, int maxPages, Method method) {
+        return select(doc, subFund, maxPages, method, false);
+    }
+
+    /**
+     * {@code withPrevious}: in the first {@value #PREVIOUS_ROUNDS} rounds, a chosen page also brings the page before
+     * it. A rule often starts at the bottom of a page that is mostly about something else (BlackRock p.156: another
+     * sub-fund, then "Classes and Form of Shares"), or runs across a page break (Robeco pp.22-23).
+     */
+    public List<Integer> select(FundDocument doc, String subFund, int maxPages, Method method, boolean withPrevious) {
         int n = doc.pages().size();
         if (n <= maxPages) {
             return java.util.stream.IntStream.rangeClosed(1, n).boxed().toList();
@@ -87,7 +97,7 @@ public final class JevPageRanking {
         var cursors = new int[rankings.size()];
         var lists = new ArrayList<>(rankings.values());
         boolean progress = true;
-        while (chosen.size() < maxPages && progress) {
+        for (int round = 1; chosen.size() < maxPages && progress; round++) {
             progress = false;
             for (int r = 0; r < lists.size() && chosen.size() < maxPages; r++) {
                 var list = lists.get(r);
@@ -95,7 +105,12 @@ public final class JevPageRanking {
                     cursors[r]++;
                 }
                 if (cursors[r] < list.size()) {
-                    chosen.add(list.get(cursors[r]++).page());
+                    int page = list.get(cursors[r]++).page();
+                    chosen.add(page);
+                    if (withPrevious && round <= PREVIOUS_ROUNDS && page - 1 > FRONT_MATTER
+                            && chosen.size() < maxPages) {
+                        chosen.add(page - 1);
+                    }
                     progress = true;
                 }
             }

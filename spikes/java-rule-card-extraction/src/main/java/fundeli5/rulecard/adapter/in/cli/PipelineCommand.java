@@ -23,7 +23,9 @@ import fundeli5.rulecard.spike.PageRecall;
  * Inbound adapter. Usage (see run.sh):
  * <pre>
  *   --pages=3,5,16,123 --label=gold-pages   extract, then score against the gold card
- *   --select=jev-choice --max-pages=25      extract from the pages Jev choice selects, with a per-page coverage check (#39)
+ *   --select=jev-choice --max-pages=25 [--jev-prev]
+ *                                           extract from the pages Jev choice selects (plus the page before its top
+ *                                           pages), with a per-page coverage check (#39)
  *   --dry-run                               page selection only, no LLM
  *   --score[=runs/x.json]                   score a run (default: latest)
  *   --recall[=page-recall-key.json] [--v2]  page recall on unseen documents (ticket #32), no LLM
@@ -91,7 +93,8 @@ class PipelineCommand implements ApplicationRunner {
             var jev = new JevPageRanking(new JevClient(opt(args, "jev-model", "jev-latest"),
                     Integer.parseInt(opt(args, "jev-concurrency", "8"))), Path.of(opt(args, "jev-cache", "jev-rankings")));
             var prospectus = documents.load(fund.prospectus());
-            pages = jev.select(prospectus, fund.name(), maxPages, JevPageRanking.Method.CHOICE);
+            pages = jev.select(prospectus, fund.name(), maxPages, JevPageRanking.Method.CHOICE,
+                    args.containsOption("jev-prev"));
             System.out.printf("jev choice: %d pages %s%ncoverage (jev per page):%n", pages.size(), pages);
             jev.coverage(prospectus, fund.name(), pages).forEach(l -> System.out.println("  " + l));
             if (args.containsOption("dry-run")) {
