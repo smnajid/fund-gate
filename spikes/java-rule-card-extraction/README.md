@@ -142,4 +142,19 @@ Rule recall (pages selected, summed over the documents with text):
 - Remaining misses are tables that only make sense with their heading on the page before (JPMorgan p.280 "base share
   classes", Amundi p.81 minimums) and Nordea p.138 at 10–15 pages.
 - No text layer still means no selection (Schroders, GS supplement): Jev reads text, OCR first.
-- Not yet tested: whether the Rule Card extracted from Jev's pages scores as well end to end (step 2 of #39).
+
+### End to end on Nordea: Rule Card from Jev's pages (2026-10-16, Claude plan, Opus 5.5)
+
+Jev choice's 25 pages (`--pages=1,2,3,4,5,6,16,67,106,123,124,131,136,137,138,210,248,249,857,859,860,861,880,936,944
+--label=jev-choice-25`), same drafter and gold card as the runs above:
+
+| Run | Prospectus pages | Rules found | Correct values | Quotes on the cited page | Time | Cost* |
+|---|---|---|---|---|---|---|
+| hand-picked pages | 9 | 18/18 | 18/18 | 38/38 | 82 s | $0.62 |
+| keyword selection (v1) | 27 of 944 | 18/18 | 18/18 | 38/38 | 131 s | $1.81 |
+| **Jev choice, 25 pages** | 25 of 944 | **18/18** | **18/18** | **40/40** | 90 s | $1.00 + $0.20 Jev |
+
+\* Claude Code's list-price estimate, not a bill. Both traps handled (mandate-only BI avoided, KID-vs-prospectus
+contradiction flagged). Jev's pages skip three hand-picked pages (134, 139, 146); the card lost nothing, as the KIDs and
+pages 136–138 carry the same rules. One run on one fund: the Citations API path (`spring-ai` profile) is still untested
+live.
