@@ -103,6 +103,29 @@ public final class JevPageRanking {
         return List.copyOf(chosen);
     }
 
+    /**
+     * The cheap extra pass: per rule kind, the best per-page score among the selected pages, and the best page left
+     * out when it scores higher. A kind whose best selected page scores low is a "possibly missed" candidate.
+     */
+    public List<String> coverage(FundDocument doc, String subFund, List<Integer> selected) {
+        var chosen = new TreeSet<>(selected);
+        var lines = new ArrayList<String>();
+        rankings(doc, subFund, Method.PAGE).forEach((kind, ranked) -> {
+            var in = ranked.stream().filter(s -> chosen.contains(s.page())).findFirst().orElse(null);
+            var top = ranked.getFirst();
+            var line = new StringBuilder("%-22s best selected %s".formatted(kind,
+                    in == null ? "none" : "p.%d %.2f".formatted(in.page(), in.score())));
+            if (in == null || top.page() != in.page()) {
+                line.append(", best left out p.%d %.2f".formatted(top.page(), top.score()));
+            }
+            if (in == null || in.score() < 0.5) {
+                line.append("  POSSIBLY MISSED");
+            }
+            lines.add(line.toString());
+        });
+        return lines;
+    }
+
     /** Per rule kind, every page ranked best first. Cached per document, sub-fund, method and model. */
     public Map<String, List<Scored>> rankings(FundDocument doc, String subFund, Method method) {
         var file = cacheDir.resolve("%s.%s.%s.json".formatted(doc.id(), method.name().toLowerCase(), jev.model()));
