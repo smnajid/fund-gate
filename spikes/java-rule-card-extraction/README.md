@@ -138,8 +138,7 @@ Rule recall (pages selected, summed over the documents with text):
   Several of the 10-page misses are DE (Mindestzeichnung, Anlegerart).
 - **jev-choice** ranks better (74/74 at 25 pages), at about 4–5× the tokens of jev-page. At these prices both are noise
   next to the Citations call ($1–2 per Nordea run).
-- **jev-page** misses at 25: JPMorgan p.45, the US Person page (not a selection hole for the Rule Card: the same rule is
-  on p.292 and p.303, listed as `alt` but not reached).
+- **jev-page**'s one miss at 25 pages: JPMorgan's US Person rule (p.45, also stated on pp. 292 and 303; none selected).
 - Remaining misses are tables that only make sense with their heading on the page before (JPMorgan p.280 "base share
   classes", Amundi p.81 minimums) and Nordea p.138 at 10–15 pages.
 - No text layer still means no selection (Schroders, GS supplement): Jev reads text, OCR first.
