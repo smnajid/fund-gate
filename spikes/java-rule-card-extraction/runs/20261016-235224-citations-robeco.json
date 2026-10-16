@@ -1,0 +1,491 @@
+{
+  "label" : "citations-robeco",
+  "drafter" : "spring-ai claude-opus-5-5 + claude-sonnet-5-5",
+  "selected_pages" : [ 1, 2, 3, 4, 5, 14, 15, 21, 22, 23, 71, 95, 96, 130, 131, 241, 242, 243, 244, 366, 367, 485, 486, 543, 544 ],
+  "usage" : [ {
+    "model" : "claude-opus-5-5",
+    "seconds" : 54.4,
+    "input" : 147,
+    "output" : 4858,
+    "cache_write" : 92694,
+    "cache_read" : 0,
+    "usd" : 0.561218
+  }, {
+    "model" : "claude-sonnet-5-5",
+    "seconds" : 28.9,
+    "input" : 4280,
+    "output" : 4665,
+    "cache_write" : null,
+    "cache_read" : null,
+    "usd" : 0.05521
+  } ],
+  "total_seconds" : 83.3,
+  "total_usd" : 0.6164,
+  "card" : {
+    "fund" : "Robeco Capital Growth Funds – RobecoSAM Smart Energy Equities",
+    "share_classes" : {
+      "I-EUR" : "Klasse I (thesaurierend, EUR)",
+      "D-EUR" : "Klasse D (thesaurierend, EUR)"
+    },
+    "status" : "draft",
+    "rules" : [ {
+      "share_class" : "*",
+      "scope" : "fund",
+      "kind" : "us_person_exclusion",
+      "allowed_categories" : null,
+      "us_person_definition" : "reg_s",
+      "excludes_us_citizens" : false,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.85,
+      "summary" : "US persons may not invest in the fund. 'US person' follows Regulation S (domicile-based), so US citizenship alone does not exclude. Shares of investors who become US persons may be compulsorily redeemed. The separate FATCA 'Specified US Person' term appears only in the reporting context.",
+      "citations" : [ {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 2,
+        "pages" : [ 2, 3 ],
+        "quote" : "US-PERONEN IST ES NICHT GESTATTET, IN ANTEILEN DER GESELLSCHAFT ANZULEGEN.\r\n",
+        "verified" : true
+      }, {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 2,
+        "pages" : [ 2, 3 ],
+        "quote" : "ANTEILINHABER UND FÜR POTENZIELLE ANTEILINHABER HANDELNDE INTERMEDIÄRE WERDEN DESHALB DARAUF BESONDERS HINGEWIESEN, \r\nDASS NACH DER GEGENWÄRTIGEN POLITIK DER GESELLSCHAFT US-PERSONEN (WIE IM ABSCHNITT GLOSSAR DER FESTGELEGTEN BEGRIFFE\r\nDEFINIERT) KEINE ANLAGEN IN DEN FONDS TÄTIGEN DÜRFEN. ",
+        "verified" : true
+      }, {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 15,
+        "pages" : [ 15, 21 ],
+        "quote" : "USD\r\nUS-Dollar\r\nUS-Person\r\nDer Begriff \"US-Person\" hat die gleiche Bedeutung wie in Bestimmung S gemäß obiger Definition, die folgendermaßen lautet:\r\ni) eine natürliche Person, die in den USA domiziliert ist;\r\nii) eine Partnerschaft oder Gesellschaft, deren Organisation oder Sitz der US-amerikanischen Gesetzgebung unterliegt;\r\niii) ein Nachlassvermögen, dessen Vollstrecker oder Verwalter eine US-Person ist;\r\niv) ein Trust, dessen Treuhandverwalter eine US-Person ist;\r\nv) -\r\nNachlasses oder Trusts), das von einem Händler oder einem anderen Treuhänder zu Gunsten oder auf Rechnung einer \r\nUS-Person gehalten wird;\r\nvi)\r\noder Trusts), das von einem Händler oder Treuhänder gehalten wird, dessen Organisation, Sitz oder (sofern es sich um \r\neine natürliche Person handelt) Wohnsitz sich in den USA befindet;\r\nvii) eine Partnerschaft oder Gesellschaft, sofern \r\nA. ihre Organisation oder ihr Sitz einem nicht-amerikanischen/ausländischen Gerichtsstand unterliegt und\r\nB. sie von einer US-Person primär zu Anlagezwecken in Wertpapieren, die nicht gemäß US-Wertpapiergesetz registriert \r\nsind, gegründet wurde, außer ihre Organisation, ihr Sitz und ihre Eigentümer sind akkreditierte Investoren und es \r\nhandelt sich bei Letzteren nicht um natürliche Personen, Nachlassvermögen oder Trusts. \r\n",
+        "verified" : true
+      }, {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 2,
+        "pages" : [ 2, 3 ],
+        "quote" : "DIE ANTEILE VON ANLEGERN, DIE IN DEN STATUS EINER US-PERSON WECHSELN, \r\nKÖNNEN ZWANGSWEISE ZURÜCKGENOMMEN WERDEN.\r\n",
+        "verified" : true
+      }, {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 14,
+        "pages" : [ 14, 15 ],
+        "quote" : "Dabei handelt es sich um eine US-Person, die unter die FATCA-Meldepflicht fällt, was jede natürliche US-Person (z. B. \r\nUS-Bürger, Einwohner, Green Card-Inhaber usw.) ",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "*",
+      "scope" : "fund",
+      "kind" : "unmodelled_restriction",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.9,
+      "summary" : "US benefit plan investors (ERISA): shares may neither be offered nor sold to them.",
+      "citations" : [ {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 2,
+        "pages" : [ 2, 3 ],
+        "quote" : "ANTEILE DER GESELLSCHAFT DÜRFEN US-AMERIKANISCHEN VORSORGEPLANANLEGERN WEDER ANGEBOTEN NOCH VERKAUFT WERDEN. ",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "*",
+      "scope" : "fund",
+      "kind" : "unmodelled_restriction",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.8,
+      "summary" : "Hong Kong: the prospectus is not registered there and may only be distributed to Professional Investors as defined in the Securities and Futures Ordinance.",
+      "citations" : [ {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 2,
+        "pages" : [ 2, 3 ],
+        "quote" : "DER VORLIEGENDE PROSPEKT WURDE NICHT IN HONGKONG REGISTRIERT UND DARF NUR AN PERSONEN VERTEILT, IN UMLAUF \r\nGEBRACHT ODER AUSGEGEBEN WERDEN, DIE PROFESSIONELLE ANLEGER IM SINNE DER SECURITIES AND FUTURES ORDINANCE UND ETWAIGER \r\nVORSCHRIFTEN DIESER VERORDNUNG SIND ODER ANDERWEITIG DURCH DIE SECURITIES AND FUTURES ORDINANCE ZUGELASSEN SIND.\r\n",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "*",
+      "scope" : "fund",
+      "kind" : "unmodelled_restriction",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.85,
+      "summary" : "Germany: no restriction. Smart Energy Equities is not on the list of sub-funds without a §310 KAGB notification. Only the listed sub-funds may not be distributed to shareholders in Germany.",
+      "citations" : [ {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 544,
+        "pages" : [ 544 ],
+        "quote" : "58\r\nMai 2022 544 / 545\r\n110491143_23\r\n110507652_21\r\nPROSPEKT ROBECO CAPITAL GROWTH FUNDS\r\nRobeco Capital Growth Funds - Robeco QI Emerging Markets Sustainable Enhanced Index Equities\r\nRobeco Capital Growth Funds – Robeco Sustainable Emerging Stars Equities\r\nRobeco Capital Growth Funds – Robeco QI Global Developed Small Cap Multi-Factor Equities\r\nRobeco Capital Growth Funds – Robeco Membership Economy\r\nRobeco Capital Growth Funds – RobecoSAM SDG Asian Bonds\r\nRobeco Capital Growth Funds – RobecoSAM QI Emerging SDG & Climate Beta Equities\r\nRobeco Capital Growth Funds – RobecoSAM QI Global SDG & Climate Multi-Factor Equities\r\nRobeco Capital Growth Funds – RobecoSAM QI Emerging SDG & Climate Conservative Equities\r\nRobeco Capital Growth Funds – RobecoSAM QI Global SDG & Climate Multi-Factor Credits\r\nRobeco Capital Growth Funds – Robeco Emerging Markets Debt\r\nRobeco Capital Growth Funds – RobecoSAM Net Zero 2050 Climate Equities\r\nRobeco Capital Growth Funds – Robeco Quantum Equities\r\nRobeco Capital Growth Funds – RobecoSAM Biodiversity Equities\r\nAnteile der oben genannten Teilfonds dürfen nicht an Anteilinhaber in der Bundesrepublik Deutschland \r\nvertrieben werden.",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "*",
+      "scope" : "fund",
+      "kind" : "kid_required_for_retail",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.5,
+      "summary" : "Subscriptions are accepted only on the basis of the prospectus and the key investor information documents (UCITS KIID per sub-fund). The excerpt gives no evidence of a PRIIPs KID, so kid_available is left unset. The validator should check whether a PRIIPs KID exists.",
+      "citations" : [ {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 2,
+        "pages" : [ 2, 3 ],
+        "quote" : "EINLAGEN KÖNNEN NUR AKZEPTIERT WERDEN, WENN SIE AUF DER GRUNDLAGE DIESES PROSPEKTS UND DER JEWEILIGEN DOKUMENTE MIT\r\nWESENTLICHEN INFORMATIONEN FÜR DEN ANLEGER ERFOLGEN. ",
+        "verified" : true
+      }, {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 543,
+        "pages" : [ 543, 544 ],
+        "quote" : "Der Verkaufsprospekt und die wesentlichen Informationen für Anleger jedes Teilfonds, die Satzung der \r\nGesellschaft, der letzte Jahresbericht sowie der letzte Halbjahresbericht sind bei der deutschen Informationsstelle \r\nkostenlos in Papierform oder auf dem Postweg erhältlich. ",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "*",
+      "scope" : "fund",
+      "kind" : "target_market",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : "client_type",
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.4,
+      "summary" : "Suitable for investors who want their investment to contribute fully to a sustainability objective, and also for experienced investors with specific investment objectives. No client_type category from the allowed set is stated, so value is left null. The information is for reference only.",
+      "citations" : [ {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 243,
+        "pages" : [ 243, 244 ],
+        "quote" : "Profil des typischen \r\nAnlegers\r\nDer Teilfonds eignet sich für Anleger, die möchten, dass ihr Investment vollständig zu einem \r\nnachhaltigkeitsbezogenen Ziel beiträgt. ",
+        "verified" : true
+      }, {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 243,
+        "pages" : [ 243, 244 ],
+        "quote" : "Es wird darauf hingewiesen, dass diese Informationen nur zu Referenzzwecken angegeben werden. \r\n",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "*",
+      "scope" : "fund",
+      "kind" : "target_market",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : "knowledge_experience",
+      "value" : "advanced",
+      "contradiction" : false,
+      "confidence" : 0.7,
+      "summary" : "Also suitable for experienced investors. Investors should understand the risks and check suitability despite the considerable risk of loss.",
+      "citations" : [ {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 243,
+        "pages" : [ 243, 244 ],
+        "quote" : "Er ist ebenfalls für erfahrene Anleger geeignet, die \r\nbestimmte Anlageziele zu erreichen wünschen. ",
+        "verified" : true
+      }, {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 243,
+        "pages" : [ 243, 244 ],
+        "quote" : "Die Anleger sollten vor einer \r\nAnlage sicherstellen, dass sie die damit zusammenhängenden Risiken verstanden haben, und \r\nüberprüfen, ob ihre Anlage trotz des erheblichen Verlustrisikos als Teil ihres Wertpapierdepots \r\ngeeignet ist.\r\n",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "*",
+      "scope" : "fund",
+      "kind" : "target_market",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : "loss_bearing",
+      "value" : "full_loss",
+      "contradiction" : false,
+      "confidence" : 0.8,
+      "summary" : "The sub-fund offers no capital guarantee. The investor must accept volatility and a considerable risk of loss.",
+      "citations" : [ {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 243,
+        "pages" : [ 243, 244 ],
+        "quote" : "Der Teilfonds bietet keine Kapitalgarantie. Der \r\nAnleger muss in der Lage sein, Volatilität hinzunehmen. ",
+        "verified" : true
+      }, {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 243,
+        "pages" : [ 243, 244 ],
+        "quote" : "Die Anleger sollten vor einer \r\nAnlage sicherstellen, dass sie die damit zusammenhängenden Risiken verstanden haben, und \r\nüberprüfen, ob ihre Anlage trotz des erheblichen Verlustrisikos als Teil ihres Wertpapierdepots \r\ngeeignet ist.\r\n",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "*",
+      "scope" : "fund",
+      "kind" : "target_market",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : "risk_sri",
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.3,
+      "summary" : "No SRRI/SRI is stated in the excerpt. Only a sustainability risk rating (scale 1-5, shown as 2) appears, which is not an SRI.",
+      "citations" : [ {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 243,
+        "pages" : [ 243, 244 ],
+        "quote" : "Das Profil hinsichtlich des nachhaltigkeitsbezogenen Risikos kann mithilfe von fünf Kategorien \r\nausgedrückt werden. Diese reichen von 1 (sehr geringes Risiko) bis 5 (sehr hohes Risiko). ",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "*",
+      "scope" : "fund",
+      "kind" : "target_market",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : "horizon_years",
+      "value" : "5",
+      "contradiction" : false,
+      "confidence" : 0.9,
+      "summary" : "Suitable for investors who can leave their capital invested for at least five to seven years (minimum 5).",
+      "citations" : [ {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 243,
+        "pages" : [ 243, 244 ],
+        "quote" : "Dieser Teilfonds ist daher für Anleger \r\ngeeignet, die es sich leisten können, ihr Anlagekapital für mindestens fünf bis sieben Jahre nicht \r\nanzutasten. ",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "D-EUR",
+      "scope" : "share_class",
+      "kind" : "investor_category",
+      "allowed_categories" : [ "all" ],
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.95,
+      "summary" : "Class D shares are available to all investors. Class D (1.50% / 0.16%, accumulating) exists for this sub-fund.",
+      "citations" : [ {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 21,
+        "pages" : [ 21, 22 ],
+        "quote" : "58\r\nMai 2022 21 / 545\r\n110491143_23\r\n110507652_21\r\nPROSPEKT ROBECO CAPITAL GROWTH FUNDS\r\nKAPITEL 2 - DIE ANTEILE\r\n2.1 Anteilsklassen\r\nReguläre Anteilsklassen\r\nAnteile der Klassen D und DH stehen allen Anlegern zur Verfügung.\r\n",
+        "verified" : true
+      }, {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 244,
+        "pages" : [ 244, 366 ],
+        "quote" : "Klasse D 1,50 % 0,16 % Thesaurierend k.A.\r\n",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "D-EUR",
+      "scope" : "share_class",
+      "kind" : "minimum_initial_subscription",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : 0.0,
+      "currency" : "EUR",
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.85,
+      "summary" : "Minimum investment is one share, so there is effectively no monetary minimum.",
+      "citations" : [ {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 23,
+        "pages" : [ 23, 71 ],
+        "quote" : "Für andere \r\nAnteilsklassen (außer für Anteile der Klasse J) gilt ein Mindestanlagebetrag von einem Anteil.\r\n",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "D-EUR",
+      "scope" : "share_class",
+      "kind" : "mandate_only_class",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : false,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.85,
+      "summary" : "Class D is not reserved to discretionary-mandate clients, since it is available to all investors.",
+      "citations" : [ {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 21,
+        "pages" : [ 21, 22 ],
+        "quote" : "58\r\nMai 2022 21 / 545\r\n110491143_23\r\n110507652_21\r\nPROSPEKT ROBECO CAPITAL GROWTH FUNDS\r\nKAPITEL 2 - DIE ANTEILE\r\n2.1 Anteilsklassen\r\nReguläre Anteilsklassen\r\nAnteile der Klassen D und DH stehen allen Anlegern zur Verfügung.\r\n",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "I-EUR",
+      "scope" : "share_class",
+      "kind" : "investor_category",
+      "allowed_categories" : [ "institutional" ],
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.9,
+      "summary" : "Holding, redemption and transfer of institutional class shares is restricted to institutional investors as defined by the Luxembourg regulator (pension funds, insurers, credit institutions, UCIs, other professional financial-sector institutions). The Company will not issue them to non-institutional investors. Shares held by non-institutional investors may be converted or compulsorily redeemed. Class I availability is unconfirmed because the fee table breaks off at the institutional share classes heading.",
+      "citations" : [ {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 244,
+        "pages" : [ 244, 366 ],
+        "quote" : "Institutionelle Anteilsklassen",
+        "verified" : true
+      }, {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 22,
+        "pages" : [ 22, 23 ],
+        "quote" : "58\r\nMai 2022 22 / 545\r\n110491143_23\r\n110507652_21\r\nPROSPEKT ROBECO CAPITAL GROWTH FUNDS\r\nInstitutionelle Anteilsklassen\r\nDer Besitz, die Rücknahme und die Übertragung von Anteilen der Klassen für institutionelle Anleger ist auf institutionelle \r\nAnleger, entsprechend der jeweiligen Definition durch die Aufsichtsbehörde in Luxemburg, beschränkt. ",
+        "verified" : true
+      }, {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 22,
+        "pages" : [ 22, 23 ],
+        "quote" : "Gegenwärtig gehören \r\ndie folgenden Anleger zur Kategorie der institutionellen Anleger: Rentenfonds, Versicherungsgesellschaften, Kreditinstitute, \r\nOrganismen für gemeinsame Anlagen und sonstige professionelle Institutionen des Finanzsektors. ",
+        "verified" : true
+      }, {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 22,
+        "pages" : [ 22, 23 ],
+        "quote" : "Auch Kreditinstitute und \r\nandere Experten aus dem Finanzsektor, die im eigenen Namen aber auf Rechnung anderer auf Basis eines \r\nVerwaltungsverhältnisses mit Entscheidungsbefugnis anlegen, werden als institutionelle Anleger eingestuft, auch wenn die \r\nPartei, auf deren Rechnung investiert wird, selbst kein institutioneller Anleger ist. ",
+        "verified" : true
+      }, {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 22,
+        "pages" : [ 22, 23 ],
+        "quote" : "Die Gesellschaft wird keine Anteile der Klassen \r\nfür institutionelle Anleger an nicht-institutionelle Anleger ausgeben oder zur Übertragung solcher Anteilsscheine an nicht\u0002institutionelle Anleger beitragen. ",
+        "verified" : false
+      }, {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 22,
+        "pages" : [ 22, 23 ],
+        "quote" : "Wenn sich herausstellt, dass Anteile einer Klasse für institutionelle Anleger durch einen nicht\u0002institutionellen Anleger gehalten werden, wird die Gesellschaft die betreffenden Anteile in Anteile einer Anteilsklasse \r\numtauschen, die nicht auf institutionelle Anleger beschränkt ist, (sofern es eine Anteilsklasse mit ähnlichen Eigenschaften \r\ninnerhalb des Teilfonds gibt, jedoch nicht notwendigerweise im Hinblick auf die von der jeweiligen Anteilsklasse zu zahlenden \r\nGebühren, Steuern und Kosten) oder die betreffenden Anteile zwangsweise in Übereinstimmung mit der Satzung \r\nzurücknehmen.\r\n",
+        "verified" : false
+      } ]
+    }, {
+      "share_class" : "I-EUR",
+      "scope" : "share_class",
+      "kind" : "minimum_initial_subscription",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : 500000.0,
+      "currency" : "EUR",
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.85,
+      "summary" : "Minimum investment for institutional classes (except J, Z, ZH, Z2, Z2H, ZB, ZEH, ZBH) is EUR 500,000 or equivalent. The Company may waive it at its discretion.",
+      "citations" : [ {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 22,
+        "pages" : [ 22, 23, 71 ],
+        "quote" : "Für Anteile der Klassen für institutionelle Anleger, mit Ausnahme von J, Z, ZH, Z2, Z2H, ZB, ZEH und ZBH, gilt ein 58\r\nMai 2022 23 / 545\r\n110491143_23\r\n110507652_21\r\nPROSPEKT ROBECO CAPITAL GROWTH FUNDS\r\nMindestanlagebetrag von EUR 500.000 (oder Gegenwert). ",
+        "verified" : true
+      }, {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 23,
+        "pages" : [ 23, 71 ],
+        "quote" : "Die Gesellschaft ist befugt, nach eigenem Ermessen auf diesen \r\nMindestbetrag zu verzichten. ",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "I-EUR",
+      "scope" : "share_class",
+      "kind" : "mandate_only_class",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : false,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.7,
+      "summary" : "The class is not reserved to mandate clients. However, credit institutions and financial professionals investing in their own name for others under a discretionary mandate count as institutional even if the underlying party is not.",
+      "citations" : [ {
+        "doc" : "x-robeco-cgf-de",
+        "page" : 22,
+        "pages" : [ 22, 23 ],
+        "quote" : "Auch Kreditinstitute und \r\nandere Experten aus dem Finanzsektor, die im eigenen Namen aber auf Rechnung anderer auf Basis eines \r\nVerwaltungsverhältnisses mit Entscheidungsbefugnis anlegen, werden als institutionelle Anleger eingestuft, auch wenn die \r\nPartei, auf deren Rechnung investiert wird, selbst kein institutioneller Anleger ist. ",
+        "verified" : true
+      } ]
+    } ]
+  }
+}

@@ -1,0 +1,605 @@
+{
+  "label" : "citations-bgf",
+  "drafter" : "spring-ai claude-opus-5-5 + claude-sonnet-5-5",
+  "selected_pages" : [ 1, 2, 3, 4, 5, 6, 7, 121, 122, 156, 157, 158, 160, 161, 163, 164, 173, 174, 187, 188, 191, 192, 199, 215, 216 ],
+  "usage" : [ {
+    "model" : "claude-opus-5-5",
+    "seconds" : 115.2,
+    "input" : 127,
+    "output" : 5773,
+    "cache_write" : 0,
+    "cache_read" : 94294,
+    "usd" : 0.1348268
+  }, {
+    "model" : "claude-sonnet-5-5",
+    "seconds" : 29.2,
+    "input" : 5295,
+    "output" : 5254,
+    "cache_write" : null,
+    "cache_read" : null,
+    "usd" : 0.06313
+  } ],
+  "total_seconds" : 144.4,
+  "total_usd" : 0.198,
+  "card" : {
+    "fund" : "BlackRock Global Funds – Global Allocation Fund",
+    "share_classes" : {
+      "A2-USD" : "Class A, non-distributing, USD",
+      "I2-USD" : "Class I, non-distributing, USD"
+    },
+    "status" : "draft",
+    "rules" : [ {
+      "share_class" : "*",
+      "scope" : "fund",
+      "kind" : "us_person_exclusion",
+      "allowed_categories" : null,
+      "us_person_definition" : "reg_s",
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.85,
+      "summary" : "US Persons may not subscribe or own Shares. US Person means any US resident or person specified in Regulation S. Whether US citizenship alone excludes an investor is not stated. Shareholders who become US resident must redeem.",
+      "citations" : [ {
+        "doc" : "x-blk-bgf-en",
+        "page" : 7,
+        "pages" : [ 7, 121 ],
+        "quote" : "US\r\nPersons are not permitted to subscribe for Shares. ",
+        "verified" : true
+      }, {
+        "doc" : "x-blk-bgf-en",
+        "page" : 188,
+        "pages" : [ 188, 191 ],
+        "quote" : "The Directors have resolved that no US Persons will be permitted\r\nto own Shares. ",
+        "verified" : true
+      }, {
+        "doc" : "x-blk-bgf-en",
+        "page" : 188,
+        "pages" : [ 188, 191 ],
+        "quote" : "The Directors have resolved that “US Person”\r\nmeans any US resident or other person specified in Regulation S\r\nunder the US Securities Act of 1933 as amended from time to time\r\nand as may be further supplemented by resolution of the Directors.\r\n",
+        "verified" : true
+      }, {
+        "doc" : "x-blk-bgf-en",
+        "page" : 188,
+        "pages" : [ 188, 191 ],
+        "quote" : "If a shareholder currently resident outside the US becomes resident\r\nin the US (and consequently comes within the definition of a US\r\nPerson), that shareholder will be required to redeem its Shares.\r\n",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "*",
+      "scope" : "fund",
+      "kind" : "kid_required_for_retail",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : true,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.8,
+      "summary" : "A KID exists for each available Share Class. The KID itself was not supplied, so its existence for the specific ISIN cannot be verified.",
+      "citations" : [ {
+        "doc" : "x-blk-bgf-en",
+        "page" : 7,
+        "pages" : [ 7, 121 ],
+        "quote" : "This Prospectus, and the KID for the relevant Share Class, should\r\neach be read in their entirety before making an application for\r\nShares. ",
+        "verified" : true
+      }, {
+        "doc" : "x-blk-bgf-en",
+        "page" : 7,
+        "pages" : [ 7, 121 ],
+        "quote" : "KIDs for each available Share Class can be found at:\r\nhttp://kiid.blackrock.com\r\nStatements made in this Prospectus are based on laws and\r\npractices in force at the date hereof and are subject to changes\r\ntherein. ",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "*",
+      "scope" : "fund",
+      "kind" : "target_market",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : "client_type",
+      "value" : "all",
+      "contradiction" : false,
+      "confidence" : 0.75,
+      "summary" : "Intended investors include both the general public (retail) and Institutional Investors, mapped to 'all' at fund level.",
+      "citations" : [ {
+        "doc" : "x-blk-bgf-en",
+        "page" : 199,
+        "pages" : [ 199, 215 ],
+        "quote" : "The intended categories of investor include both the\r\ngeneral public as well as Institutional Investors. ",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "*",
+      "scope" : "fund",
+      "kind" : "target_market",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : "knowledge_experience",
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.6,
+      "summary" : "Investors must understand the risks of investing in the Company, but no level (basic, informed, advanced) is specified.",
+      "citations" : [ {
+        "doc" : "x-blk-bgf-en",
+        "page" : 7,
+        "pages" : [ 7, 121 ],
+        "quote" : "Investment in the Funds is only suitable for\r\ninvestors seeking long-term capital appreciation (save for the\r\nReserve Funds which may not be appropriate for investors who\r\nseek long-term capital appreciation) who understand the risks\r\ninvolved in investing in the Company, including the risk of loss of all\r\ncapital invested.\r\n",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "*",
+      "scope" : "fund",
+      "kind" : "target_market",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : "loss_bearing",
+      "value" : "full_loss",
+      "contradiction" : false,
+      "confidence" : 0.65,
+      "summary" : "Suitable only for investors who understand and can bear the risk of loss of all capital invested.",
+      "citations" : [ {
+        "doc" : "x-blk-bgf-en",
+        "page" : 7,
+        "pages" : [ 7, 121 ],
+        "quote" : "Investment in the Funds is only suitable for\r\ninvestors seeking long-term capital appreciation (save for the\r\nReserve Funds which may not be appropriate for investors who\r\nseek long-term capital appreciation) who understand the risks\r\ninvolved in investing in the Company, including the risk of loss of all\r\ncapital invested.\r\n",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "*",
+      "scope" : "fund",
+      "kind" : "target_market",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : "horizon_years",
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.5,
+      "summary" : "Suitable for investors seeking long-term capital appreciation, but no number of years is stated.",
+      "citations" : [ {
+        "doc" : "x-blk-bgf-en",
+        "page" : 7,
+        "pages" : [ 7, 121 ],
+        "quote" : "Investment in the Funds is only suitable for\r\ninvestors seeking long-term capital appreciation (save for the\r\nReserve Funds which may not be appropriate for investors who\r\nseek long-term capital appreciation) who understand the risks\r\ninvolved in investing in the Company, including the risk of loss of all\r\ncapital invested.\r\n",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "A2-USD",
+      "scope" : "share_class",
+      "kind" : "target_market",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : "risk_sri",
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.0,
+      "summary" : "SRI not found in the supplied documents; it would come from the KID, which was not provided.",
+      "citations" : [ ]
+    }, {
+      "share_class" : "I2-USD",
+      "scope" : "share_class",
+      "kind" : "target_market",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : "risk_sri",
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.0,
+      "summary" : "SRI not found in the supplied documents; it would come from the KID, which was not provided.",
+      "citations" : [ ]
+    }, {
+      "share_class" : "*",
+      "scope" : "fund",
+      "kind" : "unmodelled_restriction",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.8,
+      "summary" : "Sanctions: Shares must not be acquired or held by persons on EU or US sanctions lists, or resident and established in countries and territories on those lists.",
+      "citations" : [ {
+        "doc" : "x-blk-bgf-en",
+        "page" : 188,
+        "pages" : [ 188, 191 ],
+        "quote" : "The Directors may impose or relax restrictions (including\r\nrestrictions on transfer and/or the requirement that Shares be\r\nissued only in registered form) on any Shares or Share Classes\r\n(but not necessarily on all Shares within the same Class) as they\r\nmay think necessary to ensure that Shares are neither acquired nor\r\nheld by or on behalf of any person in circumstances giving rise to a\r\nbreach of the laws or requirements of any country or governmental\r\nor regulatory authority on the part of that person or the Company, or\r\nlisted on EU and/or United States sanctions lists, or resident and\r\nestablished in countries and territories listed on EU and/or United\r\nStates sanctions lists, or which might have adverse taxation or\r\nother pecuniary consequences for the Company, including a\r\nrequirement to register under any securities or investment or similar\r\nlaws or requirements of any country or authority. ",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "*",
+      "scope" : "fund",
+      "kind" : "unmodelled_restriction",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.75,
+      "summary" : "Distribution jurisdiction: the Funds are not registered for distribution in India. No offer is made where it would be unlawful (see Appendix D countries).",
+      "citations" : [ {
+        "doc" : "x-blk-bgf-en",
+        "page" : 7,
+        "pages" : [ 7, 121 ],
+        "quote" : "The Funds are\r\nnot registered for distribution in India. ",
+        "verified" : true
+      }, {
+        "doc" : "x-blk-bgf-en",
+        "page" : 7,
+        "pages" : [ 7, 121 ],
+        "quote" : "Distribution\r\nThis Prospectus does not constitute an offer or solicitation by\r\nanyone in any jurisdiction in which such offer or solicitation is not\r\nlawful or in which the person making such offer or solicitation is not\r\nqualified to do so or to anyone to whom it is unlawful to make such\r\noffer or solicitation. ",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "*",
+      "scope" : "fund",
+      "kind" : "unmodelled_restriction",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.6,
+      "summary" : "Capacity soft-close: the Directors may close the Fund or any Share Class to new subscriptions. Check current status with the local Investor Servicing team.",
+      "citations" : [ {
+        "doc" : "x-blk-bgf-en",
+        "page" : 160,
+        "pages" : [ 160, 161 ],
+        "quote" : "When a\r\nFund has reached its capacity limit, Shareholders will be notified\r\naccordingly, and the Directors are authorised from time to time at\r\ntheir discretion to resolve to close the Fund or any Share Class to\r\nnew subscriptions in whole or in part (except those made through\r\nregular investment programs as agreed in advance with the\r\nManagement Company at its discretion) either for a specified\r\nperiod or until they otherwise determine at their discretion. ",
+        "verified" : true
+      }, {
+        "doc" : "x-blk-bgf-en",
+        "page" : 160,
+        "pages" : [ 160, 161 ],
+        "quote" : "Information on whether the purchase of\r\nShares in a Fund at a specific point in time is restricted in this way\r\nis available from the local Investor Servicing team.\r\n",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "A2-USD",
+      "scope" : "share_class",
+      "kind" : "investor_category",
+      "allowed_categories" : [ "all" ],
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.95,
+      "summary" : "Class A Shares are available to all investors.",
+      "citations" : [ {
+        "doc" : "x-blk-bgf-en",
+        "page" : 156,
+        "pages" : [ 156, 157 ],
+        "quote" : "Class A Shares\r\nClass A Shares are available to all investors as Distributing and\r\nNon-Distributing Shares and are issued in registered form and\r\nglobal certificate form. ",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "A2-USD",
+      "scope" : "share_class",
+      "kind" : "minimum_initial_subscription",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : 5000.0,
+      "currency" : "USD",
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.85,
+      "summary" : "Minimum initial subscription for Class A is currently USD 5,000. Minima may be varied for any particular case or distributor or generally.",
+      "citations" : [ {
+        "doc" : "x-blk-bgf-en",
+        "page" : 161,
+        "pages" : [ 161, 163 ],
+        "quote" : "Minimum Subscription\r\nThe minimum initial subscription in respect of Class A, Class B,\r\nClass C, Class CI, Class E, Class EI Shares, and Class K Shares\r\nis currently USD5,000, for Class AJ USD10,000, for Class AI,\r\nShares USD25,000, for Class D Shares USD100,000, for Class\r\nDD Shares USD1 million, for Class I Shares, Class J Shares,\r\nClass X Shares and Class Z Shares USD10 million, for Class ZI\r\nShares USD 25 million, for Class S Shares USD 50 million, and\r\nClass SR Shares, USD 250 million and for Class SI Shares USD\r\n1billion. ",
+        "verified" : true
+      }, {
+        "doc" : "x-blk-bgf-en",
+        "page" : 161,
+        "pages" : [ 161, 163 ],
+        "quote" : "These minima may be varied for any particular case or distributor\r\nor generally. ",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "A2-USD",
+      "scope" : "share_class",
+      "kind" : "mandate_only_class",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : false,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.9,
+      "summary" : "No mandate restriction is stated. The class is open to all investors.",
+      "citations" : [ {
+        "doc" : "x-blk-bgf-en",
+        "page" : 156,
+        "pages" : [ 156, 157 ],
+        "quote" : "Class A Shares\r\nClass A Shares are available to all investors as Distributing and\r\nNon-Distributing Shares and are issued in registered form and\r\nglobal certificate form. ",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "A2-USD",
+      "scope" : "share_class",
+      "kind" : "kid_required_for_retail",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : true,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.8,
+      "summary" : "A KID exists for the class, which is retail-eligible. The KID itself was not supplied.",
+      "citations" : [ {
+        "doc" : "x-blk-bgf-en",
+        "page" : 7,
+        "pages" : [ 7, 121 ],
+        "quote" : "This Prospectus, and the KID for the relevant Share Class, should\r\neach be read in their entirety before making an application for\r\nShares. ",
+        "verified" : true
+      }, {
+        "doc" : "x-blk-bgf-en",
+        "page" : 7,
+        "pages" : [ 7, 121 ],
+        "quote" : "KIDs for each available Share Class can be found at:\r\nhttp://kiid.blackrock.com\r\nStatements made in this Prospectus are based on laws and\r\npractices in force at the date hereof and are subject to changes\r\ntherein. ",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "I2-USD",
+      "scope" : "share_class",
+      "kind" : "investor_category",
+      "allowed_categories" : [ "institutional" ],
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.95,
+      "summary" : "Class I Shares are only available to Institutional Investors within the meaning of Article 174 of the 2010 Law, who must provide evidence of status. Private-bank individuals qualify only via a discretionary mandate (5.3) or a qualifying family holding company (5.5).",
+      "citations" : [ {
+        "doc" : "x-blk-bgf-en",
+        "page" : 157,
+        "pages" : [ 157, 158 ],
+        "quote" : "Class I Shares are only available to Institutional Investors within\r\nthe meaning of Article 174 of the 2010 Law. ",
+        "verified" : true
+      }, {
+        "doc" : "x-blk-bgf-en",
+        "page" : 157,
+        "pages" : [ 157, 158 ],
+        "quote" : "Investors must\r\ndemonstrate that they qualify as Institutional Investors by providing\r\nthe Company and its Transfer Agent with sufficient evidence of\r\ntheir status.\r\n",
+        "verified" : true
+      }, {
+        "doc" : "x-blk-bgf-en",
+        "page" : 188,
+        "pages" : [ 188, 191 ],
+        "quote" : "As at the date of this\r\nProspectus, Institutional Investors shall include:\r\n5.1 banks and other professionals of the financial sector, insurance and\r\nreinsurance companies, social security institutions and pension\r\nfunds, industrial, charitable institutions, commercial and financial\r\ngroup companies, all subscribing on their own behalf, and the\r\nstructures which such investors put into place for the management\r\nof their own assets;\r\n5.2 credit institutions and other professionals of the financial sector\r\nestablished in or outside Luxembourg investing in their own name\r\nbut on behalf of Institutional Investors as defined above;\r\n5.3 credit institutions and other professionals of the financial sector\r\nestablished in or outside Luxembourg which invest in their own\r\nname but on behalf of their clients on the basis of a discretionary\r\nmanagement mandate;\r\n5.4 CIS established in or outside Luxembourg;\r\n5.5 holding companies or similar entities, whether Luxembourg based\r\nor not, whose shareholders/beneficial owners are individual\r\nperson(s) who are wealthy and may reasonably be regarded as\r\nsophisticated investors and where the purpose of the holding\r\ncompany is to hold important financial interests/investments for an\r\nindividual or a family;\r\n5.6 a holding company or similar entity, whether Luxembourg based or\r\nnot, which as a result of its structure, activity and substance\r\nconstitutes an Institutional Investor;\r\n5.7 holding companies or similar entities, whether Luxembourg based\r\nor not, whose shareholders are Institutional Investors as described\r\nin the foregoing paragraphs; and/or\r\n5.8 national and regional governments, central banks, international or a\r\nsupranational institutions and other similar organisations.\r\n",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "I2-USD",
+      "scope" : "share_class",
+      "kind" : "minimum_initial_subscription",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : 1.0E7,
+      "currency" : "USD",
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.85,
+      "summary" : "Minimum initial subscription for Class I is USD 10 million. Minima may be varied for any particular case or distributor or generally.",
+      "citations" : [ {
+        "doc" : "x-blk-bgf-en",
+        "page" : 161,
+        "pages" : [ 161, 163 ],
+        "quote" : "Minimum Subscription\r\nThe minimum initial subscription in respect of Class A, Class B,\r\nClass C, Class CI, Class E, Class EI Shares, and Class K Shares\r\nis currently USD5,000, for Class AJ USD10,000, for Class AI,\r\nShares USD25,000, for Class D Shares USD100,000, for Class\r\nDD Shares USD1 million, for Class I Shares, Class J Shares,\r\nClass X Shares and Class Z Shares USD10 million, for Class ZI\r\nShares USD 25 million, for Class S Shares USD 50 million, and\r\nClass SR Shares, USD 250 million and for Class SI Shares USD\r\n1billion. ",
+        "verified" : true
+      }, {
+        "doc" : "x-blk-bgf-en",
+        "page" : 161,
+        "pages" : [ 161, 163 ],
+        "quote" : "These minima may be varied for any particular case or distributor\r\nor generally. ",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "I2-USD",
+      "scope" : "share_class",
+      "kind" : "mandate_only_class",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : false,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.8,
+      "summary" : "The class is not reserved to mandate clients. A discretionary mandate is only one route to institutional status (paragraph 5.3).",
+      "citations" : [ {
+        "doc" : "x-blk-bgf-en",
+        "page" : 188,
+        "pages" : [ 188, 191 ],
+        "quote" : "As at the date of this\r\nProspectus, Institutional Investors shall include:\r\n5.1 banks and other professionals of the financial sector, insurance and\r\nreinsurance companies, social security institutions and pension\r\nfunds, industrial, charitable institutions, commercial and financial\r\ngroup companies, all subscribing on their own behalf, and the\r\nstructures which such investors put into place for the management\r\nof their own assets;\r\n5.2 credit institutions and other professionals of the financial sector\r\nestablished in or outside Luxembourg investing in their own name\r\nbut on behalf of Institutional Investors as defined above;\r\n5.3 credit institutions and other professionals of the financial sector\r\nestablished in or outside Luxembourg which invest in their own\r\nname but on behalf of their clients on the basis of a discretionary\r\nmanagement mandate;\r\n5.4 CIS established in or outside Luxembourg;\r\n5.5 holding companies or similar entities, whether Luxembourg based\r\nor not, whose shareholders/beneficial owners are individual\r\nperson(s) who are wealthy and may reasonably be regarded as\r\nsophisticated investors and where the purpose of the holding\r\ncompany is to hold important financial interests/investments for an\r\nindividual or a family;\r\n5.6 a holding company or similar entity, whether Luxembourg based or\r\nnot, which as a result of its structure, activity and substance\r\nconstitutes an Institutional Investor;\r\n5.7 holding companies or similar entities, whether Luxembourg based\r\nor not, whose shareholders are Institutional Investors as described\r\nin the foregoing paragraphs; and/or\r\n5.8 national and regional governments, central banks, international or a\r\nsupranational institutions and other similar organisations.\r\n",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "I2-USD",
+      "scope" : "share_class",
+      "kind" : "unmodelled_restriction",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.85,
+      "summary" : "Management Company discretion: the class is only available at the Management Company's discretion.",
+      "citations" : [ {
+        "doc" : "x-blk-bgf-en",
+        "page" : 157,
+        "pages" : [ 157, 158 ],
+        "quote" : "They are only\r\navailable at the Management Company’s discretion.\r\n",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "I2-USD",
+      "scope" : "share_class",
+      "kind" : "unmodelled_restriction",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.6,
+      "summary" : "Indemnity on application: Institutional Investors indemnify the Company and its functionaries against losses from acting in good faith on declarations made on application.",
+      "citations" : [ {
+        "doc" : "x-blk-bgf-en",
+        "page" : 157,
+        "pages" : [ 157, 158 ],
+        "quote" : "On application for Class I Shares, Institutional Investors indemnify\r\nthe Company and its functionaries against any losses, costs or\r\nexpenses that the Company or its functionaries may incur by\r\nacting in good faith upon any declarations made or purporting to be\r\nmade upon application.\r\n",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "I2-USD",
+      "scope" : "share_class",
+      "kind" : "kid_required_for_retail",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : true,
+      "dimension" : null,
+      "value" : null,
+      "contradiction" : false,
+      "confidence" : 0.6,
+      "summary" : "A KID exists for the class, but the class is not retail-eligible. The KID itself was not supplied.",
+      "citations" : [ {
+        "doc" : "x-blk-bgf-en",
+        "page" : 7,
+        "pages" : [ 7, 121 ],
+        "quote" : "This Prospectus, and the KID for the relevant Share Class, should\r\neach be read in their entirety before making an application for\r\nShares. ",
+        "verified" : true
+      }, {
+        "doc" : "x-blk-bgf-en",
+        "page" : 7,
+        "pages" : [ 7, 121 ],
+        "quote" : "KIDs for each available Share Class can be found at:\r\nhttp://kiid.blackrock.com\r\nStatements made in this Prospectus are based on laws and\r\npractices in force at the date hereof and are subject to changes\r\ntherein. ",
+        "verified" : true
+      } ]
+    }, {
+      "share_class" : "I2-USD",
+      "scope" : "share_class",
+      "kind" : "target_market",
+      "allowed_categories" : null,
+      "us_person_definition" : null,
+      "excludes_us_citizens" : null,
+      "amount" : null,
+      "currency" : null,
+      "mandate_only" : null,
+      "kid_available" : null,
+      "dimension" : "client_type",
+      "value" : "institutional",
+      "contradiction" : false,
+      "confidence" : 0.85,
+      "summary" : "Class-level restriction narrows the fund-level general public and institutional target to institutional only. Other target-market dimensions are inherited from the fund-scope rules.",
+      "citations" : [ {
+        "doc" : "x-blk-bgf-en",
+        "page" : 157,
+        "pages" : [ 157, 158 ],
+        "quote" : "Class I Shares are only available to Institutional Investors within\r\nthe meaning of Article 174 of the 2010 Law. ",
+        "verified" : true
+      }, {
+        "doc" : "x-blk-bgf-en",
+        "page" : 157,
+        "pages" : [ 157, 158 ],
+        "quote" : "Investors must\r\ndemonstrate that they qualify as Institutional Investors by providing\r\nthe Company and its Transfer Agent with sufficient evidence of\r\ntheir status.\r\n",
+        "verified" : true
+      } ]
+    } ]
+  }
+}

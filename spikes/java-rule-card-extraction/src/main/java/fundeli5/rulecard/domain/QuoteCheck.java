@@ -15,8 +15,13 @@ public final class QuoteCheck {
     private QuoteCheck() {
     }
 
+    /** Control characters other than whitespace: the Citations API returns a line-break hyphen as U+0002. */
+    private static final Pattern CONTROL = Pattern.compile("[\\p{Cc}&&[^\\s]]");
+
     public static String norm(String s) {
-        var t = s.replace('’', '\'').replace('“', '"').replace('”', '"').replace('–', '-').replace('—', '-');
+        var t = s.replace('’', '\'').replace('“', '"').replace('”', '"').replace('–', '-').replace('—', '-')
+                .replace("­", "");
+        t = CONTROL.matcher(t).replaceAll("-");
         return WHITESPACE.matcher(t).replaceAll("").toLowerCase();
     }
 

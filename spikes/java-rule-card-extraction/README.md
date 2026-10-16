@@ -209,3 +209,32 @@ At 25 pages both runs agree exactly. Below that, choice's lead is partly noise: 
 runs. The page is mostly another sub-fund's description (World Technology Fund); the "Classes and Form of Shares"
 section starts at character 4,456 of 6,124. Jev judges the page as a whole, so a rule in the last quarter of a mixed
 page ranks low. Not a cut-off: pages are sent up to 6,000 characters (627 of 7,980 pages are longer and are cut).
+
+### Two more funds end to end: Robeco (DE) and BlackRock BGF (EN) (2026-10-16, Citations API)
+
+`SPRING_PROFILES_ACTIVE=spring-ai ./run.sh --fundeli5.fund-id=robeco|bgf --select=jev-choice --jev-prev --max-pages=25`.
+Prospectus only (no KIDs downloaded). Gold cards in `gold/`, drafted from the page text and checked against a blind
+answer key written by a separate Claude agent that saw only the two prospectuses: every scored rule agreed. Not yet
+checked by a person.
+
+`--jev-prev` adds the page before Jev's top pages in the first two rounds. It was added because Jev missed BlackRock
+p.156 in both Jev runs (Class A "available to all investors" at the bottom of another sub-fund's page). With it all gold
+pages of the three funds are selected; the cost is budget: unseen recall at 25 pages 74/74 and 73/74 over the two Jev
+runs (Amundi's minimum lost in run 2), at 15 pages 68 and 64 (without: 71 and 70).
+
+| Fund | Rules found | Correct values | Quotes on the cited page | Trap | Time | Cost |
+|---|---|---|---|---|---|---|
+| Robeco Smart Energy (DE, 545 pp) | 8/8 | **8/8** | 29/31, really 31/31 (see below) | mandate-only I avoided | 83 s | $0.62 |
+| BlackRock Global Allocation (EN, 724 pp) | 6/6 | **4/6** | 33/33 | mandate-only I avoided | 144 s | $0.20 |
+
+- Coverage pass flagged nothing on either fund.
+- **BlackRock US Person, "wrong" on both classes**: the model set `excludes_us_citizens` to null ("whether US citizenship
+  alone excludes an investor is not stated"), gold says false. The prospectus defines US Person as "any US resident or
+  other person specified in Regulation S", which is residence-based, but never says so about citizens in words. A
+  defensible "unclear" for the validator rather than a misreading; gold is left unchanged.
+- BlackRock Class A eligibility: found and correct, citing p.156, which `--jev-prev` brought in.
+- **Robeco's two unverified quotes are real**: the Citations API returns the line-break hyphen of "nicht-institutionelle"
+  (p.22) as U+0002. `QuoteCheck` now reads control characters as a hyphen and ignores soft hyphens; the run file keeps
+  the original 29/31.
+- BlackRock's run reports 94k cached input tokens read and none written, although this excerpt had not been sent
+  before; hence $0.20 instead of about $0.65. Not explained; check the Console bill.
