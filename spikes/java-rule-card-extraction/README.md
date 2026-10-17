@@ -150,6 +150,10 @@ Adopt **Jev choice** to select the pages (best recall at every budget, the only 
 "possibly missed" candidate for the validation screen. Both: about $0.25 per 944-page prospectus.
 `./run.sh --select=jev-choice --max-pages=25` does both before extraction (`--dry-run` stops before the LLM).
 
+Method 1 (every part of the prospectus through Citations) was not run: Jev already finds 74/74, and Method 1 would send
+about 38× more pass-1 input on Nordea (944 pages at ~600 tokens vs 25) and risks rules from other sub-funds. If Jev
+is not allowed as a second vendor (#5), fall back to keywords v2 at 40 pages (72/74).
+
 ### End to end on Nordea: Rule Card from Jev's pages (2026-10-16, Claude plan, Opus 5.5)
 
 Jev choice's 25 pages (`--pages=1,2,3,4,5,6,16,67,106,123,124,131,136,137,138,210,248,249,857,859,860,861,880,936,944
