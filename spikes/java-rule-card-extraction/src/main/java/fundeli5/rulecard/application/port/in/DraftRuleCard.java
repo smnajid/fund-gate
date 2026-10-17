@@ -12,11 +12,11 @@ public interface DraftRuleCard {
 
     /**
      * @param fund       fund name for the Rule Card and the prompt
-     * @param subFund    sub-fund name as printed in the umbrella prospectus, for page selection
+     * @param subFund    sub-fund name as printed in the umbrella prospectus, for page ranking
      * @param shareClasses share class code to ISIN
      * @param prospectus  document id of the umbrella prospectus
      * @param kids        share class code to KID document id
-     * @param pages       prospectus pages to send; empty means automatic page selection
+     * @param pages       prospectus pages to send; empty means the pages Jev ranks highest, up to {@code maxPages}
      */
     record Command(String fund, String subFund, Map<String, String> shareClasses, String prospectus, Map<String, String> kids,
                    List<Integer> pages, int maxPages, String label) {

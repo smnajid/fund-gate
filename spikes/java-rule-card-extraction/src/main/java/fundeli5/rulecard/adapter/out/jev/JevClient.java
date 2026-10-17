@@ -1,4 +1,4 @@
-package fundeli5.rulecard.spike;
+package fundeli5.rulecard.adapter.out.jev;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -13,7 +13,7 @@ import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
 
 /**
- * PROTOTYPE, ticket #39. Minimal client for TypeSafe's Jev ({@code POST /v1/systemone}). Public Fund Documentation
+ * Ticket #39. Minimal client for TypeSafe's Jev ({@code POST /v1/systemone}). Public Fund Documentation
  * only: no Client Profile ever goes through here (ADR 0004). Key from {@code TYPESAFE_API_KEY}.
  */
 public final class JevClient {
@@ -56,7 +56,7 @@ public final class JevClient {
     /** Sends {state, questions} and returns the {@code answers} node. Retries 429/529/5xx with backoff. */
     public JsonNode ask(String state, ObjectNode questions) {
         if (key == null || key.isBlank()) {
-            throw new IllegalStateException("TYPESAFE_API_KEY is not set and this ranking is not cached in jev-rankings/");
+            throw new IllegalStateException("TYPESAFE_API_KEY is not set and this ranking is not cached");
         }
         ObjectNode body = json.createObjectNode();
         body.put("state", state);

@@ -6,35 +6,45 @@ Throwaway spike for [ticket #31](https://github.com/smnajid/fund-gate/issues/31)
 
 ```bash
 # fetch the Nordea 1 GCE prospectus + 2 KIDs into docs/ (gitignored); URLs in docs/research/sample-funds.md
-./run.sh --check-gold        # PDFBox text: every gold quote on its page, auto scope covers gold pages
-./run.sh --dry-run           # page selection only
+./run.sh --check-gold        # PDFBox text: every gold quote on its page, Jev's 25 pages cover the gold pages
+./run.sh --dry-run           # Jev page selection and "possibly missed" coverage only, no LLM
 ./run.sh --pages=3,5,16,123,124,134,138,139,146 --label=gold-pages   # Claude plan (headless claude -p)
-./run.sh --label=auto        # automatic page selection
+./run.sh --label=auto        # the 25 pages Jev choice selects (--max-pages=N to change)
 SPRING_PROFILES_ACTIVE=spring-ai ./run.sh --label=api   # Anthropic API / Foundry; needs ANTHROPIC_API_KEY
 ./run.sh --score             # rescore the latest run
-./run.sh --recall=page-recall-key-unseen.json --select=jev-page --max-pages=25   # Jev ranks the pages (#39); TYPESAFE_API_KEY
+./run.sh --recall=page-recall-key-unseen.json   # page recall of Jev's selection, no LLM
+./run.sh --dry-run --fundeli5.fund-id=robeco    # robeco | bgf: the other two funds with a gold card
 ```
 
-Each run writes `runs/<stamp>-<label>.json` (the Draft Rule Card plus usage) and a `.md` score.
+Jev needs `TYPESAFE_API_KEY` unless the ranking is cached (`fundeli5.jev.cache-dir`, default `jev-rankings/`). Each run
+writes `runs/<stamp>-<label>.json` (the Draft Rule Card plus usage) and a `.md` score.
+
+**Page selection is Jev only since 2026-10-17** (ticket #39): choice selects, with the page before its top pages, and
+per page flags "possibly missed". Keyword selection v1 (`PageSelection`) and v2 (`PageSelectionV2`), `--v2`, `--sweep`,
+`--select` and `--jev-prev` are gone; the results sections below keep the commands as they were run. The last commit
+with them is `5a06179`. Per page alone was tried as the selector and dropped: at 40 pages it still missed Robeco p.243
+(target market, 0.97 but ranked 46th behind other sub-funds' target market pages) and BlackRock p.156, and coverage
+flagged neither.
 
 ## Shape
 
 ```
 fundeli5.rulecard
 ├── domain                      pure Java: RuleCard (always DRAFT out of extraction), Rule, Citation,
-│                               FundDocument, PageSelection, QuoteCheck
-├── application                 DraftRuleCardService: select pages → drafter → quote check → Draft card
+│                               FundDocument, QuoteCheck
+├── application                 DraftRuleCardService: rank pages → drafter → quote check → Draft card
 │   ├── port/in   DraftRuleCard
-│   └── port/out  FundDocuments, RuleCardDrafter (the LLM egress), ExtractionRuns
+│   └── port/out  FundDocuments, PageRanking, RuleCardDrafter (the LLM egress), ExtractionRuns
 ├── adapter
 │   ├── in/cli                  PipelineCommand (ApplicationRunner, no web server)
 │   └── out
 │       ├── pdf                 PdfBoxFundDocuments (page text cache, page excerpts)
+│       ├── jev                 JevPageRanking: choice selects, per page flags "possibly missed"; JevClient
 │       ├── llm/claudeplan      ClaudePlanDrafter: claude -p --json-schema, model writes {file,page,quote}
 │       ├── llm/springai        SpringAiCitationsDrafter: pass 1 PDF + Citations, pass 2 outputSchema
 │       └── store               JsonExtractionRuns
 ├── PipelineWiring              the only class that knows which adapter plugs into which port
-└── spike/GoldScorer            port of score.py, spike-only
+└── spike                       GoldScorer (port of score.py), PageRecall: spike-only
 ```
 
 `domain` and `application` import no Spring, Jackson, PDFBox or Spring AI classes.

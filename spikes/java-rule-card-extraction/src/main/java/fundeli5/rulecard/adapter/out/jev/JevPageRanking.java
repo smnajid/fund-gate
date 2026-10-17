@@ -1,4 +1,4 @@
-package fundeli5.rulecard.spike;
+package fundeli5.rulecard.adapter.out.jev;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,30 +10,29 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.IntStream;
 
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.node.ObjectNode;
 
+import fundeli5.rulecard.application.port.out.PageRanking;
 import fundeli5.rulecard.domain.FundDocument;
 
 /**
- * PROTOTYPE, ticket #39. Ranks a document's pages per rule kind with Jev, two ways, and selects pages from the
- * rankings the way the Elasticsearch prototype did (front matter, then round-robin over the rule kinds), so the
- * budgets compare with {@link PageSelectionV2}.
+ * Outbound adapter, ticket #39. Jev ranks the pages per rule kind two ways:
  * <ul>
- * <li>{@code choice}: per rule kind, a choice question whose options are the pages (plus "none"). A question holds
- * about 20 pages (32k tokens), so the pages run as a knockout: the top 3 of each batch go to the next round until one
- * batch is left.</li>
- * <li>{@code page}: per page, one noul question per rule kind (JEV's own RAG-classification pattern). Scores compare
- * across the whole document.</li>
+ * <li><b>choice</b> selects: per rule kind, a choice question naming the sub-fund, whose options are the pages plus
+ * "none". A question holds about 20 pages (32k tokens), so the pages play a knockout: the top 3 of each batch go on
+ * until one batch is left. Pages compete in one question, so the sub-fund's own page beats the same section of the
+ * other sub-funds of an umbrella.</li>
+ * <li><b>per page</b> flags: one request per page, one noul question per rule kind. Scores compare across the whole
+ * document, which makes them the "possibly missed" check, but they don't tell the sub-funds apart, so they don't
+ * select (Robeco p.243 ranked 46th at 0.97).</li>
  * </ul>
- * Rankings are cached in {@code jev-rankings/}, so changing the budget costs nothing.
+ * Selection: front matter, then round-robin over the rule kinds' rankings until the budget is used. Rankings are cached
+ * in {@code cacheDir}, so changing the budget costs nothing.
  */
-public final class JevPageRanking {
-
-    public enum Method {
-        CHOICE, PAGE
-    }
+public final class JevPageRanking implements PageRanking {
 
     /** Rule kinds asked about. Instructions are English; the pages may be EN, DE or FR. */
     private static final Map<String, String> RULES = new LinkedHashMap<>();
@@ -56,14 +55,17 @@ public final class JevPageRanking {
     }
 
     private static final int FRONT_MATTER = 5;
-    private static final int PREVIOUS_ROUNDS = 2;
     /** Characters of page text sent per page; longer pages (big tables) are cut. */
     private static final int PAGE_CHARS = 6000;
+    /** A rule kind whose best selected page scores lower is "possibly missed". */
+    private static final double COVERED = 0.5;
     /** Characters of page text per choice question, about 22k tokens of the 32k per-question limit. */
     private static final int CHOICE_CHARS = 66_000;
     private static final int KEEP_PER_BATCH = 3;
+    private static final int PREVIOUS_ROUNDS = 2;
 
-    record Scored(int page, double score) {
+    private enum Method {
+        CHOICE, PAGE
     }
 
     private final JevClient jev;
@@ -74,28 +76,23 @@ public final class JevPageRanking {
         this.cacheDir = cacheDir;
     }
 
-    /** Pages within budget: everything for a small document, else front matter then round-robin over rule kinds. */
-    public List<Integer> select(FundDocument doc, String subFund, int maxPages, Method method) {
-        return select(doc, subFund, maxPages, method, false);
-    }
-
     /**
-     * {@code withPrevious}: in the first {@value #PREVIOUS_ROUNDS} rounds, a chosen page also brings the page before
-     * it. A rule often starts at the bottom of a page that is mostly about something else (BlackRock p.156: another
-     * sub-fund, then "Classes and Form of Shares"), or runs across a page break (Robeco pp.22-23).
+     * In the first {@value #PREVIOUS_ROUNDS} rounds, a chosen page also brings the page before it: a rule often starts
+     * at the bottom of a page that is mostly about something else (BlackRock p.156: another sub-fund, then "Classes and
+     * Form of Shares"), or runs across a page break (Robeco pp.22-23).
      */
-    public List<Integer> select(FundDocument doc, String subFund, int maxPages, Method method, boolean withPrevious) {
+    @Override
+    public List<Integer> select(FundDocument doc, String subFund, int maxPages) {
         int n = doc.pages().size();
         if (n <= maxPages) {
-            return java.util.stream.IntStream.rangeClosed(1, n).boxed().toList();
+            return IntStream.rangeClosed(1, n).boxed().toList();
         }
-        var rankings = rankings(doc, subFund, method);
+        var lists = new ArrayList<>(rankings(doc, subFund, Method.CHOICE).values());
         var chosen = new TreeSet<Integer>();
         for (int i = 1; i <= FRONT_MATTER; i++) {
             chosen.add(i);
         }
-        var cursors = new int[rankings.size()];
-        var lists = new ArrayList<>(rankings.values());
+        var cursors = new int[lists.size()];
         boolean progress = true;
         for (int round = 1; chosen.size() < maxPages && progress; round++) {
             progress = false;
@@ -107,8 +104,7 @@ public final class JevPageRanking {
                 if (cursors[r] < list.size()) {
                     int page = list.get(cursors[r]++).page();
                     chosen.add(page);
-                    if (withPrevious && round <= PREVIOUS_ROUNDS && page - 1 > FRONT_MATTER
-                            && chosen.size() < maxPages) {
+                    if (round <= PREVIOUS_ROUNDS && page - 1 > FRONT_MATTER && chosen.size() < maxPages) {
                         chosen.add(page - 1);
                     }
                     progress = true;
@@ -118,31 +114,21 @@ public final class JevPageRanking {
         return List.copyOf(chosen);
     }
 
-    /**
-     * The cheap extra pass: per rule kind, the best per-page score among the selected pages, and the best page left
-     * out when it scores higher. A kind whose best selected page scores low is a "possibly missed" candidate.
-     */
-    public List<String> coverage(FundDocument doc, String subFund, List<Integer> selected) {
+    @Override
+    public List<Coverage> coverage(FundDocument doc, String subFund, List<Integer> selected) {
         var chosen = new TreeSet<>(selected);
-        var lines = new ArrayList<String>();
+        var out = new ArrayList<Coverage>();
         rankings(doc, subFund, Method.PAGE).forEach((kind, ranked) -> {
             var in = ranked.stream().filter(s -> chosen.contains(s.page())).findFirst().orElse(null);
             var top = ranked.getFirst();
-            var line = new StringBuilder("%-22s best selected %s".formatted(kind,
-                    in == null ? "none" : "p.%d %.2f".formatted(in.page(), in.score())));
-            if (in == null || top.page() != in.page()) {
-                line.append(", best left out p.%d %.2f".formatted(top.page(), top.score()));
-            }
-            if (in == null || in.score() < 0.5) {
-                line.append("  POSSIBLY MISSED");
-            }
-            lines.add(line.toString());
+            out.add(new Coverage(kind, in, in != null && in.page() == top.page() ? null : top,
+                    in == null || in.score() < COVERED));
         });
-        return lines;
+        return out;
     }
 
-    /** Per rule kind, every page ranked best first. Cached per document, sub-fund, method and model. */
-    public Map<String, List<Scored>> rankings(FundDocument doc, String subFund, Method method) {
+    /** Per rule kind, every page ranked best first. Cached per document, method and model: one sub-fund per document. */
+    private Map<String, List<Scored>> rankings(FundDocument doc, String subFund, Method method) {
         var file = cacheDir.resolve("%s.%s.%s.json".formatted(doc.id(), method.name().toLowerCase(), jev.model()));
         if (Files.exists(file)) {
             return jev.json().readValue(file.toFile(), new TypeReference<LinkedHashMap<String, List<Scored>>>() {
@@ -186,9 +172,8 @@ public final class JevPageRanking {
         var result = new LinkedHashMap<String, List<Scored>>();
         RULES.keySet().forEach(id -> result.put(id, new ArrayList<>()));
         for (int p = 1; p <= n; p++) {
-            var scores = get(futures.get(p - 1));
             int page = p;
-            scores.forEach((id, s) -> result.get(id).add(new Scored(page, s)));
+            get(futures.get(p - 1)).forEach((id, s) -> result.get(id).add(new Scored(page, s)));
         }
         result.values().forEach(l -> l.sort(Comparator.comparingDouble(Scored::score).reversed()));
         return result;

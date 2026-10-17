@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# PROTOTYPE, ticket #31. Builds once, then runs the pipeline from this folder.
+# PROTOTYPE, tickets #31 and #39. Builds once, then runs the pipeline from this folder.
 #   ./run.sh --check-gold
-#   ./run.sh --dry-run
+#   ./run.sh --dry-run                                                   # Jev page ranking + coverage, no LLM
 #   ./run.sh --pages=3,5,16,123,124,134,138,139,146 --label=gold-pages     # Claude plan (claude -p)
-#   ./run.sh --label=auto                                                # automatic page selection
+#   ./run.sh --label=auto                                                # pages Jev choice selects (25)
 #   SPRING_PROFILES_ACTIVE=spring-ai ./run.sh --label=api                # needs ANTHROPIC_API_KEY
 #   ./run.sh --score[=runs/<file>.json]
 set -euo pipefail

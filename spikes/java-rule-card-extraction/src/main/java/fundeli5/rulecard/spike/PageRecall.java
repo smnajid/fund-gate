@@ -8,11 +8,11 @@ import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
 
 import fundeli5.rulecard.application.port.out.FundDocuments;
-import fundeli5.rulecard.domain.PageSelection;
+import fundeli5.rulecard.application.port.out.PageRanking;
 import fundeli5.rulecard.domain.QuoteCheck;
 
 /**
- * PROTOTYPE, ticket #32. Page recall of {@link PageSelection} on documents it was not tuned on. The answer key
+ * PROTOTYPE, tickets #32 and #39. Page recall of the {@link PageRanking} on documents it was not tuned on. The answer key
  * ({@code page-recall-key.json}) lists, per document, the page holding each Hard Restriction plus a short quote;
  * the quote is checked on its page first, so a wrong key shows up as KEY? rather than as a selection miss.
  */
@@ -32,8 +32,7 @@ public final class PageRecall {
     private PageRecall() {
     }
 
-    /** {@code selector}: v1, v2, jev-choice or jev-page (ticket #39); {@code jev} only needed for the jev ones. */
-    public static void run(FundDocuments documents, Path key, int maxPages, String selector, JevPageRanking jev) {
+    public static void run(FundDocuments documents, PageRanking ranking, Path key, int maxPages) {
         List<Doc> docs = JsonMapper.builder().build().readValue(key.toFile(), new TypeReference<List<Doc>>() {
         });
         int hitAll = 0;
@@ -46,21 +45,7 @@ public final class PageRecall {
                         doc.pages().size(), chars / Math.max(1, doc.pages().size()));
                 continue;
             }
-            TreeSet<Integer> selected;
-            try {
-                selected = new TreeSet<>(switch (selector) {
-                    case "v2" -> PageSelectionV2.select(doc, d.subFund(), maxPages);
-                    case "jev-choice" -> jev.select(doc, d.subFund(), maxPages, JevPageRanking.Method.CHOICE);
-                    case "jev-page" -> jev.select(doc, d.subFund(), maxPages, JevPageRanking.Method.PAGE);
-                    case "jev-choice-prev" -> jev.select(doc, d.subFund(), maxPages, JevPageRanking.Method.CHOICE, true);
-                    case "jev-page-prev" -> jev.select(doc, d.subFund(), maxPages, JevPageRanking.Method.PAGE, true);
-                    default -> PageSelection.select(doc, d.subFund(), maxPages);
-                });
-            } catch (IllegalStateException e) {
-                System.out.printf("%n== %s (%d pp): GUARD %s%n", d.doc(), doc.pages().size(), e.getMessage());
-                all += d.rules().size();
-                continue;
-            }
+            var selected = new TreeSet<>(ranking.select(doc, d.subFund(), maxPages));
             int hit = (int) d.rules().stream().filter(r -> r.hit(selected)).count();
             hitAll += hit;
             all += d.rules().size();
@@ -74,31 +59,5 @@ public final class PageRecall {
             }
         }
         System.out.printf("%nTOTAL rule recall %d/%d%n", hitAll, all);
-    }
-
-    /** Every sub-fund of one umbrella against the shared rule pages plus its own description page (TOC page). */
-    public static void sweep(FundDocuments documents, String docId, Path subFunds, List<Integer> shared, int maxPages,
-            boolean v2) {
-        record SubFund(String name, int page) {
-        }
-        List<SubFund> funds = JsonMapper.builder().build().readValue(subFunds.toFile(),
-                new TypeReference<List<SubFund>>() {
-                });
-        var doc = documents.load(docId);
-        int complete = 0;
-        for (var f : funds) {
-            var selected = new TreeSet<>(v2 ? PageSelectionV2.select(doc, f.name(), maxPages)
-                    : PageSelection.select(doc, f.name(), maxPages));
-            var expected = new TreeSet<>(shared);
-            expected.add(f.page());
-            var missing = new TreeSet<>(expected);
-            missing.removeAll(selected);
-            if (missing.isEmpty()) {
-                complete++;
-            }
-            System.out.printf("%-4s %-60s %2d pages  missing %s%n", missing.isEmpty() ? "ok" : "MISS", f.name(),
-                    selected.size(), missing);
-        }
-        System.out.printf("%nSWEEP %d/%d sub-funds with every expected page%n", complete, funds.size());
     }
 }

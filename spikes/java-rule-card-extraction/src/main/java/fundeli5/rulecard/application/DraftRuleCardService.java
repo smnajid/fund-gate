@@ -8,26 +8,29 @@ import java.util.Map;
 import fundeli5.rulecard.application.port.in.DraftRuleCard;
 import fundeli5.rulecard.application.port.out.ExtractionRuns;
 import fundeli5.rulecard.application.port.out.FundDocuments;
+import fundeli5.rulecard.application.port.out.PageRanking;
 import fundeli5.rulecard.application.port.out.RuleCardDrafter;
 import fundeli5.rulecard.application.port.out.RuleCardDrafter.Pdf;
 import fundeli5.rulecard.domain.FundDocument;
-import fundeli5.rulecard.domain.PageSelection;
 import fundeli5.rulecard.domain.QuoteCheck;
 import fundeli5.rulecard.domain.RuleCard;
 import fundeli5.rulecard.domain.RuleKind;
 
 /**
- * Page selection, then the drafter, then the quote-on-page check. Always ends in a Draft card.
+ * Page ranking, then the drafter, then the quote-on-page check. Always ends in a Draft card.
  * Framework-free: wired in {@code PipelineWiring}.
  */
 public class DraftRuleCardService implements DraftRuleCard {
 
     private final FundDocuments documents;
+    private final PageRanking ranking;
     private final RuleCardDrafter drafter;
     private final ExtractionRuns runs;
 
-    public DraftRuleCardService(FundDocuments documents, RuleCardDrafter drafter, ExtractionRuns runs) {
+    public DraftRuleCardService(FundDocuments documents, PageRanking ranking, RuleCardDrafter drafter,
+            ExtractionRuns runs) {
         this.documents = documents;
+        this.ranking = ranking;
         this.drafter = drafter;
         this.runs = runs;
     }
@@ -40,9 +43,10 @@ public class DraftRuleCardService implements DraftRuleCard {
 
         var prospectus = docs.get(cmd.prospectus());
         var selected = cmd.pages().isEmpty()
-                ? PageSelection.select(prospectus, cmd.subFund(), cmd.maxPages())
+                ? ranking.select(prospectus, cmd.subFund(), cmd.maxPages())
                 : cmd.pages();
         System.out.printf("scope: %d of %d prospectus pages: %s%n", selected.size(), prospectus.pages().size(), selected);
+        printCoverage(ranking.coverage(prospectus, cmd.subFund(), selected));
 
         var pdfs = new ArrayList<Pdf>();
         pdfs.add(new Pdf(cmd.prospectus(), prospectus.title() + " (selected pages)", selected,
@@ -64,6 +68,15 @@ public class DraftRuleCardService implements DraftRuleCard {
         var path = runs.save(run);
         print(run, path);
         return run;
+    }
+
+    /** Ticket #39: a rule kind whose best selected page scores low goes to the validator as "possibly missed". */
+    public static void printCoverage(List<PageRanking.Coverage> coverage) {
+        System.out.println("coverage:");
+        coverage.forEach(c -> System.out.printf("  %-22s best selected %s%s%s%n", c.kind(),
+                c.bestSelected() == null ? "none" : "p.%d %.2f".formatted(c.bestSelected().page(), c.bestSelected().score()),
+                c.bestLeftOut() == null ? "" : ", best left out p.%d %.2f".formatted(c.bestLeftOut().page(), c.bestLeftOut().score()),
+                c.possiblyMissed() ? "  POSSIBLY MISSED" : ""));
     }
 
     private static List<Integer> allPages(FundDocument doc) {

@@ -18,8 +18,8 @@ import tools.jackson.databind.json.JsonMapper;
 
 import fundeli5.rulecard.PipelineProperties;
 import fundeli5.rulecard.application.port.out.FundDocuments;
+import fundeli5.rulecard.application.port.out.PageRanking;
 import fundeli5.rulecard.domain.FundDocument;
-import fundeli5.rulecard.domain.PageSelection;
 import fundeli5.rulecard.domain.QuoteCheck;
 
 /**
@@ -32,10 +32,12 @@ public class GoldScorer {
 
     private final JsonMapper json = JsonMapper.builder().build();
     private final FundDocuments documents;
+    private final PageRanking ranking;
     private final PipelineProperties props;
 
-    public GoldScorer(FundDocuments documents, PipelineProperties props) {
+    public GoldScorer(FundDocuments documents, PageRanking ranking, PipelineProperties props) {
         this.documents = documents;
+        this.ranking = ranking;
         this.props = props;
     }
 
@@ -143,7 +145,7 @@ public class GoldScorer {
         return report;
     }
 
-    /** Every gold quote is on its cited page, and automatic page selection covers the gold prospectus pages. */
+    /** Every gold quote is on its cited page, and Jev's 25 pages cover the gold prospectus pages. */
     public void checkGold() throws IOException {
         var docs = new LinkedHashMap<String, FundDocument>();
         int bad = 0;
@@ -158,7 +160,7 @@ public class GoldScorer {
             }
         }
         var fund = props.fund();
-        var auto = PageSelection.select(docs.computeIfAbsent(fund.prospectus(), documents::load), fund.name(), 40);
+        var auto = ranking.select(docs.computeIfAbsent(fund.prospectus(), documents::load), fund.name(), 25);
         var needed = new TreeSet<Integer>();
         for (var r : gold().path("rules")) {
             if (!flag(r, "optional")) {

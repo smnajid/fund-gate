@@ -12,27 +12,22 @@ import org.springframework.stereotype.Component;
 
 import fundeli5.rulecard.PipelineProperties;
 import fundeli5.rulecard.application.port.in.DraftRuleCard;
+import fundeli5.rulecard.application.DraftRuleCardService;
 import fundeli5.rulecard.application.port.out.FundDocuments;
-import fundeli5.rulecard.domain.PageSelection;
+import fundeli5.rulecard.application.port.out.PageRanking;
 import fundeli5.rulecard.spike.GoldScorer;
-import fundeli5.rulecard.spike.JevClient;
-import fundeli5.rulecard.spike.JevPageRanking;
 import fundeli5.rulecard.spike.PageRecall;
 
 /**
  * Inbound adapter. Usage (see run.sh):
  * <pre>
- *   --pages=3,5,16,123 --label=gold-pages   extract, then score against the gold card
- *   --select=jev-choice --max-pages=25 [--jev-prev]
- *                                           extract from the pages Jev choice selects (plus the page before its top
- *                                           pages), with a per-page coverage check (#39)
- *   --dry-run                               page selection only, no LLM
+ *   [--max-pages=25] --label=auto           extract from the pages Jev choice selects, with the coverage check (#39)
+ *   --pages=3,5,16,123 --label=gold-pages   extract from these pages, then score against the gold card
+ *   --dry-run                               page ranking and coverage only, no LLM
  *   --score[=runs/x.json]                   score a run (default: latest)
- *   --recall[=page-recall-key.json] [--v2]  page recall on unseen documents (ticket #32), no LLM
- *   --recall[=...] --select=jev-choice|jev-page [--jev-model=jev-latest]
- *                                           page recall with Jev ranking the pages (ticket #39); TYPESAFE_API_KEY
- *   --sweep                                 every Nordea 1 sub-fund against the shared rule pages (ticket #32)
- *   --check-gold                            every gold quote on its page, and auto scope covers gold pages
+ *   --recall[=page-recall-key.json]         page recall on unseen documents (tickets #32, #39), no LLM
+ *   --check-gold                            every gold quote on its page, and Jev's 25 pages cover the gold pages
+ * Jev needs TYPESAFE_API_KEY unless the ranking is cached (fundeli5.jev in application.yml).
  * </pre>
  */
 @Component
@@ -40,12 +35,15 @@ class PipelineCommand implements ApplicationRunner {
 
     private final DraftRuleCard draftRuleCard;
     private final FundDocuments documents;
+    private final PageRanking ranking;
     private final GoldScorer scorer;
     private final PipelineProperties props;
 
-    PipelineCommand(DraftRuleCard draftRuleCard, FundDocuments documents, GoldScorer scorer, PipelineProperties props) {
+    PipelineCommand(DraftRuleCard draftRuleCard, FundDocuments documents, PageRanking ranking, GoldScorer scorer,
+            PipelineProperties props) {
         this.draftRuleCard = draftRuleCard;
         this.documents = documents;
+        this.ranking = ranking;
         this.scorer = scorer;
         this.props = props;
     }
@@ -53,7 +51,7 @@ class PipelineCommand implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         var fund = props.fund();
-        int maxPages = Integer.parseInt(opt(args, "max-pages", "40"));
+        int maxPages = Integer.parseInt(opt(args, "max-pages", "25"));
 
         if (args.containsOption("check-gold")) {
             scorer.checkGold();
@@ -67,40 +65,18 @@ class PipelineCommand implements ApplicationRunner {
         }
         if (args.containsOption("recall")) {
             var given = opt(args, "recall", "");
-            var selector = opt(args, "select", args.containsOption("v2") ? "v2" : "v1");
-            var jev = selector.startsWith("jev")
-                    ? new JevPageRanking(new JevClient(opt(args, "jev-model", "jev-latest"),
-                            Integer.parseInt(opt(args, "jev-concurrency", "8"))), Path.of(opt(args, "jev-cache", "jev-rankings")))
-                    : null;
-            PageRecall.run(documents, Path.of(given.isBlank() ? "page-recall-key.json" : given), maxPages, selector,
-                    jev);
+            PageRecall.run(documents, ranking, Path.of(given.isBlank() ? "page-recall-key.json" : given), maxPages);
             return;
         }
-        if (args.containsOption("sweep")) {
-            PageRecall.sweep(documents, fund.prospectus(), Path.of("nordea1-subfunds.json"), List.of(3, 5, 123, 124, 138), maxPages,
-                    args.containsOption("v2"));
-            return;
-        }
-        if (args.containsOption("dry-run") && !args.containsOption("select")) {
-            var selected = PageSelection.select(documents.load(fund.prospectus()), fund.name(), maxPages);
+        if (args.containsOption("dry-run")) {
+            var prospectus = documents.load(fund.prospectus());
+            var selected = ranking.select(prospectus, fund.name(), maxPages);
             System.out.printf("scope: %d pages: %s%n", selected.size(), selected);
+            DraftRuleCardService.printCoverage(ranking.coverage(prospectus, fund.name(), selected));
             return;
         }
 
         var pages = pages(opt(args, "pages", ""));
-        if (pages.isEmpty() && opt(args, "select", "").equals("jev-choice")) {
-            // ticket #39: Jev choice selects the pages; per-page scores check coverage
-            var jev = new JevPageRanking(new JevClient(opt(args, "jev-model", "jev-latest"),
-                    Integer.parseInt(opt(args, "jev-concurrency", "8"))), Path.of(opt(args, "jev-cache", "jev-rankings")));
-            var prospectus = documents.load(fund.prospectus());
-            pages = jev.select(prospectus, fund.name(), maxPages, JevPageRanking.Method.CHOICE,
-                    args.containsOption("jev-prev"));
-            System.out.printf("jev choice: %d pages %s%ncoverage (jev per page):%n", pages.size(), pages);
-            jev.coverage(prospectus, fund.name(), pages).forEach(l -> System.out.println("  " + l));
-            if (args.containsOption("dry-run")) {
-                return;
-            }
-        }
         var cmd = new DraftRuleCard.Command(
                 fund.displayName(),
                 fund.name(),

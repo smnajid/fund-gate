@@ -1,0 +1,620 @@
+{
+  "description" : [ {
+    "page" : 8,
+    "score" : 0.88
+  }, {
+    "page" : 21,
+    "score" : 0.87
+  }, {
+    "page" : 5,
+    "score" : 0.86
+  }, {
+    "page" : 15,
+    "score" : 0.61
+  }, {
+    "page" : 6,
+    "score" : 0.59
+  }, {
+    "page" : 23,
+    "score" : 0.54
+  }, {
+    "page" : 19,
+    "score" : 0.53
+  }, {
+    "page" : 11,
+    "score" : 0.37
+  }, {
+    "page" : 29,
+    "score" : 0.32
+  }, {
+    "page" : 16,
+    "score" : 0.28
+  }, {
+    "page" : 31,
+    "score" : 0.27
+  }, {
+    "page" : 10,
+    "score" : 0.26
+  }, {
+    "page" : 12,
+    "score" : 0.25
+  }, {
+    "page" : 1,
+    "score" : 0.18
+  }, {
+    "page" : 2,
+    "score" : 0.18
+  }, {
+    "page" : 20,
+    "score" : 0.18
+  }, {
+    "page" : 9,
+    "score" : 0.17
+  }, {
+    "page" : 22,
+    "score" : 0.17
+  }, {
+    "page" : 34,
+    "score" : 0.15
+  }, {
+    "page" : 4,
+    "score" : 0.14
+  }, {
+    "page" : 7,
+    "score" : 0.14
+  }, {
+    "page" : 3,
+    "score" : 0.13
+  }, {
+    "page" : 30,
+    "score" : 0.13
+  }, {
+    "page" : 27,
+    "score" : 0.11
+  }, {
+    "page" : 26,
+    "score" : 0.1
+  }, {
+    "page" : 25,
+    "score" : 0.09
+  }, {
+    "page" : 13,
+    "score" : 0.08
+  }, {
+    "page" : 17,
+    "score" : 0.08
+  }, {
+    "page" : 28,
+    "score" : 0.08
+  }, {
+    "page" : 14,
+    "score" : 0.07
+  }, {
+    "page" : 18,
+    "score" : 0.07
+  }, {
+    "page" : 24,
+    "score" : 0.07
+  }, {
+    "page" : 33,
+    "score" : 0.07
+  }, {
+    "page" : 32,
+    "score" : 0.05
+  } ],
+  "us-person" : [ {
+    "page" : 16,
+    "score" : 0.95
+  }, {
+    "page" : 1,
+    "score" : 0.18
+  }, {
+    "page" : 3,
+    "score" : 0.18
+  }, {
+    "page" : 34,
+    "score" : 0.18
+  }, {
+    "page" : 2,
+    "score" : 0.15
+  }, {
+    "page" : 19,
+    "score" : 0.07
+  }, {
+    "page" : 4,
+    "score" : 0.06
+  }, {
+    "page" : 18,
+    "score" : 0.06
+  }, {
+    "page" : 5,
+    "score" : 0.05
+  }, {
+    "page" : 6,
+    "score" : 0.05
+  }, {
+    "page" : 7,
+    "score" : 0.05
+  }, {
+    "page" : 8,
+    "score" : 0.05
+  }, {
+    "page" : 9,
+    "score" : 0.05
+  }, {
+    "page" : 10,
+    "score" : 0.05
+  }, {
+    "page" : 12,
+    "score" : 0.05
+  }, {
+    "page" : 13,
+    "score" : 0.05
+  }, {
+    "page" : 14,
+    "score" : 0.05
+  }, {
+    "page" : 15,
+    "score" : 0.05
+  }, {
+    "page" : 17,
+    "score" : 0.05
+  }, {
+    "page" : 20,
+    "score" : 0.05
+  }, {
+    "page" : 21,
+    "score" : 0.05
+  }, {
+    "page" : 22,
+    "score" : 0.05
+  }, {
+    "page" : 23,
+    "score" : 0.05
+  }, {
+    "page" : 28,
+    "score" : 0.05
+  }, {
+    "page" : 29,
+    "score" : 0.05
+  }, {
+    "page" : 33,
+    "score" : 0.05
+  }, {
+    "page" : 11,
+    "score" : 0.04
+  }, {
+    "page" : 25,
+    "score" : 0.04
+  }, {
+    "page" : 26,
+    "score" : 0.04
+  }, {
+    "page" : 27,
+    "score" : 0.04
+  }, {
+    "page" : 30,
+    "score" : 0.04
+  }, {
+    "page" : 32,
+    "score" : 0.04
+  }, {
+    "page" : 24,
+    "score" : 0.03
+  }, {
+    "page" : 31,
+    "score" : 0.03
+  } ],
+  "investor-eligibility" : [ {
+    "page" : 5,
+    "score" : 0.99
+  }, {
+    "page" : 19,
+    "score" : 0.98
+  }, {
+    "page" : 18,
+    "score" : 0.74
+  }, {
+    "page" : 16,
+    "score" : 0.46
+  }, {
+    "page" : 3,
+    "score" : 0.1
+  }, {
+    "page" : 34,
+    "score" : 0.1
+  }, {
+    "page" : 15,
+    "score" : 0.09
+  }, {
+    "page" : 1,
+    "score" : 0.08
+  }, {
+    "page" : 2,
+    "score" : 0.08
+  }, {
+    "page" : 10,
+    "score" : 0.08
+  }, {
+    "page" : 29,
+    "score" : 0.08
+  }, {
+    "page" : 30,
+    "score" : 0.07
+  }, {
+    "page" : 11,
+    "score" : 0.06
+  }, {
+    "page" : 28,
+    "score" : 0.06
+  }, {
+    "page" : 6,
+    "score" : 0.05
+  }, {
+    "page" : 9,
+    "score" : 0.05
+  }, {
+    "page" : 12,
+    "score" : 0.05
+  }, {
+    "page" : 22,
+    "score" : 0.05
+  }, {
+    "page" : 23,
+    "score" : 0.05
+  }, {
+    "page" : 4,
+    "score" : 0.04
+  }, {
+    "page" : 7,
+    "score" : 0.04
+  }, {
+    "page" : 8,
+    "score" : 0.04
+  }, {
+    "page" : 14,
+    "score" : 0.04
+  }, {
+    "page" : 17,
+    "score" : 0.04
+  }, {
+    "page" : 20,
+    "score" : 0.04
+  }, {
+    "page" : 21,
+    "score" : 0.04
+  }, {
+    "page" : 26,
+    "score" : 0.04
+  }, {
+    "page" : 27,
+    "score" : 0.04
+  }, {
+    "page" : 31,
+    "score" : 0.04
+  }, {
+    "page" : 33,
+    "score" : 0.04
+  }, {
+    "page" : 13,
+    "score" : 0.03
+  }, {
+    "page" : 24,
+    "score" : 0.03
+  }, {
+    "page" : 25,
+    "score" : 0.03
+  }, {
+    "page" : 32,
+    "score" : 0.03
+  } ],
+  "minimum" : [ {
+    "page" : 5,
+    "score" : 0.97
+  }, {
+    "page" : 19,
+    "score" : 0.15
+  }, {
+    "page" : 1,
+    "score" : 0.08
+  }, {
+    "page" : 2,
+    "score" : 0.08
+  }, {
+    "page" : 3,
+    "score" : 0.08
+  }, {
+    "page" : 34,
+    "score" : 0.08
+  }, {
+    "page" : 11,
+    "score" : 0.07
+  }, {
+    "page" : 16,
+    "score" : 0.06
+  }, {
+    "page" : 4,
+    "score" : 0.04
+  }, {
+    "page" : 6,
+    "score" : 0.04
+  }, {
+    "page" : 15,
+    "score" : 0.04
+  }, {
+    "page" : 18,
+    "score" : 0.04
+  }, {
+    "page" : 27,
+    "score" : 0.04
+  }, {
+    "page" : 28,
+    "score" : 0.04
+  }, {
+    "page" : 29,
+    "score" : 0.04
+  }, {
+    "page" : 7,
+    "score" : 0.03
+  }, {
+    "page" : 8,
+    "score" : 0.03
+  }, {
+    "page" : 9,
+    "score" : 0.03
+  }, {
+    "page" : 10,
+    "score" : 0.03
+  }, {
+    "page" : 12,
+    "score" : 0.03
+  }, {
+    "page" : 13,
+    "score" : 0.03
+  }, {
+    "page" : 14,
+    "score" : 0.03
+  }, {
+    "page" : 17,
+    "score" : 0.03
+  }, {
+    "page" : 20,
+    "score" : 0.03
+  }, {
+    "page" : 21,
+    "score" : 0.03
+  }, {
+    "page" : 22,
+    "score" : 0.03
+  }, {
+    "page" : 23,
+    "score" : 0.03
+  }, {
+    "page" : 24,
+    "score" : 0.03
+  }, {
+    "page" : 26,
+    "score" : 0.03
+  }, {
+    "page" : 30,
+    "score" : 0.03
+  }, {
+    "page" : 31,
+    "score" : 0.03
+  }, {
+    "page" : 32,
+    "score" : 0.03
+  }, {
+    "page" : 33,
+    "score" : 0.03
+  }, {
+    "page" : 25,
+    "score" : 0.02
+  } ],
+  "target-market" : [ {
+    "page" : 16,
+    "score" : 0.97
+  }, {
+    "page" : 19,
+    "score" : 0.24
+  }, {
+    "page" : 5,
+    "score" : 0.22
+  }, {
+    "page" : 34,
+    "score" : 0.14
+  }, {
+    "page" : 1,
+    "score" : 0.12
+  }, {
+    "page" : 2,
+    "score" : 0.1
+  }, {
+    "page" : 3,
+    "score" : 0.09
+  }, {
+    "page" : 23,
+    "score" : 0.07
+  }, {
+    "page" : 9,
+    "score" : 0.06
+  }, {
+    "page" : 12,
+    "score" : 0.06
+  }, {
+    "page" : 4,
+    "score" : 0.05
+  }, {
+    "page" : 6,
+    "score" : 0.05
+  }, {
+    "page" : 8,
+    "score" : 0.05
+  }, {
+    "page" : 10,
+    "score" : 0.05
+  }, {
+    "page" : 11,
+    "score" : 0.05
+  }, {
+    "page" : 17,
+    "score" : 0.05
+  }, {
+    "page" : 18,
+    "score" : 0.05
+  }, {
+    "page" : 22,
+    "score" : 0.05
+  }, {
+    "page" : 7,
+    "score" : 0.04
+  }, {
+    "page" : 14,
+    "score" : 0.04
+  }, {
+    "page" : 15,
+    "score" : 0.04
+  }, {
+    "page" : 20,
+    "score" : 0.04
+  }, {
+    "page" : 21,
+    "score" : 0.04
+  }, {
+    "page" : 25,
+    "score" : 0.04
+  }, {
+    "page" : 26,
+    "score" : 0.04
+  }, {
+    "page" : 27,
+    "score" : 0.04
+  }, {
+    "page" : 28,
+    "score" : 0.04
+  }, {
+    "page" : 29,
+    "score" : 0.04
+  }, {
+    "page" : 13,
+    "score" : 0.03
+  }, {
+    "page" : 24,
+    "score" : 0.03
+  }, {
+    "page" : 30,
+    "score" : 0.03
+  }, {
+    "page" : 31,
+    "score" : 0.03
+  }, {
+    "page" : 32,
+    "score" : 0.03
+  }, {
+    "page" : 33,
+    "score" : 0.03
+  } ],
+  "other-restriction" : [ {
+    "page" : 16,
+    "score" : 0.9
+  }, {
+    "page" : 19,
+    "score" : 0.9
+  }, {
+    "page" : 28,
+    "score" : 0.67
+  }, {
+    "page" : 5,
+    "score" : 0.39
+  }, {
+    "page" : 18,
+    "score" : 0.31
+  }, {
+    "page" : 1,
+    "score" : 0.13
+  }, {
+    "page" : 3,
+    "score" : 0.13
+  }, {
+    "page" : 34,
+    "score" : 0.13
+  }, {
+    "page" : 2,
+    "score" : 0.1
+  }, {
+    "page" : 4,
+    "score" : 0.07
+  }, {
+    "page" : 14,
+    "score" : 0.06
+  }, {
+    "page" : 15,
+    "score" : 0.06
+  }, {
+    "page" : 29,
+    "score" : 0.06
+  }, {
+    "page" : 33,
+    "score" : 0.06
+  }, {
+    "page" : 6,
+    "score" : 0.05
+  }, {
+    "page" : 7,
+    "score" : 0.05
+  }, {
+    "page" : 11,
+    "score" : 0.05
+  }, {
+    "page" : 12,
+    "score" : 0.05
+  }, {
+    "page" : 17,
+    "score" : 0.05
+  }, {
+    "page" : 20,
+    "score" : 0.05
+  }, {
+    "page" : 32,
+    "score" : 0.05
+  }, {
+    "page" : 8,
+    "score" : 0.04
+  }, {
+    "page" : 9,
+    "score" : 0.04
+  }, {
+    "page" : 10,
+    "score" : 0.04
+  }, {
+    "page" : 13,
+    "score" : 0.04
+  }, {
+    "page" : 21,
+    "score" : 0.04
+  }, {
+    "page" : 22,
+    "score" : 0.04
+  }, {
+    "page" : 23,
+    "score" : 0.04
+  }, {
+    "page" : 24,
+    "score" : 0.04
+  }, {
+    "page" : 26,
+    "score" : 0.04
+  }, {
+    "page" : 27,
+    "score" : 0.04
+  }, {
+    "page" : 30,
+    "score" : 0.04
+  }, {
+    "page" : 31,
+    "score" : 0.04
+  }, {
+    "page" : 25,
+    "score" : 0.03
+  } ]
+}

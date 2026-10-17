@@ -18,6 +18,10 @@ fundeli5:
   runs-dir: runs
   extract-model: claude-opus-5-5
   normalise-model: claude-sonnet-5-5
+  jev:                   # page ranking, ticket #39; TYPESAFE_API_KEY unless cached
+    model: jev-latest
+    concurrency: 8
+    cache-dir: jev-rankings   # --fundeli5.jev.cache-dir=jev-rankings-rerun for the second run
   fund-id: nordea        # --fundeli5.fund-id=robeco | bgf (ticket #39)
   funds:
     nordea:
