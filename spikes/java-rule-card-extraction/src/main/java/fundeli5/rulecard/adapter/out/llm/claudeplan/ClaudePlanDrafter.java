@@ -58,9 +58,12 @@ public class ClaudePlanDrafter implements RuleCardDrafter {
             var cmd = List.of("claude", "-p", prompt, "--model", model, "--tools", "Read", "--allowedTools", "Read",
                     "--output-format", "stream-json", "--verbose", "--json-schema", json.writeValueAsString(schema),
                     "--no-session-persistence");
+            var pb = new ProcessBuilder(cmd).directory(work.toFile()).redirectErrorStream(true)
+                    .redirectInput(ProcessBuilder.Redirect.from(new java.io.File("/dev/null")));
+            // An exported API key takes precedence over the claude.ai login and bills the API, not the plan.
+            pb.environment().remove("ANTHROPIC_API_KEY");
             long t = System.nanoTime();
-            var result = stream(new ProcessBuilder(cmd).directory(work.toFile()).redirectErrorStream(true)
-                    .redirectInput(ProcessBuilder.Redirect.from(new java.io.File("/dev/null"))).start(), t);
+            var result = stream(pb.start(), t);
             double seconds = (System.nanoTime() - t) / 1e9;
 
             if (result == null) {
