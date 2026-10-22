@@ -92,6 +92,10 @@ public class DraftRuleCardService implements DraftRuleCard {
         Map<RuleKind, Long> byKind = new LinkedHashMap<>();
         card.rules().forEach(r -> byKind.merge(r.kind(), 1L, Long::sum));
         System.out.printf("%nRule Card (%s): %d rules %s%n", card.status(), card.rules().size(), byKind);
+        System.out.printf("unmodelled restrictions suggested Noted: %d of %d (all stay Blocking until validated)%n",
+                card.rules().stream().filter(r -> r.kind() == RuleKind.UNMODELLED_RESTRICTION && r.notedReason() != null).count(),
+                byKind.getOrDefault(RuleKind.UNMODELLED_RESTRICTION, 0L));
+        System.out.printf("proposed Fund Registration entries: %d%n", card.fundRegistration().size());
         System.out.printf("quotes verified on their page: %d/%d%n", card.verifiedQuotes(), card.quotes());
         System.out.printf("time %.1fs, cost $%.4f%n", run.totalSeconds(), run.totalUsd());
         System.out.printf("saved %s%n", path);

@@ -6,6 +6,8 @@ import java.util.function.UnaryOperator;
 /**
  * One rule of a Rule Card for one Share Class ({@code "*"} = every class of the fund).
  * Only the parameters relevant to the kind are set; the others are null.
+ * {@code notedReason} is the extractor's suggestion that an Unmodelled Restriction sets no condition on the
+ * client. It is only a hint: the restriction stays Blocking until a Rule Card Validator marks it Noted (ADR 0003).
  */
 public record Rule(
         String shareClass,
@@ -23,6 +25,7 @@ public record Rule(
         boolean contradiction,
         double confidence,
         String summary,
+        String notedReason,
         List<Citation> citations) {
 
     public enum Scope {
@@ -36,7 +39,7 @@ public record Rule(
 
     public Rule withCitations(UnaryOperator<Citation> change) {
         return new Rule(shareClass, scope, kind, allowedCategories, usPersonDefinition, excludesUsCitizens, amount,
-                currency, mandateOnly, kidAvailable, dimension, value, contradiction, confidence, summary,
+                currency, mandateOnly, kidAvailable, dimension, value, contradiction, confidence, summary, notedReason,
                 citations.stream().map(change).toList());
     }
 }

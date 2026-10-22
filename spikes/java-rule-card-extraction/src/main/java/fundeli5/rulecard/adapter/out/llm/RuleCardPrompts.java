@@ -94,6 +94,7 @@ public final class RuleCardPrompts {
                     r.path("contradiction").asBoolean(),
                     r.path("confidence").asDouble(),
                     r.path("summary").asString(),
+                    str(r, "noted_reason"),
                     citations.apply(r)));
         }
         return rules;

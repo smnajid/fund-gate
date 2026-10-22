@@ -10,6 +10,15 @@ Rule kinds (use only these):
 - kid_required_for_retail: whether a PRIIPs KID exists for the class.
 - target_market: one rule per dimension: client_type, knowledge_experience, loss_bearing, risk_sri, horizon_years.
 - unmodelled_restriction: any other restriction on who may subscribe that fits none of the kinds above.
+  Set noted_reason, in one line, when the clause sets no condition on the client: for example the board's right to
+  reject any application or to close a class, a sanctions or anti-money-laundering statement that the bank's own KYC
+  onboarding covers, or a condition another rule on this card already captures. Leave noted_reason null when the client
+  might not meet the clause, and always for a class closed to new investors, a capacity or holder-count limit, or a
+  subscription that needs the manager's confirmation. noted_reason is only a suggestion: a human validator decides.
+- fund_registration: where the fund or class may or may not be offered, sold or marketed, by country or region
+  (for example "not offered to the public in the Cayman Islands", "no marketing in the EEA", "in Hong Kong to
+  Professional Investors only"). Put the jurisdictions in value. One rule per clause. Never file these as
+  unmodelled_restriction.
 Mark a rule's scope as fund (applies to every class) or share_class.
 When two documents contradict each other on a rule, never resolve it: record each document's rule with the value that document literally states, set contradiction on it, and cite both passages. A human validator decides which one wins.
 Ignore fees, investment policy, tax and operations unless they restrict who may subscribe.
