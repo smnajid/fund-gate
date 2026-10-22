@@ -19,6 +19,11 @@ SPRING_PROFILES_ACTIVE=spring-ai ./run.sh --label=api   # Anthropic API / Foundr
 Jev needs `TYPESAFE_API_KEY` unless the ranking is cached (`fundeli5.jev.cache-dir`, default `jev-rankings/`). Each run
 writes `runs/<stamp>-<label>.json` (the Draft Rule Card plus usage) and a `.md` score.
 
+**The Claude-plan drafter is for public documents only.** It runs on your personal claude.ai plan, even when
+`ANTHROPIC_API_KEY` is exported, and the plan's terms are not the bank's. Put a confidential PPM, side letter or
+bank-internal document through `SPRING_PROFILES_ACTIVE=spring-ai` on the bank's approved endpoint. Never port
+`ClaudePlanDrafter` to the online dealer runtime ([ADR 0004](../../docs/adr/0004-two-runtimes-one-llm-egress.md)).
+
 **Page selection is Jev only since 2026-10-17** (ticket #39): choice selects, with the page before its top pages, and
 per page flags "possibly missed". Keyword selection v1 (`PageSelection`) and v2 (`PageSelectionV2`), `--v2`, `--sweep`,
 `--select` and `--jev-prev` are gone; the results sections below keep the commands as they were run. The last commit

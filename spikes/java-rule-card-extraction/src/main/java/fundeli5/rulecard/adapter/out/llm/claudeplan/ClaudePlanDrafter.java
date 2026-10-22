@@ -23,6 +23,10 @@ import fundeli5.rulecard.domain.Citation;
  * holding just the PDFs (it can't see the answer key). The model writes its own {file, page, quote}
  * citations instead of using the Citations API, so the quote check is what catches made-up quotes.
  * Cost is Claude Code's list-price estimate, not a bill.
+ * <p>
+ * Public documents only. It runs on the user's personal claude.ai plan, whose terms are not the bank's, so a
+ * confidential PPM, side letter or bank-internal document goes through the spring-ai drafter on the bank's
+ * approved endpoint instead. Never port this drafter to the online dealer runtime (ADR 0004).
  */
 public class ClaudePlanDrafter implements RuleCardDrafter {
 
