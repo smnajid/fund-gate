@@ -1,5 +1,7 @@
 # Client Profile API: what to look for in the bank's catalogue
 
+**Found (2026-10-18):** the bank's CRM is a GraphQL API with a `portfolio` query and a `person` query, both taking the Portfolio Reference; the Portfolio Id comes back with the other portfolio fields. The app's side is fixed in the [Client Profile contract](contracts/client-profile.md); this page stays as the checklist for finding each field in the CRM.
+
 The Eligibility Check reads one **Client Profile** per portfolio (see `GLOSSARY.md` and [demo-dataset.md](demo-dataset.md)). This page describes the API (or APIs) we need from the bank, so we can find it in their catalogue. In most banks the data is spread over **2–4 APIs**: look for each block separately rather than for one "client profile" endpoint.
 
 ## What we're looking for
@@ -65,3 +67,4 @@ Name, address, phone, email, exact birth date, balances and positions. None of t
 3. Are knowledge & experience given per product type (funds, private equity, structured products)? On what scale?
 4. Are risk profile and horizon held per portfolio or per client?
 5. How fresh is the data: real time or a nightly copy? Is there a test environment with anonymised data for the hackathon?
+6. Does the Investor Classification come from the `portfolio` query or the `person` query? Is there one entry per Legal Entity?
