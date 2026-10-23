@@ -90,6 +90,10 @@ _Avoid_: Booking centre, booking entity
 What a Fund Dealer is asked to check: a portfolio, a Share Class, an amount and currency, and whether the client initiated the order.
 _Avoid_: Order, ticket, request email
 
+**Order**:
+An instruction to subscribe to a Share Class for a portfolio, created by a portfolio manager in G2 and sent to Negoce for execution; no subscription is executed without one. An Eligibility Check on an Order runs on a Subscription Request derived from it, without an LLM.
+_Avoid_: Trade, ticket
+
 **Scale Mapping**:
 The validated correspondence between the bank's own client scales (risk profile, knowledge and experience, …) and the Target Market scales.
 _Avoid_: Conversion table, risk mapping
