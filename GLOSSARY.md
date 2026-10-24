@@ -61,7 +61,7 @@ A statement in Fund Documentation about where, or to whom, the fund may be offer
 _Avoid_: Fund registration (for the document's claim), distribution restriction
 
 **Rule Card**:
-The validated, structured set of Hard Restrictions and Target Market criteria for one Share Class, each rule carrying its Citation.
+The validated, structured set of Hard Restrictions and Target Market criteria for one Fund, each rule scoped to the whole Fund or to one of its Share Classes and carrying its Citation.
 _Avoid_: Rule set, fund profile, extraction
 
 **Stale Rule Card**:
