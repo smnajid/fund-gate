@@ -2,7 +2,7 @@
 
 Part of [What contracts let the app move from the external to the internal environment?](https://github.com/smnajid/fund-gate/issues/41). Why the app reads bank data only through contracts like this one: [ADR 0008](../../adr/0008-bank-data-enters-through-canonical-contracts.md).
 
-The app reads a **Client Profile** (see `GLOSSARY.md`) through one out port, `ClientProfiles`. Two adapters implement it, chosen by Spring profile:
+The app reads a **Client Profile** (see `GLOSSARY.md`) through one out port, `ClientProfiles`. Two adapters implement it, chosen per port ([ADR 0008](../../adr/0008-bank-data-enters-through-canonical-contracts.md)). **At the event the fixture adapter runs inside the bank too**: DEV's CRM holds mock clients, and the fixtures are the coverage set's answer key. The CRM adapter below is the production path.
 
 ```
 Privacy Gate ──┐
