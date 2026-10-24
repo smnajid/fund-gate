@@ -53,12 +53,20 @@ An Unmodelled Restriction that sets a condition the client may not meet (e.g. "s
 _Avoid_: Open rule, unresolved rule
 
 **Fund Registration**:
-The record, from a regulator's register or the bank's fund list, that a Share Class may be offered to a given Investor Classification in a given country. Not part of the Rule Card.
+The bank's record, from its fund master data or the desk's fund list, that a Share Class may be offered to a given Investor Classification in a given country. Not part of the Rule Card, and not what the Fund Documentation says about it (that is a Selling Restriction).
 _Avoid_: Distribution jurisdiction, passport, country list
+
+**Selling Restriction**:
+A statement in Fund Documentation about where, or to whom, the fund may be offered, e.g. "not offered in Switzerland". It is kept with its Citation to cross-check the Fund Registration, and never decides a Verdict.
+_Avoid_: Fund registration (for the document's claim), distribution restriction
 
 **Rule Card**:
 The validated, structured set of Hard Restrictions and Target Market criteria for one Share Class, each rule carrying its Citation.
 _Avoid_: Rule set, fund profile, extraction
+
+**Stale Rule Card**:
+A Validated Rule Card drafted from an edition of Fund Documentation older than the one the bank's fund master data lists. It still decides Verdicts, with a warning, until it is re-drafted and validated.
+_Avoid_: Outdated card, expired card
 
 **Target Market**:
 The manufacturer-defined profile of clients a Fund is designed for (client type, knowledge and experience, loss-bearing capacity, risk tolerance, objectives, horizon), as published in the EMT/KID.

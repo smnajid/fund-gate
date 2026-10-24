@@ -66,7 +66,7 @@ The bank scales are invented and deliberately differ from the Target Market scal
 | SL-* | CH | qualified | yes | "distribution approved: Switzerland" (appendix p.45) |
 | SL-* | LU | any | **no** | same |
 
-The bank's fund list replaces this table at hour 0 if it carries registration data.
+Fixture: [`contracts/fixtures/fund-registrations.json`](contracts/fixtures/fund-registrations.json). DEV FMD carries registration data, so at the event the engine reads FMD instead ([contract](contracts/fund-registrations.md)). Compare this table with FMD before the event if DEV can be reached, otherwise at hour 0; where they differ, FMD wins and the coverage rows that depend on it change.
 
 ## FX
 
@@ -241,5 +241,5 @@ These emails are drafts. Revise them once [How does the fund dealing desk answer
 
 1. Map the canonical fields above onto the bank's export, and swap the Scale Mapping for the bank's scales.
 2. Generate fixtures in the bank's shape, with fresh Portfolio Ids.
-3. Replace the Fund Registration and FX tables with the bank's if it provides them.
+3. Compare the Fund Registration table with DEV FMD and update the coverage set where they differ; replace the FX table with the bank's if it provides one.
 4. Run the coverage set; every row must match before the demo is rehearsed.
