@@ -11,7 +11,7 @@ Rule Engine  ──┴─► ClientProfiles (out port)
                      └── CrmClientProfiles       internal environment: CRM GraphQL portfolio + person → Client Profile
 ```
 
-Nothing above the port knows which adapter runs or that the CRM speaks GraphQL. This page is a specification: the organisers forbid pre-built code, so the Java interface and records are written from it at hour 0.
+Nothing above the port knows which adapter runs or that the CRM speaks GraphQL. This page is a specification: the Java interface and records are written from it before the event.
 
 ## The port
 
