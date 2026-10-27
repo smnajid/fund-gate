@@ -2,7 +2,7 @@
 
 Resolves [What should the dealer screen and the Rule Card validation screen look like?](https://github.com/smnajid/fund-gate/issues/17).
 
-Two screens, both Angular ([ADR 0006](../adr/0006-spring-boot-and-angular-python-only-for-real-added-value.md)), owned by Builder 3 ([architecture](architecture.md#ownership-5-people)). The throwaway prototype holds every variant we compared: [`prototype/screens`](https://github.com/smnajid/fund-gate/tree/prototype/screens/spikes/screens) (`open spikes/screens/index.html`). Rebuild from this page, not from the prototype's code. Vocabulary: [GLOSSARY.md](../../GLOSSARY.md).
+Two screens, both Angular ([ADR 0006](../adr/0006-spring-boot-and-angular-python-only-for-real-added-value.md)), built by Mohamed ([architecture](architecture.md#ownership)). The throwaway prototype holds every variant we compared: [`prototype/screens`](https://github.com/smnajid/fund-gate/tree/prototype/screens/spikes/screens) (`open spikes/screens/index.html`). Rebuild from this page, not from the prototype's code. Vocabulary: [GLOSSARY.md](../../GLOSSARY.md).
 
 ## Dealer screen: the answer sheet
 

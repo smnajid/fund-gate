@@ -41,22 +41,19 @@ The AI drafts, a person validates, deterministic code decides. The explanation a
 - **Extraction on a real prospectus** (Nordea 1): 18/18 rules found, every quote checked on its page, 1–2 min and $0.2–1.2 per fund.
 - **Claude on Microsoft Foundry** confirmed for PDF, citations and structured output.
 - **A 26-case answer key** across Switzerland and Luxembourg, plus screens and architecture decided and recorded as ADRs.
-- No product code yet, as the rules require: only throwaway spikes.
+- The Must tier is built before the event on synthetic data; the 20 hours move it onto the bank's data and add the rest.
 
-## Team we need
+## The team
 
-Five people. The desk that will use it is on the team.
+Five people: one builder and four specialists from the business side. The desk that will use it advises every day.
 
-| Seat | Profile | Status |
+| Who | Profile | Brings |
 |---|---|---|
-| Domain | Fund dealing desk member: plain-language wording, form checklist content, accepts the answer key, co-presents | from the desk |
-| Pitch and platform | Adapters, Privacy Gate, audit trail, deployment, pitch | **filled: Mohamed** |
-| Builder 1 | Java/Spring, LLMs and document pipelines: cited extraction from PDFs | open |
-| Builder 2 | Java/Spring, loves deterministic logic and tests: rule engine, explanations, form checklist | open |
-| Builder 3 | Angular plus LLM integration: the dealer screens, request parsing, reply drafting, Q&A | open |
+| Mohamed | Builder | The whole app: pipeline, engine, Privacy Gate, screens, bank adapters, audit trail |
+| Frederic | Banking Relation Specialist | The relationship manager's voice: the requests and whether the explanation can go to a client |
+| Cynthia | Fund Custodian Bank Specialist | Fund rules and registrations: validates the Rule Cards, writes the form checklist |
+| Mathilde | Data and Reporting Specialist | The client and fund data, and the 26-case answer key run in the app |
+| Xavier | Business Development Manager | The business case and the pitch |
+| Samuel and Tania | Fund dealing desk, advisers | Answer domain questions 30 minutes a day |
 
 Stack: Spring Boot 4 and Angular, Claude on Microsoft Foundry.
-
-## How to join
-
-Pick **FundEli5** when you apply, and tell <!-- TODO: internal email / Teams --> which seat you want.

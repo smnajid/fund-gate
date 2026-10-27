@@ -89,16 +89,16 @@ One append-only **Check Record** per Eligibility Check: the Subscription Request
 - **Demo**: runs locally on our laptops (one compose file: dealer app + store; the pipeline as a CLI against the same store). Claude on Microsoft Foundry through the egress client. Fallbacks by config switch: our own Anthropic key, then a recorded-responses mode for offline rehearsal.
 - **Production path (slide only)**: Container Apps, Entra ID SSO for dealers and validators, Key Vault, Foundry over a private endpoint, logs to Log Analytics, Check Record store as the audit source. Next lanes: NER-based redaction is not needed while Requesters send references only; advisory options (b) suggest Blocking/Noted per client and (c) propose facts from free-text KYC notes; a required reason list on dismissing an Advisory Suggestion (to measure how often the lane is wrong) and tracking a Needs Review to its final answer; Microsoft Graph mailbox intake.
 
-## Ownership (5 people)
+## Ownership
 
-The team is five including a member of the fund dealing desk, the subject's sponsor. Whether the organisers count the sponsor's member in the five is unconfirmed; we plan for the tighter case ([pitch](pitch.md#team-we-need)).
+Mohamed is the only builder: he owns every module above, builds the Must tier on fixtures before the event, and writes the bank adapters in the internal environment at the event. The other four own the content the modules run on.
 
 | Seat | Owns |
 |---|---|
-| Builder 1 | Rule Card pipeline (port the spike), Share Class catalog, seeding the 4 funds, adapters and Intake |
-| Builder 2 | Rule Engine, Scale Mapping, reverse lookup, ELI5 templates, form checklist logic, "what would make it eligible" re-runs; test-first against the coverage set |
-| Builder 3 | Dealer UI and Validation UI, LLM egress, Request Parser, Reply Drafter, replay mode |
-| Lead and platform (Mohamed) | Skeleton app, Privacy Gate, Check Record, merging, pitch and production slide |
-| Domain (dealing desk) | Bank data mapping, Rule Card validation, plain-language wording, form checklist content, accepting the coverage set, co-presenting the demo |
+| Mohamed, builder | Every module, the executable specification in `specs/`, merging, the production slide |
+| Frederic, Banking Relation Specialist | Request emails in real RM wording, plain-language wording of templates and replies |
+| Cynthia, Fund Custodian Bank Specialist | Rule Card validation (first pass), Fund Registration facts, form checklist content |
+| Mathilde, Data and Reporting Specialist | Client Profile fixtures, mapping CRM and FMD fields onto the [contracts](contracts/), running the answer key in the app |
+| Xavier, Business Development Manager | Pitch, business case, roadmap slides |
 
-The build window is 20 hours, so the advisory lane, free-text Q&A and LLM polish on ELI5 are cut up front and shown on the production slide only; "what would make it eligible" stays as a thin Q&A that re-runs the engine. If the organisers allow a sixth person, give them Builder 3's LLM lane. Scope tiers, the hour-by-hour plan and merge rules: [team-plan.md](team-plan.md).
+Samuel and Tania (fund dealing desk) answer domain questions 30 minutes a day, before and during the event. The advisory lane, free-text Q&A and LLM polish on ELI5 stay cut and shown on the production slide only; "what would make it eligible" stays as a thin Q&A that re-runs the engine. Scope tiers, the day-by-day plan and merge rules: [team-plan.md](team-plan.md).
