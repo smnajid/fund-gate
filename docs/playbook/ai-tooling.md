@@ -17,7 +17,7 @@ The team uses **Claude Code**, served from **Microsoft Foundry**, on the bank's 
 |---|---|---|
 | **privacy-gate-auditor** subagent: one egress, gate-only input, fail closed, allow-list, logged (ADR 0004/0005) | `.claude/agents/` | The platform seat and Builder 3 before each merge touching an LLM call, everyone before rehearsal |
 | **engine-purity-reviewer** subagent: no LLM, deterministic, Draft never decides, Advisory Suggestions never change the Verdict (ADR 0002/0003/0005/0007) | `.claude/agents/` | Builder 2 on every Rule Engine, Scale Mapping or reverse-lookup change |
-| **demo-flow-verifier** subagent: runs the coverage set and the hero flow, times each step | `.claude/agents/` | The platform seat at each integration checkpoint, after feature freeze, before each rehearsal |
+| **demo-flow-verifier** subagent: runs the `specs/` scenarios and the hero flow, times each step | `.claude/agents/` | The platform seat at each integration checkpoint, after feature freeze, before each rehearsal |
 | **java-reviewer / java-build-resolver** (from ECC, trimmed) for Spring Boot | `.claude/agents/` | Persons 1, 2, 4, 5: the resolver when the build breaks, the reviewer before merging |
 | **typescript-reviewer / ts-build-resolver** (from ECC, rewritten for Angular: signals, `@if`/`@for`, `OnPush`, NG error codes) | `.claude/agents/` | Builder 3 |
 | **angular-developer** skill (official, from `angular/skills`): current Angular practice for signals, Signal Forms, DI, routing, Aria, testing | `.claude/skills/` | Builder 3; it loads only when Angular work comes up |
@@ -39,7 +39,7 @@ Playwright, Context7 and `document-skills` are opt-in because MCP tool schemas a
 | Person | Owns (architecture.md) | Main tools |
 |---|---|---|
 | 1 | Rule Card pipeline (command-line mode of the Spring Boot app: Anthropic Java SDK + PDFBox), Share Class catalog | `tdd`, `java-build-resolver`, `claude-api` skill for PDF + Citations calls, `blast-radius` on the quote-on-page check |
-| 2 | Rule Engine, Scale Mapping, reverse lookup | `tdd` against the coverage set, `engine-purity-reviewer`, `blast-radius` |
+| 2 | Rule Engine, Scale Mapping, reverse lookup | `tdd` against the `@rule-engine` scenarios in `specs/`, `engine-purity-reviewer`, `blast-radius` |
 | 3 | Dealer UI, Validation UI (Angular) | `prototype` (before the event, issue #17), `angular-developer`, Angular CLI MCP, `frontend-design`, Playwright, `typescript-reviewer` |
 | 4 | Intake, Privacy Gate, egress, Parser, Reply Drafter, advisory lane | `privacy-gate-auditor` on every merge, `tdd` for the gate's fail-closed cases, `claude-api` skill for Foundry calls |
 | 5 | Adapters, Check Record, compose, pitch | `demo-flow-verifier`, `create-verification-skill`, `pptx`, `unslop` |

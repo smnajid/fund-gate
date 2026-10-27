@@ -2,11 +2,13 @@
 
 Resolves [Which synthetic Client Profiles make the demo?](https://github.com/smnajid/fund-gate/issues/8).
 
-The synthetic data the team needs for rehearsal and the demo. This is a **spec**, not fixture files. The bank's data shape is only known at hour 0, so at hour 0 someone turns these rows into that shape. It takes about 30 minutes.
+The synthetic data the team needs for rehearsal and the demo: the inputs, not the expected answers. This is a **spec**, not fixture files. The bank's data shape is only known at hour 0, so at hour 0 someone turns these rows into that shape. It takes about 30 minutes.
 
 It has two tiers:
 - **Demo cast**: 3 named clients the 5-minute story shows.
-- **Coverage set**: every check below, cast included. Each row gives the Verdict and the per-rule outcomes it must produce, so it is also the answer key to rerun before going on stage.
+- **Coverage set**: every check the demo data must produce, cast included. Its expected Verdicts and per-rule outcomes, the answer key, live in the executable specification: each row as an example under the rule it proves in [`specs/01-check-eligibility.feature`](../../specs/01-check-eligibility.feature), and all 26 rows in [`specs/99-answer-key.feature`](../../specs/99-answer-key.feature). The emails live in [`specs/02-answer-a-subscription-request.feature`](../../specs/02-answer-a-subscription-request.feature).
+
+This page keeps the conventions, the Share Classes and their short names, the bank scales, Fund Registration, FX and the Client Profiles the specification refers to.
 
 Vocabulary: [GLOSSARY.md](../../GLOSSARY.md). Rule kinds and outcomes: [What is the Rule Card model?](https://github.com/smnajid/fund-gate/issues/6). Fund facts: [sample funds research](https://github.com/smnajid/fund-gate/blob/research/sample-funds/docs/research/sample-funds.md).
 
@@ -66,7 +68,7 @@ The bank scales are invented and deliberately differ from the Target Market scal
 | SL-* | CH | qualified | yes | "distribution approved: Switzerland" (appendix p.45) |
 | SL-* | LU | any | **no** | same |
 
-Fixture: [`contracts/fixtures/fund-registrations.json`](contracts/fixtures/fund-registrations.json). DEV FMD carries registration data, so at the event the engine reads FMD instead ([contract](contracts/fund-registrations.md)). Compare this table with FMD before the event if DEV can be reached, otherwise at hour 0; where they differ, FMD wins and the coverage rows that depend on it change.
+Fixture: [`contracts/fixtures/fund-registrations.json`](contracts/fixtures/fund-registrations.json). DEV FMD carries registration data, so at the event the engine reads FMD instead ([contract](contracts/fund-registrations.md)). Compare this table with FMD before the event if DEV can be reached, otherwise at hour 0; where they differ, FMD wins and the answer-key rows in `specs/` that depend on it change.
 
 ## FX
 
@@ -138,108 +140,21 @@ Fields follow the Rule Card model: client (client number) / client × Legal Enti
 | `SIN90001301` | advisory | 3 Balanced | full loss | 5y | USD |
 | `LOC90001401` | advisory | 2 Income | limited loss | 5y | CHF |
 
-## Coverage set (answer key)
-
-Rule columns:
-- **Cat** investor category
-- **US** US Person exclusion
-- **Min** minimum initial subscription
-- **Mand** mandate-only class
-- **KID** KID required for retail
-- **Unm** Unmodelled Restrictions
-- **TM** Target Market
-- **Reg** Fund Registration
-
-Outcomes: P = Pass, F = Fail, R = Review, W = warning only (CH Target Market), – = no such rule on the card. Init. = client initiated the order.
-
-Assumes [ADR 0003](../adr/0003-validator-marks-unmodelled-restrictions-noted.md): Nordea's "reject or close" and the SIF's "at AIFM discretion" clauses are validated as **Noted** (Pass).
-
-| # | Portfolio | Share Class | Amount | Init. | Cat | US | Min | Mand | KID | Unm | TM | Reg | **Verdict** | What it shows |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | `LOC90000101` Anna | GCE-BI | EUR 80,000 | no | **F** | P | P | – | P | P | P | P | **Not Eligible** | ★ Advisory retail portfolio is not institutional |
-| 2 | `LOC90000102` Anna | GCE-BI | EUR 80,000 | no | P | P | P | – | P | P | P | P | **Eligible** | ★ Discretionary mandate counts as institutional (2010 Law art. 174, prospectus p.5) |
-| 3 | `LOC90000101` Anna | GCE-BP | EUR 80,000 | no | P | P | P | – | P | P | P | P | **Eligible** | ★ The class the reply suggests for portfolio 01 |
-| 4 | `LOC90000201` Tom | GCE-BP | CHF 2,000,000 | no | P | **P** | P | – | P | P | P | P | **Eligible** | ★ Reg S: US citizenship alone is not a US Person |
-| 5 | `LOC90000201` Tom | GCE-BI | CHF 2,000,000 | no | **F** | P | P | – | P | P | P | P | **Not Eligible** | ★ HNWI opt-out is not an art. 174 institutional investor (*assumed reading: confirm with the desk*) |
-| 6 | `LOC90000201` Tom | BNP-A | CHF 2,000,000 | no | P | **F** | P | – | P | – | W | P | **Not Eligible** | ★ "in particular investors with U.S. citizenship" |
-| 7 | `LOC90000201` Tom | BNP-I | CHF 2,000,000 | no | P | **F** | P | – | P | – | W | P | **Not Eligible** | ★ Qualified and above CHF 1m, but US citizen |
-| 8 | `LOC90000201` Tom | SL-ICAP | CHF 2,000,000 | no | P | **F** | – | – | – | P | W (no source) | P | **Not Eligible** | ★ IRC definition: any US citizen, dual nationals included |
-| 9 | `LOC90000201` Tom | SIF-W | CHF 2,000,000 | no | P | P | P | – | P | P | W | **F** | **Not Eligible** | ★ Not registered in CH |
-| 10 | `LUX90000301` Claire | GCE-BP | EUR 20,000 | no | P | P | P | – | P | P | **R** | P | **Needs Review** | ★ LU: outside positive Target Market (SRI 4 > max 3, 5y RHP > 2y, total loss > limited). Under LOC it would be Eligible with warnings |
-| 11 | `LUX90000301` Claire | GCE-BI | EUR 20,000 | no | **F** | P | **F** | – | P | P | R | P | **Not Eligible** | ★ Retail, and below EUR 75k |
-| 12 | `LUX90000401` | SIF-W | EUR 50,000 | no | P | P | **F** | – | P | P | P | P | **Not Eligible** | Below EUR 100k (W class) |
-| 13 | `LUX90000501` | SIF-W | EUR 120,000 | no | P | P | P | – | P | P | **R** | P | **Needs Review** | Well-informed derived from written confirmation + ≥ EUR 100k. Negative Target Market on risk (SRI 6 > max 3) and horizon (10y RHP > 5y) |
-| 14 | `LUX90000601` | SIF-W | EUR 120,000 | no | P | P | P | – | P | P | **F** | P | **Not Eligible** | LU: negative Target Market on knowledge & experience gives Fail |
-| 15 | `LOC90000701` | SIF-W | EUR 150,000 | no | P | P | P | – | P | P | W | **F** | **Not Eligible** | Not registered in CH |
-| 16 | `LOC90000701` | SIF-W | EUR 150,000 | **yes** | P | P | P | – | P | P | W | **R** | **Needs Review** | Reverse solicitation: the dealer records evidence |
-| 17 | `LUX90000801` | BNP-A | CHF 50,000 | no | P | P | P | – | P | – | P | **F** | **Not Eligible** | "No issue or redemption abroad" |
-| 18 | `LOC90000901` | SL-AMCAP | CHF 500,000 | no | **F** | P | – | **F** | – | P | W (no source) | P | **Not Eligible** | HNWI opt-outs excluded, and no Swiss Life mandate |
-| 19 | `LOC90000901` | SL-ICAP | CHF 500,000 | no | P | P | – | – | – | P | W (no source) | P | **Eligible** | Same client, open class. Missing Target Market source is a warning only in CH |
-| 20 | `LOC90001001` | SL-IA1 | CHF 300,000 | no | **F** | P | – | **F** | – | P | W (no source) | P | **Not Eligible** | Art. 10(3ter) mandate clients excluded |
-| 21 | `LOC90001001` | SL-ICAP | CHF 300,000 | no | P | P | – | – | – | P | W (no source) | P | **Eligible** | 3ter mandate clients are qualified for I Cap |
-| 22 | `LOC90001101` | GCE-BI | CHF 70,000 | no | P | P | **R** | – | P | P | P | P | **Needs Review** | CHF 70,000 / 0.9350 = EUR 74,866: below EUR 75k by 0.2%, within 5% |
-| 23 | `LOC90001201` | BNP-A | CHF 50,000 | no | P | **R** | P | – | P | – | W | P | **Needs Review** | US Person / FATCA status missing: Review, never Fail |
-| 24 | `SIN90001301` | GCE-BP | EUR 50,000 | no | | | | | | | | | **Needs Review** | Regime not covered (SIN) |
-| 25 | `LOC90001401` | BNP-AAC | CHF 50,000 | no | | | | | | | | | **Needs Review** | Only a Draft Rule Card exists for this class |
-| 26 | `LOC90000102` Anna | GCE-BI | *missing* | no | P | P | **R** | – | P | P | P | P | **Needs Review** | The request names no amount |
-
-★ = demo cast. Rows 4–9 are Tom's reverse lookup, one row per Share Class.
-
-"Within 5%" is read as: an amount below the minimum by at most 5% gives Review; further below gives Fail; at or above gives Pass.
-
 ## Demo cast
 
-### Anna Steinmann: same client, same fund, two portfolios (hero)
+The emails and the expected behaviour are scenarios in [`specs/02-answer-a-subscription-request.feature`](../../specs/02-answer-a-subscription-request.feature) and [`specs/04-find-what-a-portfolio-can-buy.feature`](../../specs/04-find-what-a-portfolio-can-buy.feature). Row numbers refer to the [answer key](../../specs/99-answer-key.feature).
 
-The email lists two Portfolio References and no client data. The system runs one check per reference and returns a Verdict for each (rows 1 and 2). The drafted reply suggests GCE-BP for portfolio 01 (row 3).
+- **Anna Steinmann, the hero: same client, same fund, two portfolios.** Marc Aebi's email lists `LOC90000101` and `LOC90000102` and no client data. One check per reference gives Not Eligible and Eligible on GCE-BI (rows 1 and 2), and the reply suggests GCE-BP for portfolio 01 (row 3).
+- **Tom Whitfield, the closing flourish: one client, three US Person definitions.** No email: the dealer runs "what can this portfolio buy?" on `LOC90000201` with CHF 2,000,000, deterministic and with no LLM. The same US citizen passes Nordea's Reg S test and fails BNP's and Swiss Life's (rows 4–9).
+- **Claire Dupont: the Target Market binds in Luxembourg.** Sophie Lentz's email is in French and names the fund but no Share Class, so every class of the fund is checked (rows 10 and 11). The reply, in French, recommends BP-EUR.
 
-> **From:** Marc Aebi (relationship manager)
-> **To:** Fund dealing desk
-> **Subject:** Subscription Nordea Global Climate – LOC90000101, LOC90000102
->
-> Hi desk,
-> The client would like to put EUR 80,000 into the Nordea Global Climate fund, institutional class, from portfolios LOC90000101 and LOC90000102. Can you confirm they can subscribe?
-> Thanks, Marc
+Two more emails exercise the edges: the **guard email** names Anna, so the Privacy Gate makes no LLM call and the dealer enters the request by hand; the **amount-to-follow email** gives row 26.
 
-### Tom Whitfield: one client, three US Person definitions (closing flourish)
-
-There is no email. The dealer opens `LOC90000201` in the dealer screen with an amount of CHF 2,000,000 and runs "what can this portfolio buy?". This is deterministic and needs no LLM. The table of rows 4–9 shows the same US citizen passing Nordea's Reg S test and failing BNP's and Swiss Life's.
-
-### Claire Dupont: Target Market is binding in Luxembourg
-
-The email is in French and names the fund but no Share Class. That means "check every class of that fund" (rows 10 and 11). The reply recommends BP-EUR and asks the Requester the questions the dealer accepted.
-
-> **De :** Sophie Lentz (conseillère)
-> **À :** Fund dealing desk
-> **Objet :** Souscription Nordea Global Climate – LUX90000301
->
-> Bonjour,
-> Ma cliente (LUX90000301) souhaite investir 20 000 EUR dans Nordea 1 Global Climate and Environment. Pouvez-vous valider ?
-> Merci, Sophie
-
-The advisory lane turns row 10's Needs Review into Requester Questions (is the risk profile current? is 2 years the horizon of the portfolio or of this investment?) and a Dealer To-do (file the client's acknowledgement if she proceeds). The Verdict stays Needs Review ([ADR 0005](../adr/0005-advisory-llm-lane-after-the-engine.md), [ADR 0007](../adr/0007-advisory-suggestions-never-change-the-verdict.md)).
-
-## Guard email (no coverage row)
-
-Requesters identify portfolios by Portfolio Reference only ([architecture](architecture.md)). This email breaks the convention, so the Privacy Gate finds a known client name, makes no LLM call, and the dealer enters the request by hand.
-
-> **From:** Marc Aebi
-> **Subject:** Nordea Global Climate for Anna Steinmann
->
-> Hi desk, can Anna Steinmann (LOC90000101) subscribe EUR 80,000 to Nordea Global Climate BP-EUR?
-
-## Coverage email (row 26)
-
-> **From:** Marc Aebi
-> **Subject:** LOC90000102 – Nordea Global Climate BI-EUR
->
-> Please check whether LOC90000102 can subscribe to Nordea Global Climate BI-EUR. Amount to follow.
-
-These emails are drafts. Revise them once [How does the fund dealing desk answer subscription requests today?](https://github.com/smnajid/fund-gate/issues/14) brings real samples.
+The emails are drafts. Revise them once [How does the fund dealing desk answer subscription requests today?](https://github.com/smnajid/fund-gate/issues/14) brings real samples.
 
 ## At hour 0
 
 1. Map the canonical fields above onto the bank's export, and swap the Scale Mapping for the bank's scales.
 2. Generate fixtures in the bank's shape, with fresh Portfolio Ids.
-3. Compare the Fund Registration table with DEV FMD and update the coverage set where they differ; replace the FX table with the bank's if it provides one.
-4. Run the coverage set; every row must match before the demo is rehearsed.
+3. Compare the Fund Registration table with DEV FMD and update the answer-key rows in `specs/` where they differ; replace the FX table with the bank's if it provides one.
+4. Run the answer key (`@answer-key`); every row must pass before the demo is rehearsed.
