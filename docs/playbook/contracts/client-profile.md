@@ -111,7 +111,7 @@ Columns: **LLM** is whether the field may reach an LLM under the [allow-list](..
 | `nationalities` | array of ISO 3166-1 alpha-2, every nationality held | Citizenships. `["CH","US"]` is a US citizen even if resident in Switzerland | US Person under citizenship-based definitions ("investors with U.S. citizenship", US tax code) | yes | US Person: Review when the card's definition looks at citizenship |
 | `taxResidences` | array of ISO 3166-1 alpha-2 | Countries where the client is tax resident | US Person (tax-code definitions); shown in the Justification | yes | US Person: Review when the card's definition looks at tax residence |
 | `birthCountry` | ISO 3166-1 alpha-2 | Country of birth only, never city or date | US Person: a US birthplace is a US indication | as "US-born yes/no" only | US Person: Review when needed and nothing else settles it |
-| `usPerson.fatcaStatus` | `us_person` \| `non_us_person` | The bank's own FATCA determination for the client | US Person: shown in the Justification next to the card's own definition; never replaces it | yes | Review on every US Person rule ([coverage row 23](../demo-dataset.md#coverage-set-answer-key)) |
+| `usPerson.fatcaStatus` | `us_person` \| `non_us_person` | The bank's own FATCA determination for the client | US Person: shown in the Justification next to the card's own definition; never replaces it | yes | Review on every US Person rule ([answer-key row 23](../../../specs/99-answer-key.feature)) |
 | `usPerson.usPermanentResident` | boolean | Holds a US green card | US Person (tax-code definitions count green card holders) | yes | taken from `fatcaStatus`: `non_us_person` means no green card; otherwise Review |
 | `knowledgeAndExperience` | array of `{ productType, level }` | Knowledge and experience per product type, as the bank assesses it | Target Market (knowledge and experience), for the product type the Share Class catalog gives the Share Class | yes | no entry for the Share Class's product type: Target Market Review |
 | `knowledgeAndExperience[].productType` | bank code | The bank's product type, e.g. `FUNDS`, `PRIVATE_EQUITY` | Share Class catalog → which entry applies | yes | entry ignored |
@@ -155,7 +155,7 @@ Qualified investor (CH) and well-informed investor (LU) are never fields: the en
 
 ## Fixtures
 
-[`fixtures/client-profiles/`](fixtures/client-profiles/): the 15 portfolios of [demo-dataset.md](../demo-dataset.md), one file per Portfolio Reference, in the invented bank scales of that page. The fixture adapter reads them as they are. Portfolio Ids are fixed random UUIDs; regenerate them at hour 0 if the bank wants fresh ones.
+[`fixtures/client-profiles/`](fixtures/client-profiles/): the 15 portfolios of [demo-dataset.md](../demo-dataset.md), one file per Portfolio Reference, in the invented bank scales of that page. The fixture adapter reads them as they are. Portfolio Ids are fixed random UUIDs; regenerate them at the event if the bank wants fresh ones.
 
 ## Inside the bank: the CRM adapter
 

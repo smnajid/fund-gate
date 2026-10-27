@@ -18,7 +18,7 @@ Read first: `docs/adr/0002-no-llm-at-check-time.md`, `docs/adr/0003-validator-ma
 5. **Suggestions never change the Verdict.** The advisory lane's output (Requester Questions, Dealer To-dos) and the dealer's accept or dismiss never write to the Verdict, in either direction. Look for any path from the lane's output or an accept/dismiss to the Verdict or the Justification.
 6. **Regime.** A Legal Entity prefix other than LOC or LUX gives Needs Review "regime not covered".
 
-When tests exist, run them. Cross-check a few rows of the coverage set in `docs/playbook/demo-dataset.md` against what the code would produce.
+When tests exist, run them, including the Cucumber scenarios tagged `@rule-engine` and `@answer-key` in `specs/`. Cross-check a few rows of `specs/99-answer-key.feature` against what the code would produce.
 
 ## Output
 
