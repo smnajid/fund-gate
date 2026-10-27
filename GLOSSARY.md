@@ -99,7 +99,7 @@ What a Fund Dealer is asked to check: a portfolio, a Share Class, an amount and 
 _Avoid_: Order, ticket, request email
 
 **Order**:
-An instruction to subscribe to a Share Class for a portfolio, created by a portfolio manager in G2 and sent to Negoce for execution; no subscription is executed without one. An Eligibility Check on an Order runs on a Subscription Request derived from it, without an LLM.
+An instruction to subscribe to a Share Class for a portfolio, created by a portfolio manager in GX (the next version of G2) and sent to Negoce for execution; no subscription is executed without one. An Eligibility Check on an Order runs on a Subscription Request derived from it, without an LLM.
 _Avoid_: Trade, ticket
 
 **Scale Mapping**:

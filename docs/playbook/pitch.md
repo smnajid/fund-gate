@@ -20,7 +20,7 @@ A relationship manager emails the desk: put EUR 80,000 from two of Anna's portfo
 - **Form guided**: a checklist of the declarations and documents the subscription needs, pre-filled from the client's facts.
 - **Questions answered**: "why not the I class?", "what would make her eligible?"
 
-- **No email needed**: the same check from a structured request (portfolio, ISIN, amount), no AI involved. Every subscription the bank executes passes through a G2 order, so the next step is checking each one before it leaves ([order flow](order-flow-integration.md)).
+- **No email needed**: the same check from a structured request (portfolio, ISIN, amount), no AI involved. Every subscription the bank executes passes through a GX order to Negoce, so the next step is Negoce checking each fund Order with FundEli5 ([order flow](order-flow-integration.md)).
 
 Closing: "which funds can Tom buy?" One US citizen, three funds, three different US Person definitions.
 

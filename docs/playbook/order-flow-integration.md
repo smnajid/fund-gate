@@ -1,56 +1,55 @@
-# Order flow integration: from desk tool to pre-trade control
+# Order flow integration: from desk tool to the order flow
 
-Not built at the hackathon: this note maps where FundEli5 fits in the bank's order flow, for the pitch and later brainstorming. Source: exchange with Samuel (fund dealing desk), 2026-10-20, and a grilling session the same day. Vocabulary: [GLOSSARY.md](../../GLOSSARY.md).
+Not built at the hackathon: this note maps where FundEli5 fits in the bank's order flow, for the pitch and later brainstorming. Sources: exchanges with Samuel (fund dealing desk), 2026-10-20, a grilling session the same day, and a correction of the bank's architecture on 2026-10-24. Vocabulary: [GLOSSARY.md](../../GLOSSARY.md).
+
+Diagrams: the [architecture map](https://claude.ai/artifact/UwWpZvZGcQ3WxY1zfpTXUM) (current architecture and this roadmap, interactive) and the [roadmap slides](https://claude.ai/artifact/Pbkn19Z7SmPQ3Z5Q4nMNXD) shown at the end of the 5-minute demo. Both are private artifacts: ask Mohamed for access.
 
 ## The bank's order flow
 
 ```
- PM ─► G2 (portfolio management) ─► ValidationEngine ─► Negoce (dealing desk) ─► booking
-                                      ├─ client constraints (suitability, cash)
-                                      ├─ credit risk
-                                      └─ OrderRules (market: min amount, round lot)
+ PM ─► GX (portfolio management) ─────────────► Negoce (dealing desk) ─► booking
+        │ validate                                 transmits the Order directly
+        ▼
+      ValidationEngine ─► Kafka (async) ─► sub-validators
+                                            ├─ client constraints (suitability, cash)
+                                            ├─ credit risk
+                                            └─ OrderRules (market: min amount, round lot)
 ```
 
-- Portfolio managers often skip the email and create the **Order** directly in G2. **100% of executed subscriptions pass through G2 → Negoce**: no Order in Negoce, no execution.
-- Before transmission, G2 calls the **ValidationEngine**, which fans the Order out to validators by domain. Each validator can **pass**, **block**, **warn** (the PM must justify; the ValidationEngine stores the justification and shows it back), or turn the constraint into an **asynchronous manual validation** by a named team on the ValidationEngine's own screen.
-- Today the fund dealing desk re-checks eligibility by hand on each Order it receives in Negoce: the same work as an emailed request, triggered differently.
+- GX is the next version of G2, the portfolio management system.
+- Portfolio managers often skip the email and create the **Order** directly in GX. **100% of executed subscriptions pass through GX → Negoce**: no Order in Negoce, no execution.
+- GX transmits the Order to Negoce directly; the transmission does not pass through the ValidationEngine.
+- GX asks the **ValidationEngine** to validate the Order. The sub-validators are components outside the ValidationEngine, which delegates to them asynchronously over Kafka.
+- Today the fund dealing desk re-checks eligibility by hand on each fund Order it receives in Negoce: the same work as an emailed request, triggered differently.
 
 So email covers the question asked *before* an Order; the Order flow covers *every* execution.
 
 ## Roadmap
 
-1. **Hackathon**: the email story stays the demo. One extra beat: a structured Subscription Request (portfolio, ISIN, amount, currency), no email, gets its Verdict straight from the engine through the same OpenAPI endpoint the dealer form uses, with no LLM call.
-2. **Negoce calls FundEli5** (REST) on each incoming Order and shows the Verdict beside it. The desk's process is unchanged; only the manual check goes.
-3. **FundEli5 behind OrderRules** in the ValidationEngine: every Order is checked before it leaves G2.
+1. **Standalone, on real bank data.** FundEli5 is used as at the hackathon: the dealer pastes an emailed request, or a structured Subscription Request (portfolio, ISIN, amount, currency) gets its Verdict through the same OpenAPI endpoint the dealer form uses, with no LLM call. What changes is behind the ports ([ADR 0008](../adr/0008-bank-data-enters-through-canonical-contracts.md)): FMD supplies Share Classes and Fund Registrations, the CRM Gateway supplies Client Profiles and Portfolio Ids. The order flow is untouched.
+2. **Negoce calls FundEli5** (REST) on each incoming fund Order and shows the Verdict and answer sheet beside it. The email path stays for questions asked before an Order exists.
 
-Stage 3 is possible because the Verdict involves no LLM ([ADR 0002](../adr/0002-no-llm-at-check-time.md)): a synchronous validator in an order pipeline must be fast, deterministic and auditable.
+Stage 2 is possible because the Verdict involves no LLM ([ADR 0002](../adr/0002-no-llm-at-check-time.md)): Negoce gets the same answer, fast, every time it asks about the same Order, and the Check Record makes it auditable.
 
-**Selling it to the desk.** Stage 3 moves the check upstream of the desk, which validates eligibility today. The desk goes from validating every Order to validating the rules: Fund Dealers and compliance remain the Rule Card Validators, and no Verdict exists without a card they validated ([ADR 0001](../adr/0001-llm-extracts-rules-engine-decides.md), [ADR 0003](../adr/0003-validator-marks-unmodelled-restrictions-noted.md)). The engine applies their judgement at the point where the Order is created.
+## What the desk does with the Verdict in Negoce
 
-## Verdict → ValidationEngine outcome
-
-| Verdict | Outcome |
+| Verdict | The desk |
 |---|---|
-| Eligible | pass |
-| Not Eligible on a Hard Restriction or Fund Registration | **block**, Justification returned to the PM |
-| Not Eligible on a Target Market mismatch only | **warn**: the PM justifies (e.g. client-initiated, diversification); the ValidationEngine stores it |
-| Needs Review | **manual validation** by the fund dealing desk |
+| Eligible | lets the Order through, with the Justification on file |
+| Not Eligible | rejects the Order, citing the rule and its page in the Fund Documentation |
+| Needs Review | checks by hand, as today, starting from the answer sheet |
 
-Hard Restrictions never downgrade to a warning: they are binary by definition. A Target Market mismatch is a MiFID "distribute with care" signal, not a legal bar. This needs the Justification to say which kind of rule failed, which it already does rule by rule.
+The desk's process and its decision stay the same; FundEli5 removes the manual re-check where the rules already answer. The Reply Drafter has no role here: there is no email to answer.
 
-## Needs Review on an Order
+## Not on the roadmap: FundEli5 as a sub-validator
 
-The desk keeps one queue: the ValidationEngine's manual-validation screen. Each item deep-links to the FundEli5 answer sheet (Justification, evidence, Advisory Suggestions); the desk's decision goes back through the ValidationEngine asynchronously.
+FundEli5 could become a distinct sub-validator for fund Orders, consuming the ValidationEngine's Kafka topics like the others, so every fund Order is checked before it reaches Negoce. It is left out of the roadmap because it implies process changes and raises questions the pitch cannot answer yet:
 
-- The Reply Drafter has no role here: there is no email to answer.
-- The ValidationEngine cannot send a question back to the PM, so accepted Requester Questions are asked outside the system, as an email follow-up is today.
-
-## Overlap with existing validators
-
-- **Minimum subscription.** OrderRules checks a minimum amount. It could delegate the per-Share-Class minimum to FundEli5; keeping or dropping the rule in OrderRules is the desk's decision, not ours.
-- **Target Market.** Unknown whether the client-constraints validator (suitability) already covers the MiFID Target Market. If it does, the pitch says "consolidates", not "adds".
+- **Needs Review.** Either the ValidationEngine holds the Order in a manual workflow for the desk, or the PM gets a warning that the desk will review the Order and may reject it. A warning today means the PM must justify; a Needs Review warning would only inform.
+- **Who validates.** The check moves upstream of the desk, which goes from validating every Order to validating the rules as Rule Card Validators ([ADR 0001](../adr/0001-llm-extracts-rules-engine-decides.md), [ADR 0003](../adr/0003-validator-marks-unmodelled-restrictions-noted.md)).
+- **Overlap with existing sub-validators.** OrderRules checks a minimum amount and could delegate the per-Share-Class minimum to FundEli5; that is the desk's decision. It is unknown whether the client-constraints sub-validator already covers the MiFID Target Market.
 
 ## Open questions
 
-- Does the client-constraints validator cover the MiFID Target Market? (owner: Samuel)
+- Does the client-constraints sub-validator cover the MiFID Target Market? Only matters for the sub-validator idea. (owner: Samuel)
 - For discretionary mandates, is Target Market checked at mandate level or at client level? Affects the Target Market rules.
