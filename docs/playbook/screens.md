@@ -44,7 +44,7 @@ Portfolio Reference and amount in, one engine run against **every Share Class in
 - A count line on top: Eligible n · Needs Review n · Not Eligible n.
 
 **Search** narrows the rows already computed; it never reruns the engine.
-- **Fields:** fund name, Share Class name, ISIN, currency and fund regime from the Share Class catalog, plus the Valor number and the bank's internal fund code if its fund list carries them (known at hour 0).
+- **Fields:** fund name, Share Class name, ISIN, currency and fund regime from the Share Class catalog, plus the Valor number and the bank's internal fund code if its fund list carries them (known at the event).
 - **Matching** is deterministic, with no AI and no fuzzy guessing: case, accents and punctuation are ignored, every typed word must appear in any order, and an ISIN or Valor matches exactly or by prefix.
 - **One matcher.** The search reuses the Share Class catalog's matcher, the one that turns an email's fund mention into Share Classes, so typing and parsing give the same answer.
 - **Filters:** regime, currency, Verdict. Everything filters in the browser: a few thousand rows need no search server.

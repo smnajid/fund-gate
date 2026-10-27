@@ -1,6 +1,6 @@
-# Hackathon kit: install at hour 0
+# Hackathon kit: install before you build
 
-The Claude Code setup every teammate runs in the 20 build hours ([team-plan.md](../playbook/team-plan.md)). Why each piece is here: [ai-tooling.md](../playbook/ai-tooling.md). Target time: 10 minutes.
+The Claude Code setup the builder runs from the first day of the pre-build, and any specialist who tries an AI agent installs too ([team-plan.md](../playbook/team-plan.md)). Why each piece is here: [ai-tooling.md](../playbook/ai-tooling.md). Target time: 10 minutes.
 
 ## 1. Point Claude Code at Foundry
 
@@ -50,12 +50,12 @@ Personal choices go in `.claude/settings.local.json`, which is git-ignored:
 }
 ```
 
-- `playwright`: Builder 3 (UIs) and the platform seat (demo verifier).
-- `document-skills` (`pptx`): the platform seat (pitch deck).
+- `playwright`: the builder, for the screens and the demo verifier.
+- `document-skills` (`pptx`): whoever builds the pitch deck.
 - `context7`: anyone who keeps hitting outdated framework APIs.
-- `security-guidance`: the platform seat if wanted, for the Privacy Gate. It reviews every turn, which slows you down.
+- `security-guidance`: the builder if wanted, for the Privacy Gate. It reviews every turn, which slows you down.
 
-## 4. Angular CLI MCP (Builder 3)
+## 4. Angular CLI MCP
 
 Gives the agent `ng` build, test and serve targets, Angular docs search and the best-practices guide:
 
@@ -63,34 +63,34 @@ Gives the agent `ng` build, test and serve targets, Angular docs search and the 
 claude mcp add angular-cli -- npx -y @angular/cli mcp
 ```
 
-## 5. Stack practices (set up at hour 0)
+## 5. Stack practices (set up with the skeleton)
 
 The POC runs on Spring Boot 4 and Angular so that the team checks generated code in the language it knows best ([ADR 0006](../adr/0006-spring-boot-and-angular-python-only-for-real-added-value.md)). Three practices recover most of the speed of a single-language stack. Put them in the scaffold before anyone builds a feature.
 
 1. **Generated client types.** Add `springdoc-openapi` to the backend so it serves its OpenAPI spec. Generate the Angular types and HTTP client from that spec with `openapi-generator` (`typescript-angular`), and put the generate step in an npm script. Regenerate after every API change instead of editing DTOs by hand. Generated files are never edited.
 2. **One codebase.** The Rule Card pipeline is a command-line mode of the same Spring Boot app, for example a `pipeline` profile with an `ApplicationRunner`, not a second project. That gives one build, one image and shared domain types. It runs as its own process, with no Client Profile or CRM adapter wired in, so the offline and online runtimes stay separate (ADR 0004).
-3. **Fast loop, tests as the safety net.** Turn on `spring-boot-devtools` so a backend change restarts in seconds. Builder 2 builds the Rule Engine test-first (`/tdd`) against the scenarios of the executable specification in `specs/` (section 6). A wrong Verdict then fails a scenario even when a review misses it.
+3. **Fast loop, tests as the safety net.** Turn on `spring-boot-devtools` so a backend change restarts in seconds. The Rule Engine is built test-first (`/tdd`) against the scenarios of the executable specification in `specs/` (section 6). A wrong Verdict then fails a scenario even when a review misses it.
 
 Python only if a module needs something the JVM can't do well. Today none does.
 
 ## 6. Run the executable specification
 
-`specs/` describes what FundEli5 does in Gherkin: start with `specs/00-fundeli5.feature`. The feature files are written before the event; the step definitions are written at hour 0, by the owner of each module. `specs/` never moves.
+`specs/` describes what FundEli5 does in Gherkin: start with `specs/00-fundeli5.feature`. The feature files are written before the event; the step definitions are written with each module, from Wed 28 Oct. `specs/` never moves.
 
-**The lead wires Cucumber into the skeleton at hour 0** (9:30–10:30), before anyone builds a feature:
+**Cucumber is wired into the skeleton on Wed 28 Oct**, before any feature is built:
 - `cucumber-java`, `cucumber-spring` and `cucumber-junit-platform-engine` with a `@Suite` runner, and `cucumber.features=specs` in `src/test/resources/junit-platform.properties` (a path relative to the directory Maven runs in; use `../specs` if the backend is a sub-module).
 - Default filter `cucumber.filter.tags=not @live-llm`, and the LLM egress client in replay mode, so a run makes no model call. A run with `-Dcucumber.filter.tags=@live-llm` uses the real model.
 - One step-definition package per module. An undefined step is that module's to-do list.
 
-How each seat and agent runs it:
+Who runs it:
 
 | Who | Runs | When |
 |---|---|---|
-| Builder 2 | `./mvnw test -Dcucumber.filter.tags="@rule-engine"` in the `/tdd` loop: pick the next failing example, make it pass, repeat. `@answer-key` once the engine decides every rule | Every change to the Rule Engine, Scale Mapping, reverse lookup |
-| Every owner | the tags of their modules (see `00-fundeli5.feature`), e.g. `@privacy-gate or @check-record` | Before saying "ready" |
+| Mohamed, Rule Engine | `./mvnw test -Dcucumber.filter.tags="@rule-engine"` in the `/tdd` loop: pick the next failing example, make it pass, repeat. `@answer-key` once the engine decides every rule | Every change to the Rule Engine, Scale Mapping, reverse lookup |
+| Mohamed, other modules | the module's tags (see `00-fundeli5.feature`), e.g. `@privacy-gate or @check-record` | Before merging the module |
 | `/pre-merge` | the module tags of the changed files, plus `@answer-key` | Before every merge |
 | `demo-flow-verifier` | `@must`, then `@should` once picked, against the running app | Checkpoints, freeze, rehearsals |
-| Desk member | reads the `@assumed` scenarios and removes each tag once the reading is confirmed | Before the event; again after mapping the bank's data |
+| Cynthia, then the desk | Cynthia reads the `@assumed` scenarios; Samuel or Tania confirm them in the daily slot ([#50](https://github.com/smnajid/fund-gate/issues/50)); Mohamed removes each tag once confirmed | Before the event; again after mapping the bank's data |
 
 `@assumed` scenarios still run. A failing `@answer-key` row blocks the rehearsal.
 
@@ -98,7 +98,7 @@ How each seat and agent runs it:
 
 | When | Do |
 |---|---|
-| Starting your module | `claude --worktree <module>`, one worktree per owner |
+| Building two modules at once | `claude --worktree <module>`, one worktree per agent |
 | API changed | regenerate the Angular client from the OpenAPI spec, commit both sides together |
 | Build broken | `java-build-resolver` (Spring Boot) or `ts-build-resolver` (Angular) |
 | Before merging | `/pre-merge` (runs your modules' scenarios); the stack reviewer agent; `privacy-gate-auditor` if an LLM call or client field is touched; `engine-purity-reviewer` for the engine |

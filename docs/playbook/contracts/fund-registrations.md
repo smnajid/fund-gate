@@ -10,7 +10,7 @@ Rule Engine ──► FundRegistrations (out port)
                   └── FmdFundRegistrations       FMD registration data → Registration
 ```
 
-**At the event `FmdFundRegistrations` runs inside the bank**: DEV FMD carries registration data per Share Class and country. This page is a specification; the Java interface and records are written from it at hour 0.
+**At the event `FmdFundRegistrations` runs inside the bank**: DEV FMD carries registration data per Share Class and country. This page is a specification; the Java interface and records are written from it before the event.
 
 The port returns **the bank's record only**. What the Fund Documentation says about where the fund may be sold is a **Selling Restriction**. The pipeline extracts it with its Citation and shows it on the validation screen beside the bank's record, with a banner when the two disagree. It is never an input to the engine.
 
@@ -80,7 +80,7 @@ FMD may also carry a status or a date per entry (registered since, withdrawn on)
 
 1. Find FMD's registration fields on one real ISIN, e.g. Nordea 1 GCE BP-EUR (`LU0348926287`): the list should include LU, CH and many EU countries.
 2. Fill the mapping table below, and map FMD's investor-type codes onto the enum.
-3. **Compare the fixture table with FMD for the demo funds**, before the event if DEV can be reached, or else at hour 0. Where they differ, FMD wins: update the demo dataset's table and the coverage set rows that depend on it, then rerun the coverage set.
+3. **Compare the fixture table with FMD for the demo funds**, before the event if DEV can be reached, or else at the event. Where they differ, FMD wins: update the demo dataset's table and the coverage set rows that depend on it, then rerun the coverage set.
 
 | Contract field | FMD field (fill at the event) | Notes |
 |---|---|---|

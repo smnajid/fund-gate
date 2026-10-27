@@ -45,7 +45,7 @@ Two runtimes, split on whether they touch client data, sharing one store.
 | **LLM egress client** | both | the only code that calls Foundry; the online side accepts only Privacy Gate output | — |
 | **Adapters** | online | Behind out ports with canonical models ([ADR 0008](../adr/0008-bank-data-enters-through-canonical-contracts.md)): `ClientProfiles` gives the Client Profile and the Portfolio Id ([contract](contracts/client-profile.md)); `ShareClasses` the Share Class catalog ([contract](contracts/share-classes.md)); `FundDocuments` the pipeline's documents ([contract](contracts/fund-documents.md)); `FundRegistrations` the bank's Fund Registration ([contract](contracts/fund-registrations.md)). The adapter is chosen per port: at the event, FMD for Share Classes and Fund Registration, a folder of real PDFs for documents, fixtures for Client Profiles (DEV's CRM and FMD PDFs are mocks) | no |
 
-The **Client Profile**, **Share Classes**, **Fund Documents** and **Fund Registrations** contracts are written before the event ([contracts/](contracts/), with fixtures); the **Rule Card**, **Subscription Request** and **Check Record** schemas are agreed at hour 0. Everyone builds against fixtures from [demo-dataset.md](demo-dataset.md).
+The **Client Profile**, **Share Classes**, **Fund Documents** and **Fund Registrations** contracts are written before the event ([contracts/](contracts/), with fixtures); the **Rule Card**, **Subscription Request** and **Check Record** schemas are fixed with the skeleton on Wed 28 Oct. Everything is built against fixtures from [demo-dataset.md](demo-dataset.md); the behaviour it must produce is the executable specification in [`specs/`](../../specs/00-fundeli5.feature).
 
 ## Data flow of one request
 

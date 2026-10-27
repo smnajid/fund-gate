@@ -2,7 +2,7 @@
 
 Resolves [Which synthetic Client Profiles make the demo?](https://github.com/smnajid/fund-gate/issues/8).
 
-The synthetic data the team needs for rehearsal and the demo: the inputs, not the expected answers. This is a **spec**, not fixture files. The bank's data shape is only known at hour 0, so at hour 0 someone turns these rows into that shape. It takes about 30 minutes.
+The synthetic data the team needs for rehearsal and the demo: the inputs, not the expected answers. This is a **spec**, not fixture files. Mathilde turns these rows into fixtures before the event. The bank's data shape is only known at the event, where she and Mohamed map them onto it in about 30 minutes.
 
 It has two tiers:
 - **Demo cast**: 3 named clients the 5-minute story shows.
@@ -15,9 +15,9 @@ Vocabulary: [GLOSSARY.md](../../GLOSSARY.md). Rule kinds and outcomes: [What is 
 ## Conventions
 
 - **Synthetic client numbers** come from the reserved range **900001–900099**, so they can never be mistaken for a real client. Portfolio Reference = Legal Entity + client number + dossier number, e.g. `LOC90000101`.
-- **Portfolio Ids** are random UUIDs, generated at hour 0. Only Portfolio Ids reach the LLM.
+- **Portfolio Ids** are random UUIDs, generated with the fixtures. Only Portfolio Ids reach the LLM.
 - Values use the **bank scales** below. The Scale Mapping is the only thing that translates them.
-- *Assumed* marks a fact we chose, not one read from a source. Replace it with the bank's data at hour 0.
+- *Assumed* marks a fact we chose, not one read from a source. Replace it with the bank's data at the event.
 
 ## Share Classes used
 
@@ -37,7 +37,7 @@ Swiss Life class↔ISIN pairs are unverified (see the research). Pick one sub-fu
 
 ## Bank scales and Scale Mapping
 
-The bank scales are invented and deliberately differ from the Target Market scales, so the Scale Mapping does real work. At hour 0 the bank's real scales replace this one table.
+The bank scales are invented and deliberately differ from the Target Market scales, so the Scale Mapping does real work. At the event the bank's real scales replace this one table.
 
 | Bank field | Bank value | Target Market value |
 |---|---|---|
@@ -68,7 +68,7 @@ The bank scales are invented and deliberately differ from the Target Market scal
 | SL-* | CH | qualified | yes | "distribution approved: Switzerland" (appendix p.45) |
 | SL-* | LU | any | **no** | same |
 
-Fixture: [`contracts/fixtures/fund-registrations.json`](contracts/fixtures/fund-registrations.json). DEV FMD carries registration data, so at the event the engine reads FMD instead ([contract](contracts/fund-registrations.md)). Compare this table with FMD before the event if DEV can be reached, otherwise at hour 0; where they differ, FMD wins and the answer-key rows in `specs/` that depend on it change.
+Fixture: [`contracts/fixtures/fund-registrations.json`](contracts/fixtures/fund-registrations.json). DEV FMD carries registration data, so at the event the engine reads FMD instead ([contract](contracts/fund-registrations.md)). Compare this table with FMD before the event if DEV can be reached, otherwise at the event; where they differ, FMD wins and the answer-key rows in `specs/` that depend on it change.
 
 ## FX
 
@@ -152,7 +152,7 @@ Two more emails exercise the edges: the **guard email** names Anna, so the Priva
 
 The emails are drafts. Revise them once [How does the fund dealing desk answer subscription requests today?](https://github.com/smnajid/fund-gate/issues/14) brings real samples.
 
-## At hour 0
+## At the event
 
 1. Map the canonical fields above onto the bank's export, and swap the Scale Mapping for the bank's scales.
 2. Generate fixtures in the bank's shape, with fresh Portfolio Ids.

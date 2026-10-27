@@ -155,7 +155,7 @@ Qualified investor (CH) and well-informed investor (LU) are never fields: the en
 
 ## Fixtures
 
-[`fixtures/client-profiles/`](fixtures/client-profiles/): the 15 portfolios of [demo-dataset.md](../demo-dataset.md), one file per Portfolio Reference, in the invented bank scales of that page. The fixture adapter reads them as they are. Portfolio Ids are fixed random UUIDs; regenerate them at hour 0 if the bank wants fresh ones.
+[`fixtures/client-profiles/`](fixtures/client-profiles/): the 15 portfolios of [demo-dataset.md](../demo-dataset.md), one file per Portfolio Reference, in the invented bank scales of that page. The fixture adapter reads them as they are. Portfolio Ids are fixed random UUIDs; regenerate them at the event if the bank wants fresh ones.
 
 ## Inside the bank: the CRM adapter
 

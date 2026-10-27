@@ -10,7 +10,7 @@ Share Class catalog ──► ShareClasses (out port)
                            └── FmdShareClasses       FMD instrument data → Share Classes
 ```
 
-**At the event `FmdShareClasses` runs inside the bank**: DEV FMD's instrument data is real, so real ISINs resolve. This page is a specification; the Java interface and records are written from it at hour 0.
+**At the event `FmdShareClasses` runs inside the bank**: DEV FMD's instrument data is real, so real ISINs resolve. This page is a specification; the Java interface and records are written from it before the event.
 
 ## The port
 
@@ -91,7 +91,7 @@ Either way, a class whose ISIN no card lists has no card.
 
 ## Fixtures
 
-[`fixtures/share-classes.json`](fixtures/share-classes.json): the demo dataset's 9 classes and 2 card-less ones. The Swiss Life ISINs are unconfirmed (see the demo dataset), so the fixture uses placeholders starting `XX`, which no real ISIN uses; the 2 card-less classes do too. Replace them with real ISINs from DEV FMD at hour 0.
+[`fixtures/share-classes.json`](fixtures/share-classes.json): the demo dataset's 9 classes and 2 card-less ones. The Swiss Life ISINs are unconfirmed (see the demo dataset), so the fixture uses placeholders starting `XX`, which no real ISIN uses; the 2 card-less classes do too. Replace them with real ISINs from DEV FMD at the event.
 
 ## Inside the bank: the FMD adapter
 

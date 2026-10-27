@@ -7,7 +7,7 @@ Feature: Prepare the subscription form
   No subscription form has been provided, so the guide is a checklist generated
   from the Rule Card: each item comes from a rule and carries its Citation, and
   pre-filled values come from the Client Profile, locally. If the bank provides
-  its form at hour 0, the checklist maps onto it.
+  its form at the event, the checklist maps onto it.
 
   Assumed: which items each rule kind produces, who receives the checklist, and
   how it behaves on Not Eligible and Needs Review are open in issue #25. Samuel

@@ -34,7 +34,7 @@ Feature: FundEli5
     Engine modules: @rule-engine @scale-mapping @reverse-lookup @what-if @explanation @form-checklist
     LLM-facing modules: @privacy-gate @request-parser @reply-drafter
     Other modules: @share-class-catalog @rule-card-pipeline @validation @check-record
-    Seats filter on module tags, and /pre-merge runs the tags of the modules a change touches.
+    Run one module's scenarios by its tag; /pre-merge runs the tags of the modules a change touches.
 
   Vocabulary: GLOSSARY.md. Why each constraint holds: docs/adr/.
   Cast, conventions, bank scales and the short Share Class names (GCE-BI, SIF-W, ...):

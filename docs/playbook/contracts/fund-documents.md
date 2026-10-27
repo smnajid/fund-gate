@@ -10,7 +10,7 @@ Rule Card pipeline ──► FundDocuments (out port)
                          └── FmdFundDocuments      FMD document metadata + PDFs
 ```
 
-**At the event `FolderFundDocuments` runs inside the bank too.** DEV FMD, the only environment we can reach, serves mock PDFs, and a Rule Card drafted from a mock is meaningless. So the PDFs come from the funds' public websites or from the bank by hand, and `FmdFundDocuments` is specified here but not built. In production it replaces the folder adapter, and nothing else changes. This page is a specification; the Java interface and records are written from it at hour 0.
+**At the event `FolderFundDocuments` runs inside the bank too.** DEV FMD, the only environment we can reach, serves mock PDFs, and a Rule Card drafted from a mock is meaningless. So the PDFs come from the funds' public websites or from the bank by hand, and `FmdFundDocuments` is specified here but not built. In production it replaces the folder adapter, and nothing else changes. This page is a specification; the Java interface and records are written from it before the event.
 
 ## The port
 

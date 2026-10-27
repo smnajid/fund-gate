@@ -160,7 +160,7 @@ Feature: Check eligibility
 
     @assumed
     Example: Row 22 - CHF 70,000 is EUR 74,866, below EUR 75,000 by 0.2%
-      Assumed: the 5% tolerance, and the EUR/CHF rate 0.9350 standing in for the bank's FX table. Samuel (desk) confirms the tolerance; the bank's FX table replaces the rate at hour 0.
+      Assumed: the 5% tolerance, and the EUR/CHF rate 0.9350 standing in for the bank's FX table. Samuel (desk) confirms the tolerance; the bank's FX table replaces the rate at the event.
       When LOC90001101 asks to subscribe CHF 70,000 to GCE-BI
       Then the Verdict is Needs Review
       And the minimum initial subscription rule gives Review
