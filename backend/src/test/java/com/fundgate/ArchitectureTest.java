@@ -1,6 +1,9 @@
 package com.fundgate;
 
+import static com.tngtech.archunit.core.domain.JavaCall.Predicates.target;
+import static com.tngtech.archunit.core.domain.properties.HasOwner.Predicates.With.owner;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
+import static com.tngtech.archunit.base.DescribedPredicate.describe;
 
 import com.fundgate.privacygate.GatedEmail;
 import com.tngtech.archunit.core.importer.ImportOption;
@@ -25,7 +28,8 @@ class ArchitectureTest {
     @ArchTest
     static final ArchRule only_the_privacy_gate_builds_a_gated_email = noClasses()
             .that().resideOutsideOfPackage("com.fundgate.privacygate..")
-            .should().callConstructor(GatedEmail.class, String.class, java.util.Map.class);
+            // Any constructor of it, so a changed signature cannot leave the rule matching nothing
+            .should().callConstructorWhere(target(owner(describe("GatedEmail", owner -> owner.isEquivalentTo(GatedEmail.class)))));
 
     /** The modules are plain Java, so a later ticket swaps a stub by changing one bean, and their tests need no Spring. */
     @ArchTest
