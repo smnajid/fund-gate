@@ -1,0 +1,10 @@
+{
+  "portfolioRef": "LOC90000101",
+  "portfolioId": "0d0e3c6a-1111-4c55-9a59-0c8f1d5b7e21",
+  "legalEntity": "LOC",
+  "retrievedAt": "2026-11-02T08:00:00Z",
+  "client": {
+    "residenceCountry": "CH",
+    "nationalitys": ["CH"]
+  }
+}
