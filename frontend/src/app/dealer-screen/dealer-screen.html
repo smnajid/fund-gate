@@ -1,0 +1,46 @@
+<section class="paste">
+  <label for="email">Requester's email</label>
+  <textarea #pasted id="email" rows="10" [value]="email()" (input)="email.set(pasted.value)"></textarea>
+  <button type="button" [disabled]="answering() || !email().trim()" (click)="answerIt()">Answer it</button>
+</section>
+
+@if (failed()) {
+  <p class="failure" role="alert">Could not answer this email, try again.</p>
+}
+
+@if (answer(); as answer) {
+  @if (answer.refusal; as refusal) {
+    <section class="refusal" role="alert">
+      <h2>No AI used for this email</h2>
+      <p>{{ refusal.reason }}: {{ refusal.found.join(', ') }}</p>
+      <p>Enter the request by hand.</p>
+    </section>
+  } @else {
+    @if (answer.swaps.length > 0) {
+      <p class="gate">
+        @for (swap of answer.swaps; track swap.portfolioRef) {
+          <code>{{ swap.portfolioRef }} → {{ shortId(swap.portfolioId) }}</code>
+        }
+        <span>the LLM saw Portfolio Ids only</span>
+      </p>
+    }
+
+    <ul class="checks">
+      @for (check of answer.checks; track check.checkId) {
+        <li [attr.data-verdict]="check.verdict">
+          <code>{{ check.portfolioRef }}</code> <strong>{{ verdictPhrase(check.verdict) }}</strong> {{ check.shareClass }}.
+          @for (notice of check.notices; track $index) {
+            <span class="notice">{{ notice }}</span>
+          }
+        </li>
+      }
+    </ul>
+
+    @if (answer.reply; as reply) {
+      <section class="reply">
+        <h2>Reply @if (reply.draftedByAi) { <small>drafted by AI</small> }</h2>
+        <textarea aria-label="Reply" rows="12" [value]="reply.text"></textarea>
+      </section>
+    }
+  }
+}

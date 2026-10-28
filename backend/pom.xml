@@ -19,6 +19,7 @@
     <properties>
         <java.version>25</java.version>
         <cucumber.version>8.0.4</cucumber.version>
+        <archunit.version>1.4.2</archunit.version>
         <springdoc.version>3.1.1</springdoc.version>
     </properties>
 
@@ -53,6 +54,17 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.tngtech.archunit</groupId>
+            <artifactId>archunit-junit5</artifactId>
+            <version>${archunit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
