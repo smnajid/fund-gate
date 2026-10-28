@@ -20,7 +20,11 @@ import org.junit.platform.testkit.engine.EngineTestKit;
 import org.junit.platform.testkit.engine.Event;
 import org.junit.platform.testkit.engine.Events;
 
-/** The executable specification in specs/ runs, and a step nobody has written yet shows as undefined, not as an error. */
+/**
+ * The executable specification in specs/ runs. A scenario not built yet shows as undefined, or as failing on its
+ * assertion once its steps are defined (build-workflow.md, S3); only an error in a step fails the build. A module's
+ * own tag passing is its definition of done.
+ */
 class SpecificationRunsTest {
 
     private static final Path SPECS = Path.of("../specs");
@@ -30,24 +34,33 @@ class SpecificationRunsTest {
         Events scenarios = runSpecification();
 
         Set<String> featuresRun = scenarios.stream()
-                .map(event -> event.getTestDescriptor().getSource())
-                .flatMap(source -> source.stream())
-                .filter(FileSource.class::isInstance)
-                .map(source -> ((FileSource) source).getFile().getName())
+                .map(SpecificationRunsTest::featureOf)
+                .filter(feature -> !feature.isEmpty())
                 .collect(Collectors.toSet());
         assertThat(featuresRun).containsExactlyInAnyOrderElementsOf(featureFilesWithScenarios());
     }
 
     @Test
-    void only_a_scenario_that_really_fails_or_errors_fails_the_build() {
+    void only_a_scenario_whose_step_errors_fails_the_build() {
         Events scenarios = runSpecification();
 
         assertThat(scenarios.count()).isPositive();
         List<String> broken = scenarios.stream()
-                .filter(event -> !passed(event) && !isUndefined(event))
+                .filter(event -> !passed(event) && !isUndefined(event) && !failedOnAssertion(event))
                 .map(event -> event.getTestDescriptor().getDisplayName())
                 .toList();
         assertThat(broken).isEmpty();
+    }
+
+    @Test
+    void every_step_of_answering_a_subscription_request_is_defined() {
+        List<String> undefined = runSpecification().stream()
+                .filter(event -> featureOf(event).equals("02-answer-a-subscription-request.feature"))
+                .filter(SpecificationRunsTest::isUndefined)
+                .map(event -> event.getTestDescriptor().getDisplayName())
+                .toList();
+
+        assertThat(undefined).isEmpty();
     }
 
     @Test
@@ -73,6 +86,13 @@ class SpecificationRunsTest {
                 .finished();
     }
 
+    private static String featureOf(Event scenario) {
+        return scenario.getTestDescriptor().getSource()
+                .filter(FileSource.class::isInstance)
+                .map(source -> ((FileSource) source).getFile().getName())
+                .orElse("");
+    }
+
     private static boolean passed(Event finished) {
         return finished.getPayload(TestExecutionResult.class)
                 .map(result -> result.getStatus() == TestExecutionResult.Status.SUCCESSFUL)
@@ -83,6 +103,13 @@ class SpecificationRunsTest {
         return finished.getPayload(TestExecutionResult.class)
                 .flatMap(TestExecutionResult::getThrowable)
                 .map(thrown -> thrown.getClass().getSimpleName().equals("UndefinedStepException"))
+                .orElse(false);
+    }
+
+    private static boolean failedOnAssertion(Event finished) {
+        return finished.getPayload(TestExecutionResult.class)
+                .flatMap(TestExecutionResult::getThrowable)
+                .map(AssertionError.class::isInstance)
                 .orElse(false);
     }
 
