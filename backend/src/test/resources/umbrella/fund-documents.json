@@ -1,0 +1,6 @@
+[
+  { "documentId": "nordea1-umbrella-prospectus", "isins": ["LU0348926287", "LU0348927095", "LU0064675639"],
+    "type": "prospectus", "contentSha256": "00", "file": "prospectus.pdf" },
+  { "documentId": "nordea1-gce-kid-bp-eur", "isins": ["LU0348926287"], "type": "kid", "contentSha256": "01", "file": "a.pdf" },
+  { "documentId": "nordea1-nordic-kid-bp-eur", "isins": ["LU0064675639"], "type": "kid", "contentSha256": "02", "file": "b.pdf" }
+]
