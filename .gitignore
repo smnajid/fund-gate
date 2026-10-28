@@ -9,3 +9,6 @@
 spikes/java-rule-card-extraction/target/
 spikes/java-rule-card-extraction/docs/*.pdf
 spikes/java-rule-card-extraction/docs/*.pages.json
+
+# Backend build output
+backend/target/

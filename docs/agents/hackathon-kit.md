@@ -78,7 +78,8 @@ Python only if a module needs something the JVM can't do well. Today none does.
 `specs/` describes what FundEli5 does in Gherkin: start with `specs/00-fundeli5.feature`. The feature files are written before the event; the step definitions are written with each module, from Wed 28 Oct. `specs/` never moves.
 
 **Cucumber is wired into the skeleton on Wed 28 Oct**, before any feature is built:
-- `cucumber-java`, `cucumber-spring` and `cucumber-junit-platform-engine` with a `@Suite` runner, and `cucumber.features=specs` in `src/test/resources/junit-platform.properties` (a path relative to the directory Maven runs in; use `../specs` if the backend is a sub-module).
+- `cucumber-java`, `cucumber-spring` and `cucumber-junit-platform-engine` with a `@Suite` runner, `SpecificationSuite`, that selects `@SelectDirectories("../specs")` (relative to `backend/`, where Maven runs). Not the `cucumber.features` property: under the JUnit 6 Suite engine it finds nothing.
+- Cucumber reports an undefined step as an error, so the suite stays out of the default build. `./mvnw test` runs `SpecificationRunsTest` instead, which runs the whole specification and fails only on a scenario that really fails or errors. To see a module's scenarios one by one, run the suite by name: `./mvnw test -Dtest=SpecificationSuite -Dcucumber.filter.tags="<tags>"`.
 - Default filter `cucumber.filter.tags=not @live-llm`, and the LLM egress client in replay mode, so a run makes no model call. A run with `-Dcucumber.filter.tags=@live-llm` uses the real model.
 - One step-definition package per module. An undefined step is that module's to-do list.
 
@@ -86,7 +87,7 @@ Who runs it:
 
 | Who | Runs | When |
 |---|---|---|
-| Mohamed, Rule Engine | `./mvnw test -Dcucumber.filter.tags="@rule-engine"` in the `/tdd` loop: pick the next failing example, make it pass, repeat. `@answer-key` once the engine decides every rule | Every change to the Rule Engine, Scale Mapping, reverse lookup |
+| Mohamed, Rule Engine | `./mvnw test -Dtest=SpecificationSuite -Dcucumber.filter.tags="@rule-engine"` in `backend/`, in the `/tdd` loop: pick the next failing example, make it pass, repeat. `@answer-key` once the engine decides every rule | Every change to the Rule Engine, Scale Mapping, reverse lookup |
 | Mohamed, other modules | the module's tags (see `00-fundeli5.feature`), e.g. `@privacy-gate or @check-record` | Before merging the module |
 | `/pre-merge` | the module tags of the changed files, plus `@answer-key` | Before every merge |
 | `demo-flow-verifier` | `@must`, then `@should` once picked, against the running app | Checkpoints, freeze, rehearsals |
