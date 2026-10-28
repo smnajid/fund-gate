@@ -1,9 +1,9 @@
 package com.fundgate.requestparser;
 
-import com.fundgate.privacygate.GatedEmail;
+import com.fundgate.privacygate.PseudonymisedEmail;
 
-/** Turns a gated email into Subscription Requests: one per portfolio and Share Class it names. */
+/** Turns a pseudonymised email into Subscription Requests: one per portfolio and Share Class it names. */
 public interface RequestParser {
 
-    ParsedEmail parse(GatedEmail email);
+    ParsedEmail parse(PseudonymisedEmail email);
 }

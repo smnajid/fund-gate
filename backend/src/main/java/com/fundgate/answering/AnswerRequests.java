@@ -76,13 +76,13 @@ public class AnswerRequests {
     }
 
     private Answer answer(GatedEmail gated) {
-        ParsedEmail parsed = requestParser.parse(gated);
+        ParsedEmail parsed = requestParser.parse(gated.pseudonymised());
         // A Portfolio Id the Gate did not swap in names no portfolio of this email: fail closed, check nothing
         if (!parsed.requests().stream().allMatch(request -> gated.swaps().containsKey(request.portfolioId()))) {
             return new Answer.Refused("The request names a portfolio the email does not", List.of());
         }
         List<Checked> checked = parsed.requests().stream().map(this::check).toList();
-        DraftedReply drafted = replyDrafter.draft(gated, facts(checked));
+        DraftedReply drafted = replyDrafter.draft(gated.pseudonymised(), facts(checked));
         List<Answer.Swap> swaps = gated.swaps().entrySet().stream()
                 .map(swap -> new Answer.Swap(swap.getValue(), swap.getKey()))
                 .toList();

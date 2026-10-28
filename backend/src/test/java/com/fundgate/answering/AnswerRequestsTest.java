@@ -34,6 +34,7 @@ import java.nio.file.Path;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -177,12 +178,30 @@ class AnswerRequestsTest {
     @Test
     void a_parsed_request_for_a_portfolio_the_email_does_not_name_is_refused_with_no_check_recorded() {
         PortfolioId elsewhere = new PortfolioId(UUID.fromString("00000000-0000-4000-8000-000000000000"));
+        List<SubscriptionRequest> checked = new ArrayList<>();
+        List<CheckRecord> written = new ArrayList<>();
         AnswerRequests answering = new AnswerRequests(clientProfiles, new StubPrivacyGate(clientProfiles),
                 email -> new ParsedEmail(List.of(new SubscriptionRequest(elsewhere, new Isin("LU0348927095"),
                         Optional.empty(), ClientInitiated.UNKNOWN)), List.of()),
-                new StubRuleEngine(), new StubReplyDrafter(), checkRecords, clock);
+                request -> {
+                    checked.add(request);
+                    return new StubRuleEngine().check(request);
+                },
+                new StubReplyDrafter(), new CheckRecords() {
+                    @Override
+                    public void write(CheckRecord record) {
+                        written.add(record);
+                    }
+
+                    @Override
+                    public Optional<CheckRecord> find(UUID checkId) {
+                        return Optional.empty();
+                    }
+                }, clock);
 
         assertThat(answering.answer(ANNAS_EMAIL)).isInstanceOf(Answer.Refused.class);
+        assertThat(checked).as("Eligibility Checks run").isEmpty();
+        assertThat(written).as("Check Records written").isEmpty();
     }
 
     private CheckRecord.LlmCall llmCall(String purpose) {

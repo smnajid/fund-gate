@@ -23,10 +23,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 /** The reply, asserted by properties, never by wording: the LLM writes it (02-answer-a-subscription-request.feature). */
 public class ReplyDrafterSteps {
 
-    /** What gives a Verdict in a line of the reply, in English or French; Eligible never matches its negation. */
+    /** What gives a Verdict in a line of the reply, in English or French. */
     private static final Map<Verdict, Pattern> VERDICT_WORDS = Map.of(
-            Verdict.ELIGIBLE, Pattern.compile("(?<!not )(?<!non )(can subscribe|eligible|peut souscrire|éligible)"),
-            Verdict.NOT_ELIGIBLE, Pattern.compile("cannot subscribe|not eligible|ne peut pas|non éligible"),
+            Verdict.ELIGIBLE, Pattern.compile("can subscribe|eligible|peut souscrire|éligible"),
+            Verdict.NOT_ELIGIBLE, Pattern.compile("cannot subscribe|can't subscribe|ineligible|inéligible"
+                    + "|not (yet |be )?eligible|n't eligible|non éligible|pas éligible|ne peut pas"),
             Verdict.NEEDS_REVIEW, Pattern.compile("review|vérifi|examen"));
 
     private static final List<String> FRENCH_WORDS = List.of("bonjour", "le", "la", "les", "est", "peut", "pour",
@@ -56,7 +57,7 @@ public class ReplyDrafterSteps {
         assertThat(answered.checks()).allSatisfy(check -> assertThat(lines)
                 .as("a line of the reply naming %s and giving %s", check.portfolioRef().value(), check.result().verdict())
                 .anyMatch(line -> line.contains(check.portfolioRef().value().toLowerCase(Locale.ROOT))
-                        && VERDICT_WORDS.get(check.result().verdict()).matcher(line).find()));
+                        && givesVerdict(line, check.result().verdict())));
     }
 
     @Then("^the drafted reply cites the (.+) rule for (\\w+), with its page$")
@@ -122,6 +123,12 @@ public class ReplyDrafterSteps {
                 .containsOnly(RuleEngineSteps.verdict(verdict));
         assertThat(answered.reply().draftedByAi()).isFalse();
         assertThat(llm.sent()).isEmpty();
+    }
+
+    /** Eligible words are also inside their negations ("not eligible"), so an Eligible line must not be negated. */
+    private static boolean givesVerdict(String line, Verdict verdict) {
+        boolean negated = VERDICT_WORDS.get(Verdict.NOT_ELIGIBLE).matcher(line).find();
+        return VERDICT_WORDS.get(verdict).matcher(line).find() && (verdict != Verdict.ELIGIBLE || !negated);
     }
 
     private List<Answer.Check> checksOf(String ref) {

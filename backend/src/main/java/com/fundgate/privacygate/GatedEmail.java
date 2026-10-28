@@ -4,6 +4,7 @@ import com.fundgate.clientprofiles.PortfolioId;
 import com.fundgate.clientprofiles.PortfolioReference;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -16,6 +17,11 @@ public record GatedEmail(String text, Map<PortfolioId, PortfolioReference> swaps
     public GatedEmail {
         Objects.requireNonNull(text, "text");
         swaps = Collections.unmodifiableMap(new LinkedHashMap<>(swaps));
+    }
+
+    /** The email as the Request Parser and Reply Drafter see it: without the swap table. */
+    public PseudonymisedEmail pseudonymised() {
+        return new PseudonymisedEmail(text, List.copyOf(swaps.keySet()));
     }
 
     /** Puts the Portfolio References back in text written from this email, e.g. the drafted reply. */
