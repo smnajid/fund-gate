@@ -226,6 +226,18 @@ Feature: Check eligibility
       Then the Verdict is Eligible
       And the Target Market rule gives a warning "no Target Market source"
 
+    @assumed
+    Example: Row 2 - a discretionary mandate is matched on the mandate's profile and the client's knowledge
+      Anna's discretionary mandate: 4 Growth (max SRI 5), full loss, 10-year horizon, against GCE-BI's SRI 4
+      and 5-year holding period. Her knowledge and experience in funds is informed.
+      Assumed: under a discretionary mandate, risk, ability to bear losses and horizon are read from the
+      portfolio, which carries the mandate's profile; knowledge and experience is read from the client.
+      Samuel (desk) confirms.
+      When LOC90000102 asks to subscribe EUR 80,000 to GCE-BI
+      Then the Target Market rule gives Pass
+      And the Target Market rule cites the risk profile, ability to bear losses and horizon of portfolio LOC90000102
+      And the Target Market rule cites client 900001's knowledge and experience in funds
+
   Rule: An Unmodelled Restriction gives Review while Blocking, and passes once a Rule Card Validator marks it Noted
     ADR 0003. A Noted Restriction stays in the Justification with its Citation.
 
@@ -239,3 +251,15 @@ Feature: Check eligibility
       When LOC90000101 asks to subscribe EUR 80,000 to GCE-BP
       Then the Verdict is Needs Review
       And the Unmodelled Restrictions rule gives Review
+
+    @assumed
+    Example: Row 2 - a discretionary mandate is matched on the mandate's profile and the client's knowledge
+      Anna's discretionary mandate: 4 Growth (max SRI 5), full loss, 10-year horizon, against GCE-BI's SRI 4
+      and 5-year holding period. Her knowledge and experience in funds is informed.
+      Assumed: under a discretionary mandate, risk, ability to bear losses and horizon are read from the
+      portfolio, which carries the mandate's profile; knowledge and experience is read from the client.
+      Samuel (desk) confirms.
+      When LOC90000102 asks to subscribe EUR 80,000 to GCE-BI
+      Then the Target Market rule gives Pass
+      And the Target Market rule cites the risk profile, ability to bear losses and horizon of portfolio LOC90000102
+      And the Target Market rule cites client 900001's knowledge and experience in funds
