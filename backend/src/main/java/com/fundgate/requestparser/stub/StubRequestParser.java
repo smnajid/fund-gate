@@ -1,0 +1,22 @@
+package com.fundgate.requestparser.stub;
+
+import com.fundgate.eligibility.SubscriptionRequest;
+import com.fundgate.eligibility.SubscriptionRequest.ClientInitiated;
+import com.fundgate.privacygate.GatedEmail;
+import com.fundgate.requestparser.RequestParser;
+import com.fundgate.shareclasses.Isin;
+import java.util.List;
+import java.util.Optional;
+
+/** Walking skeleton (#57): one request per Portfolio Id, all on Nordea 1 Global Climate BI-EUR, no amount, no LLM. */
+public class StubRequestParser implements RequestParser {
+
+    private static final Isin GLOBAL_CLIMATE_BI_EUR = new Isin("LU0348927095");
+
+    @Override
+    public List<SubscriptionRequest> parse(GatedEmail email) {
+        return email.swaps().keySet().stream()
+                .map(id -> new SubscriptionRequest(id, GLOBAL_CLIMATE_BI_EUR, Optional.empty(), ClientInitiated.UNKNOWN))
+                .toList();
+    }
+}
