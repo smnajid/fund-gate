@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AnswerControllerService, AnswerResponse, Check } from '../generated/api';
 
 /** The answer sheet (screens.md, Dealer screen): paste a Requester's email, get one sentence per check and the reply. */
@@ -10,18 +11,29 @@ import { AnswerControllerService, AnswerResponse, Check } from '../generated/api
 })
 export class DealerScreen {
   private readonly answers = inject(AnswerControllerService);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected readonly email = signal('');
   protected readonly answer = signal<AnswerResponse | undefined>(undefined);
   protected readonly answering = signal(false);
+  protected readonly failed = signal(false);
 
   protected answerIt(): void {
+    // An earlier email's Verdicts must never stay on screen for this one
+    this.answer.set(undefined);
+    this.failed.set(false);
     this.answering.set(true);
-    this.answers.answer({ email: this.email() }).subscribe({
-      next: answer => this.answer.set(answer),
-      complete: () => this.answering.set(false),
-      error: () => this.answering.set(false)
-    });
+    this.answers
+      .answer({ email: this.email() })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: answer => this.answer.set(answer),
+        complete: () => this.answering.set(false),
+        error: () => {
+          this.failed.set(true);
+          this.answering.set(false);
+        }
+      });
   }
 
   protected verdictPhrase(verdict: Check.VerdictEnum): string {

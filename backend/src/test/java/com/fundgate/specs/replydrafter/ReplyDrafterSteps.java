@@ -23,11 +23,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 /** The reply, asserted by properties, never by wording: the LLM writes it (02-answer-a-subscription-request.feature). */
 public class ReplyDrafterSteps {
 
-    /** Words that give a Verdict in the reply, in English or French. */
-    private static final Map<Verdict, List<String>> VERDICT_WORDS = Map.of(
-            Verdict.ELIGIBLE, List.of("can subscribe", "eligible", "peut souscrire", "éligible"),
-            Verdict.NOT_ELIGIBLE, List.of("cannot subscribe", "not eligible", "ne peut pas", "non éligible"),
-            Verdict.NEEDS_REVIEW, List.of("review", "vérifi", "examen"));
+    /** What gives a Verdict in a line of the reply, in English or French; Eligible never matches its negation. */
+    private static final Map<Verdict, Pattern> VERDICT_WORDS = Map.of(
+            Verdict.ELIGIBLE, Pattern.compile("(?<!not )(?<!non )(can subscribe|eligible|peut souscrire|éligible)"),
+            Verdict.NOT_ELIGIBLE, Pattern.compile("cannot subscribe|not eligible|ne peut pas|non éligible"),
+            Verdict.NEEDS_REVIEW, Pattern.compile("review|vérifi|examen"));
 
     private static final List<String> FRENCH_WORDS = List.of("bonjour", "le", "la", "les", "est", "peut", "pour",
             "nous", "votre", "vous", "cordialement", "souscrire");
@@ -56,7 +56,7 @@ public class ReplyDrafterSteps {
         assertThat(answered.checks()).allSatisfy(check -> assertThat(lines)
                 .as("a line of the reply naming %s and giving %s", check.portfolioRef().value(), check.result().verdict())
                 .anyMatch(line -> line.contains(check.portfolioRef().value().toLowerCase(Locale.ROOT))
-                        && VERDICT_WORDS.get(check.result().verdict()).stream().anyMatch(line::contains)));
+                        && VERDICT_WORDS.get(check.result().verdict()).matcher(line).find()));
     }
 
     @Then("^the drafted reply cites the (.+) rule for (\\w+), with its page$")

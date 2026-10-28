@@ -3,6 +3,7 @@ package com.fundgate.requestparser.stub;
 import com.fundgate.eligibility.SubscriptionRequest;
 import com.fundgate.eligibility.SubscriptionRequest.ClientInitiated;
 import com.fundgate.privacygate.GatedEmail;
+import com.fundgate.requestparser.ParsedEmail;
 import com.fundgate.requestparser.RequestParser;
 import com.fundgate.shareclasses.Isin;
 import java.util.List;
@@ -14,9 +15,9 @@ public class StubRequestParser implements RequestParser {
     private static final Isin GLOBAL_CLIMATE_BI_EUR = new Isin("LU0348927095");
 
     @Override
-    public List<SubscriptionRequest> parse(GatedEmail email) {
-        return email.swaps().keySet().stream()
+    public ParsedEmail parse(GatedEmail email) {
+        return new ParsedEmail(email.swaps().keySet().stream()
                 .map(id -> new SubscriptionRequest(id, GLOBAL_CLIMATE_BI_EUR, Optional.empty(), ClientInitiated.UNKNOWN))
-                .toList();
+                .toList(), List.of());
     }
 }

@@ -6,6 +6,7 @@ import com.fundgate.eligibility.EligibilityResult;
 import com.fundgate.eligibility.SubscriptionRequest;
 import com.fundgate.replydrafter.DraftedReply;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /** What the Fund Dealer gets back for one email: its answer, or the Privacy Gate's refusal. */
@@ -37,5 +38,12 @@ public sealed interface Answer {
 
     /** The checkId names its Check Record. */
     record Check(UUID checkId, PortfolioReference portfolioRef, SubscriptionRequest request, EligibilityResult result) {
+
+        public Check {
+            Objects.requireNonNull(checkId, "checkId");
+            Objects.requireNonNull(portfolioRef, "Portfolio Reference");
+            Objects.requireNonNull(request, "request");
+            Objects.requireNonNull(result, "result");
+        }
     }
 }

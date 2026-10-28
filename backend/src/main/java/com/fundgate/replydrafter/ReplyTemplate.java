@@ -13,10 +13,10 @@ public final class ReplyTemplate {
     }
 
     /** Each portfolio is named as {@code name} gives it: by Portfolio Id before the swap back, else by reference. */
-    public static String write(List<CheckedRequest> checks, Function<PortfolioId, String> name) {
+    public static String write(List<ReplyFacts> checks, Function<PortfolioId, String> name) {
         return checks.stream()
-                .map(check -> "%s on %s: %s.".formatted(name.apply(check.request().portfolioId()),
-                        check.request().shareClass(), phrase(check.result().verdict())))
+                .map(check -> "%s on %s: %s.".formatted(name.apply(check.portfolioId()), check.shareClass(),
+                        phrase(check.verdict())))
                 .collect(Collectors.joining("\n", "Hello,\n\n", "\n\nFund dealing desk"));
     }
 

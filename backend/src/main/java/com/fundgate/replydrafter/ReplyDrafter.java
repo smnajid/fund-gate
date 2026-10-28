@@ -9,5 +9,5 @@ import java.util.List;
  */
 public interface ReplyDrafter {
 
-    DraftedReply draft(GatedEmail email, List<CheckedRequest> checks);
+    DraftedReply draft(GatedEmail email, List<ReplyFacts> checks);
 }

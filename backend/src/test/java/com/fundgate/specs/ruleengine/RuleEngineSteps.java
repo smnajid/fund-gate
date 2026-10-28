@@ -9,7 +9,7 @@ import com.fundgate.rulecard.RuleKind;
 import com.fundgate.specs.AnsweringSteps;
 import io.cucumber.java.en.Then;
 import java.util.Arrays;
-import java.util.Optional;
+import java.util.Locale;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /** The Verdict and rule outcomes of the one Eligibility Check a scenario ran. */
@@ -31,7 +31,7 @@ public class RuleEngineSteps {
                 .as("the outcome of the %s rule", rule)
                 .singleElement()
                 .extracting(RuleOutcome::outcome)
-                .isEqualTo(RuleOutcome.Outcome.valueOf(outcome.toUpperCase()));
+                .isEqualTo(RuleOutcome.Outcome.valueOf(outcome.toUpperCase(Locale.ROOT)));
     }
 
     private Answer.Check onlyCheck() {
@@ -41,16 +41,18 @@ public class RuleEngineSteps {
 
     /** "Not Eligible" as NOT_ELIGIBLE. */
     public static Verdict verdict(String verdict) {
-        return Verdict.valueOf(verdict.toUpperCase().replace(' ', '_'));
+        return Verdict.valueOf(verdict.toUpperCase(Locale.ROOT).replace(' ', '_'));
     }
 
-    /** The rule as the specification names it, e.g. "mandate-only class" or "Unmodelled Restrictions". */
+    /**
+     * The rule as the specification names it, e.g. "mandate-only class" or "Unmodelled Restrictions". An unknown name
+     * is a wording the glue does not know, so it errors rather than failing as "not built yet".
+     */
     public static RuleKind ruleKind(String rule) {
-        String name = rule.toUpperCase().replaceAll("[ -]", "_");
-        Optional<RuleKind> kind = Arrays.stream(RuleKind.values())
+        String name = rule.toUpperCase(Locale.ROOT).replaceAll("[ -]", "_");
+        return Arrays.stream(RuleKind.values())
                 .filter(candidate -> name.equals(candidate.name()) || name.equals(candidate.name() + "S"))
-                .findFirst();
-        assertThat(kind).as("a rule kind named %s", rule).isPresent();
-        return kind.orElseThrow();
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No rule kind named " + rule));
     }
 }

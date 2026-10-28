@@ -37,8 +37,17 @@ describe('DealerScreen', () => {
 
   afterEach(() => http.verify());
 
-  async function answer(email: string, response: AnswerResponse): Promise<HTMLElement> {
-    const fixture = TestBed.createComponent(DealerScreen);
+  async function answer(email: string, response: AnswerResponse, screen?: DealerScreenFixture): Promise<HTMLElement> {
+    const fixture = screen ?? TestBed.createComponent(DealerScreen);
+    const request = await paste(fixture, email);
+    request.flush(response);
+    await fixture.whenStable();
+    return fixture.nativeElement;
+  }
+
+  type DealerScreenFixture = ReturnType<typeof TestBed.createComponent<DealerScreen>>;
+
+  async function paste(fixture: DealerScreenFixture, email: string) {
     const screen = fixture.nativeElement as HTMLElement;
     await fixture.whenStable();
     const pasted = screen.querySelector('textarea')!;
@@ -48,9 +57,7 @@ describe('DealerScreen', () => {
     button(screen, 'Answer it').click();
     const request = http.expectOne('/api/answers');
     expect(request.request.body).toEqual({ email });
-    request.flush(response);
-    await fixture.whenStable();
-    return screen;
+    return request;
   }
 
   function button(screen: HTMLElement, label: string): HTMLButtonElement {
@@ -84,6 +91,26 @@ describe('DealerScreen', () => {
     expect(refusal?.textContent).toContain('No AI used for this email');
     expect(refusal?.textContent).toContain('LOC90009999');
     expect(screen.querySelector('[data-verdict]')).toBeNull();
+    expect(screen.textContent).not.toContain('the LLM saw Portfolio Ids only');
+  });
+
+  it('drops the last answer when the next email cannot be answered, and says so', async () => {
+    const fixture = TestBed.createComponent(DealerScreen);
+    await answer(ANNAS_EMAIL, ANNAS_ANSWER, fixture);
+
+    const request = await paste(fixture, 'Hi desk, can LOC90000102 subscribe?');
+    request.flush('down', { status: 503, statusText: 'Service Unavailable' });
+    await fixture.whenStable();
+
+    const screen = fixture.nativeElement as HTMLElement;
+    expect(screen.querySelector('[data-verdict]')).toBeNull();
+    expect(screen.querySelector('textarea[aria-label="Reply"]')).toBeNull();
+    expect(screen.querySelector('[role="alert"]')?.textContent).toContain('Could not answer this email');
+  });
+
+  it('shows no Privacy Gate line when no Portfolio Id was swapped in', async () => {
+    const screen = await answer(ANNAS_EMAIL, { ...ANNAS_ANSWER, swaps: [] });
+
     expect(screen.textContent).not.toContain('the LLM saw Portfolio Ids only');
   });
 });

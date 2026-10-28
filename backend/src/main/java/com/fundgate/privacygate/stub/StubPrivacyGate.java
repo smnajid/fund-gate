@@ -33,7 +33,7 @@ public class StubPrivacyGate implements PrivacyGate {
             PortfolioReference ref = new PortfolioReference(found.group());
             Optional<PortfolioId> id = clientProfiles.portfolioId(ref);
             id.ifPresentOrElse(known -> swaps.put(known, ref), () -> unknown.add(ref.value()));
-            found.appendReplacement(text, id.map(PortfolioId::toString).orElse(ref.value()));
+            found.appendReplacement(text, Matcher.quoteReplacement(id.map(PortfolioId::toString).orElse(ref.value())));
         }
         found.appendTail(text);
         if (!unknown.isEmpty()) {

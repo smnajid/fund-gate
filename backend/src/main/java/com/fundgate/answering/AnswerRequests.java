@@ -6,23 +6,26 @@ import com.fundgate.clientprofiles.ClientProfiles;
 import com.fundgate.clientprofiles.PortfolioId;
 import com.fundgate.clientprofiles.PortfolioNotFound;
 import com.fundgate.clientprofiles.PortfolioReference;
+import com.fundgate.eligibility.EligibilityResult;
 import com.fundgate.eligibility.SubscriptionRequest;
 import com.fundgate.privacygate.GateRefusal;
 import com.fundgate.privacygate.GatedEmail;
 import com.fundgate.privacygate.PrivacyGate;
-import com.fundgate.replydrafter.CheckedRequest;
 import com.fundgate.replydrafter.DraftedReply;
 import com.fundgate.replydrafter.ReplyDrafter;
+import com.fundgate.replydrafter.ReplyFacts;
 import com.fundgate.replydrafter.ReplyTemplate;
+import com.fundgate.requestparser.ParsedEmail;
 import com.fundgate.requestparser.RequestParser;
 import com.fundgate.ruleengine.RuleEngine;
 import java.time.Clock;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 /** In port: answers a Requester's email, module by module (architecture.md, Data flow of one request). */
 public class AnswerRequests {
@@ -60,42 +63,58 @@ public class AnswerRequests {
     /** No LLM at all: the requests are checked and the reply is the template. Throws {@link PortfolioNotFound}. */
     public Answer.Answered answerByHand(List<RequestByHand> requests) {
         Map<PortfolioId, PortfolioReference> refs = new LinkedHashMap<>();
-        List<CheckedRequest> checked = new ArrayList<>();
+        List<Checked> checked = new ArrayList<>();
         for (RequestByHand byHand : requests) {
             PortfolioId id = clientProfiles.portfolioId(byHand.portfolioRef())
                     .orElseThrow(() -> new PortfolioNotFound(byHand.portfolioRef()));
             refs.put(id, byHand.portfolioRef());
             checked.add(check(new SubscriptionRequest(id, byHand.shareClass(), byHand.amount(), byHand.clientInitiated())));
         }
-        DraftedReply reply = new DraftedReply(ReplyTemplate.write(checked, id -> refs.get(id).value()), false);
-        return answered(List.of(), refs, checked, reply);
+        DraftedReply reply = new DraftedReply(
+                ReplyTemplate.write(facts(checked), id -> refs.get(id).value()), false, List.of());
+        return answered(List.of(), refs, checked, reply, List.of());
     }
 
-    private Answer.Answered answer(GatedEmail gated) {
-        List<CheckedRequest> checked = requestParser.parse(gated).stream().map(this::check).toList();
-        DraftedReply drafted = replyDrafter.draft(gated, checked);
+    private Answer answer(GatedEmail gated) {
+        ParsedEmail parsed = requestParser.parse(gated);
+        // A Portfolio Id the Gate did not swap in names no portfolio of this email: fail closed, check nothing
+        if (!parsed.requests().stream().allMatch(request -> gated.swaps().containsKey(request.portfolioId()))) {
+            return new Answer.Refused("The request names a portfolio the email does not", List.of());
+        }
+        List<Checked> checked = parsed.requests().stream().map(this::check).toList();
+        DraftedReply drafted = replyDrafter.draft(gated, facts(checked));
         List<Answer.Swap> swaps = gated.swaps().entrySet().stream()
                 .map(swap -> new Answer.Swap(swap.getValue(), swap.getKey()))
                 .toList();
-        return answered(swaps, gated.swaps(), checked,
-                new DraftedReply(gated.restore(drafted.text()), drafted.draftedByAi()));
+        DraftedReply reply = new DraftedReply(gated.restore(drafted.text()), drafted.draftedByAi(), drafted.llmCalls());
+        return answered(swaps, gated.swaps(), checked, reply,
+                Stream.concat(parsed.llmCalls().stream(), drafted.llmCalls().stream()).toList());
+    }
+
+    private record Checked(SubscriptionRequest request, EligibilityResult result) {
+    }
+
+    private Checked check(SubscriptionRequest request) {
+        return new Checked(request, ruleEngine.check(request));
+    }
+
+    private static List<ReplyFacts> facts(List<Checked> checked) {
+        return checked.stream().map(check -> ReplyFacts.of(check.request(), check.result())).toList();
     }
 
     private Answer.Answered answered(List<Answer.Swap> swaps, Map<PortfolioId, PortfolioReference> refs,
-            List<CheckedRequest> checked, DraftedReply reply) {
-        return new Answer.Answered(swaps,
-                checked.stream().map(check -> record(refs.get(check.request().portfolioId()), check)).toList(), reply);
+            List<Checked> checked, DraftedReply reply, List<CheckRecord.LlmCall> llmCalls) {
+        return new Answer.Answered(swaps, checked.stream()
+                .map(check -> record(refs.get(check.request().portfolioId()), check, llmCalls))
+                .toList(), reply);
     }
 
-    private CheckedRequest check(SubscriptionRequest request) {
-        return new CheckedRequest(request, ruleEngine.check(request));
-    }
-
-    private Answer.Check record(PortfolioReference portfolioRef, CheckedRequest check) {
+    /** Every LLM call the email needed goes in the Check Record of each of its checks. */
+    private Answer.Check record(PortfolioReference portfolioRef, Checked check, List<CheckRecord.LlmCall> llmCalls) {
         Answer.Check answered = new Answer.Check(UUID.randomUUID(), portfolioRef, check.request(), check.result());
         checkRecords.write(new CheckRecord(answered.checkId(), clock.instant(), DEALER, portfolioRef,
                 check.request(), Optional.empty(), NO_VERSION, NO_VERSION, List.of(), check.result().verdict(),
-                check.result().justification(), List.of()));
+                check.result().justification(), llmCalls));
         return answered;
     }
 }

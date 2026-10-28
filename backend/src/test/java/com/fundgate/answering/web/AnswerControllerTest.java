@@ -11,6 +11,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
+import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import tools.jackson.databind.json.JsonMapper;
 
 /** The dealer screen's one call: a pasted email in, the Verdicts and the reply out (issue #57). */
@@ -30,10 +31,7 @@ class AnswerControllerTest {
 
     @Test
     void annas_email_posted_gives_back_a_verdict_per_portfolio_and_a_reply() {
-        var response = mvc.post().uri("/api/answers")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(JsonMapper.builder().build().writeValueAsString(Map.of("email", ANNAS_EMAIL)))
-                .exchange();
+        var response = post(Map.of("email", ANNAS_EMAIL));
 
         assertThat(response).hasStatusOk();
         assertThat(response).bodyJson().extractingPath("$.swaps[*].portfolioRef")
@@ -46,5 +44,27 @@ class AnswerControllerTest {
                 .asArray().containsOnly("NEEDS_REVIEW");
         assertThat(response).bodyJson().extractingPath("$.reply.text")
                 .asString().contains("LOC90000101", "LOC90000102");
+    }
+
+    @Test
+    void an_email_the_privacy_gate_refuses_gives_back_the_refusal_and_no_check() {
+        var response = post(Map.of("email", "Hi desk, can LOC90009999 subscribe EUR 80,000?"));
+
+        assertThat(response).hasStatusOk();
+        assertThat(response).bodyJson().extractingPath("$.refusal.found").asArray().containsExactly("LOC90009999");
+        assertThat(response).bodyJson().extractingPath("$.checks").asArray().isEmpty();
+        assertThat(response).bodyJson().extractingPath("$.reply").isNull();
+    }
+
+    @Test
+    void a_body_with_no_email_is_a_bad_request() {
+        assertThat(post(Map.of())).hasStatus(400);
+    }
+
+    private MvcTestResult post(Map<String, String> body) {
+        return mvc.post().uri("/api/answers")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonMapper.builder().build().writeValueAsString(body))
+                .exchange();
     }
 }

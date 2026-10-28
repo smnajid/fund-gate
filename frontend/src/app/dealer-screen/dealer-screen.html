@@ -1,13 +1,12 @@
 <section class="paste">
   <label for="email">Requester's email</label>
-  <textarea
-    id="email"
-    rows="10"
-    [value]="email()"
-    (input)="email.set($any($event.target).value)"
-  ></textarea>
+  <textarea #pasted id="email" rows="10" [value]="email()" (input)="email.set(pasted.value)"></textarea>
   <button type="button" [disabled]="answering() || !email().trim()" (click)="answerIt()">Answer it</button>
 </section>
+
+@if (failed()) {
+  <p class="failure" role="alert">Could not answer this email, try again.</p>
+}
 
 @if (answer(); as answer) {
   @if (answer.refusal; as refusal) {
@@ -17,18 +16,20 @@
       <p>Enter the request by hand.</p>
     </section>
   } @else {
-    <p class="gate">
-      @for (swap of answer.swaps; track swap.portfolioRef) {
-        <code>{{ swap.portfolioRef }} → {{ shortId(swap.portfolioId) }}</code>
-      }
-      <span>the LLM saw Portfolio Ids only</span>
-    </p>
+    @if (answer.swaps.length > 0) {
+      <p class="gate">
+        @for (swap of answer.swaps; track swap.portfolioRef) {
+          <code>{{ swap.portfolioRef }} → {{ shortId(swap.portfolioId) }}</code>
+        }
+        <span>the LLM saw Portfolio Ids only</span>
+      </p>
+    }
 
     <ul class="checks">
       @for (check of answer.checks; track check.checkId) {
         <li [attr.data-verdict]="check.verdict">
           <code>{{ check.portfolioRef }}</code> <strong>{{ verdictPhrase(check.verdict) }}</strong> {{ check.shareClass }}.
-          @for (notice of check.notices; track notice) {
+          @for (notice of check.notices; track $index) {
             <span class="notice">{{ notice }}</span>
           }
         </li>

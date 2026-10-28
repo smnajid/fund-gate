@@ -42,17 +42,21 @@ public class PrivacyGateSteps {
 
     @Then("no text sent to the LLM contains a Portfolio Reference or a client name")
     public void noTextSentToTheLlmContainsAPortfolioReferenceOrAClientName() {
+        // Not vacuous: answering the email must have called the LLM
+        assertThat(llm.sent()).as("the texts sent to the LLM").isNotEmpty();
         for (LlmRequest sent : llm.sent()) {
             String text = sent.system() + "\n" + sent.prompt();
             assertThat(PortfolioReference.FORMAT.matcher(text).find()).as("a Portfolio Reference sent").isFalse();
-            assertThat(text).doesNotContain(AnsweringSteps.CLIENT_NAMES);
+            assertThat(text).doesNotContainIgnoringCase(AnsweringSteps.CLIENT_NAMES.toArray(String[]::new));
         }
     }
 
     @Then("the screen shows {string}")
     public void theScreenShows(String line) {
-        // The screen writes this line from the swaps, shown only when the Gate let the email through
-        assertThat(line).isEqualTo("the LLM saw Portfolio Ids only");
+        // The screen writes this line from the swaps, shown only when the Gate swapped Portfolio Ids in
+        if (!line.equals("the LLM saw Portfolio Ids only")) {
+            throw new IllegalArgumentException("No screen line known as " + line);
+        }
         assertThat(answering.answered().swaps()).isNotEmpty();
     }
 

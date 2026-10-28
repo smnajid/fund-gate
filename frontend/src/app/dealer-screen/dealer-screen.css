@@ -59,6 +59,10 @@ button {
   font-size: 0.875rem;
 }
 
+.failure {
+  color: var(--not-eligible);
+}
+
 .refusal {
   padding: 1rem;
   border: 2px solid var(--not-eligible);

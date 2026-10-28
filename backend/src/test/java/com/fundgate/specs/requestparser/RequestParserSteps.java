@@ -56,7 +56,8 @@ public class RequestParserSteps {
     }
 
     private static CheckRun run(Answer.Check check) {
-        return new CheckRun(check.portfolioRef(), check.request().shareClass(), check.request().amount(),
-                check.result().verdict());
+        Optional<Money> amount = check.request().amount()
+                .map(money -> new Money(money.amount().stripTrailingZeros(), money.currency()));
+        return new CheckRun(check.portfolioRef(), check.request().shareClass(), amount, check.result().verdict());
     }
 }

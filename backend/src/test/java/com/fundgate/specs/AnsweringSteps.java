@@ -62,8 +62,9 @@ public class AnsweringSteps {
             Hi desk, can Anna Steinmann (LOC90000101) subscribe EUR 80,000 to Nordea Global Climate BP-EUR?
             """;
 
-    /** The demo clients' names (demo-dataset.md): none may reach the LLM. */
-    public static final List<String> CLIENT_NAMES = List.of("Anna Steinmann", "Claire Dupont", "Tom Whitfield");
+    /** The demo clients' names (demo-dataset.md), full and surname alone: none may reach the LLM. */
+    public static final List<String> CLIENT_NAMES = List.of("Anna Steinmann", "Claire Dupont", "Tom Whitfield",
+            "Steinmann", "Dupont", "Whitfield");
 
     private static final Path DEMO_DATASET = Path.of("../docs/playbook/demo-dataset.md");
 
@@ -87,7 +88,9 @@ public class AnsweringSteps {
 
     @Given("the demo dataset")
     public void theDemoDataset() {
-        assertThat(clientProfiles.portfolioId(new PortfolioReference("LOC90000101"))).isPresent();
+        if (clientProfiles.portfolioId(new PortfolioReference("LOC90000101")).isEmpty()) {
+            throw new IllegalStateException("The demo dataset's Client Profile fixtures are missing");
+        }
     }
 
     @Given("the Validated Rule Cards of the sample funds")
@@ -120,6 +123,8 @@ public class AnsweringSteps {
     public void thePrivacyGateRefusedTheEmailNamingAnna() {
         email = EMAIL_NAMING_ANNA;
         answer = answerRequests.answer(email);
+        // The Gate's behaviour, so an assertion: it fails until the client name scan is built
+        assertThat(answer).isInstanceOf(Answer.Refused.class);
     }
 
     @Given("the LLM egress client cannot reach the model")
@@ -197,10 +202,10 @@ public class AnsweringSteps {
         return demoShareClasses().get(code).name();
     }
 
-    /** "EUR 80,000" as Money. */
+    /** "EUR 80,000" as Money, its amount without trailing zeros so that 80000 and 80000.00 compare equal. */
     public static Money money(String amount) {
         String[] currencyAndValue = amount.split(" ");
-        return new Money(new BigDecimal(currencyAndValue[1].replace(",", "")), currencyAndValue[0]);
+        return new Money(new BigDecimal(currencyAndValue[1].replace(",", "")).stripTrailingZeros(), currencyAndValue[0]);
     }
 
     private record DemoShareClass(String isin, String name) {
