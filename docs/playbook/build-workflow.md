@@ -55,7 +55,7 @@ An AFK agent that hits a stop condition (below) stops and reports. It never work
 <one sentence in GLOSSARY.md terms: what the module does in Anna's flow>
 
 ## Done when
-- `./mvnw test -Dcucumber.filter.tags="<module tags>"` passes
+- `./mvnw test -Dtest=SpecificationSuite -Dcucumber.filter.tags="<module tags>"` passes, with no undefined step
 - `@answer-key` still passes
 - <gate agents> report nothing
 
