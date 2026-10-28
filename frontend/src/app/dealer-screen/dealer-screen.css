@@ -1,0 +1,71 @@
+:host {
+  display: grid;
+  gap: 1.5rem;
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+
+.paste {
+  display: grid;
+  gap: 0.5rem;
+}
+
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+}
+
+button {
+  justify-self: start;
+  padding: 0.5rem 1.25rem;
+  font: inherit;
+}
+
+.gate {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  color: var(--muted);
+}
+
+.checks {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.checks li {
+  padding: 0.75rem 1rem;
+  border-left: 4px solid var(--review);
+  background: color-mix(in srgb, var(--review) 8%, transparent);
+}
+
+.checks li[data-verdict='ELIGIBLE'] {
+  border-color: var(--eligible);
+  background: color-mix(in srgb, var(--eligible) 8%, transparent);
+}
+
+.checks li[data-verdict='NOT_ELIGIBLE'] {
+  border-color: var(--not-eligible);
+  background: color-mix(in srgb, var(--not-eligible) 8%, transparent);
+}
+
+.notice {
+  display: block;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.refusal {
+  padding: 1rem;
+  border: 2px solid var(--not-eligible);
+  color: var(--not-eligible);
+}
+
+.reply h2 small {
+  font-weight: normal;
+  color: var(--muted);
+}
