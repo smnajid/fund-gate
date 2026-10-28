@@ -8,11 +8,13 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.engine.TestExecutionResult;
+import org.junit.platform.engine.TestTag;
 import org.junit.platform.engine.support.descriptor.FileSource;
 import org.junit.platform.testkit.engine.EngineTestKit;
 import org.junit.platform.testkit.engine.Event;
@@ -48,9 +50,24 @@ class SpecificationRunsTest {
         assertThat(notUndefined).isEmpty();
     }
 
+    @Test
+    void a_tag_filter_runs_only_that_modules_scenarios() {
+        Events scenarios = runSpecification(Map.of("cucumber.filter.tags", "@rule-engine"));
+
+        // 33 examples of 01-check-eligibility, 26 rows of 99-answer-key, 1 example of 02-answer-a-subscription-request
+        assertThat(scenarios.count()).isEqualTo(60);
+        assertThat(scenarios.stream())
+                .allMatch(event -> event.getTestDescriptor().getTags().contains(TestTag.create("rule-engine")));
+    }
+
     private static Events runSpecification() {
+        return runSpecification(Map.of());
+    }
+
+    private static Events runSpecification(Map<String, String> configuration) {
         return EngineTestKit.engine("junit-platform-suite")
                 .selectors(selectClass(SpecificationSuite.class))
+                .configurationParameters(configuration)
                 .execute()
                 .testEvents()
                 .finished();
