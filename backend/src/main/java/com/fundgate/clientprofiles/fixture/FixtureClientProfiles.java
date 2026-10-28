@@ -39,7 +39,8 @@ public class FixtureClientProfiles implements ClientProfiles {
         try {
             return Optional.of(FixtureJson.read(file, ClientProfile.class));
         } catch (JacksonException e) {
-            throw new ClientDataUnavailable("Cannot read the fixture " + file, e);
+            // The file name holds the reference, so the message gives the masked one
+            throw new ClientDataUnavailable("Cannot read the Client Profile fixture of " + ref + " in " + directory, e);
         }
     }
 }

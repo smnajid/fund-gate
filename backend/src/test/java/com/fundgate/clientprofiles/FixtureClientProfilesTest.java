@@ -81,6 +81,22 @@ class FixtureClientProfilesTest {
         assertThat(clientProfiles.portfolioId(unknown)).isEmpty();
         assertThatThrownBy(() -> clientProfiles.clientProfile(unknown))
                 .isInstanceOf(PortfolioNotFound.class)
-                .hasMessageContaining("LOC90009901");
+                .hasMessageContaining("LOC")
+                .hasMessageNotContaining("90009901");
+    }
+
+    @Test
+    void a_portfolio_reference_printed_by_accident_hides_the_client_number() {
+        PortfolioReference ref = new PortfolioReference("LOC90000201");
+
+        assertThat(ref.toString()).isEqualTo("LOC********");
+        assertThat(ref.value()).isEqualTo("LOC90000201");
+    }
+
+    @Test
+    void a_malformed_reference_is_refused_without_echoing_it() {
+        assertThatThrownBy(() -> new PortfolioReference("Anna Steinmann LOC9000010"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageNotContaining("Anna");
     }
 }

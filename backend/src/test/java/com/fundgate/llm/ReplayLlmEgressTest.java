@@ -42,6 +42,48 @@ class ReplayLlmEgressTest {
     }
 
     @Test
+    void a_recording_holding_a_portfolio_reference_is_refused() throws IOException {
+        // Recorded from an email before the Privacy Gate swapped the reference for its Portfolio Id
+        Files.writeString(recordings.resolve("before-the-gate.json"), """
+                {
+                  "request": { "model": "claude-sonnet-5-5", "system": "Parse.", "prompt": "Please check LOC90000101." },
+                  "response": { "model": "claude-sonnet-5-5", "text": "[]" }
+                }
+                """);
+
+        assertThatThrownBy(() -> new ReplayLlmEgress(recordings))
+                .hasMessageContaining("before-the-gate.json")
+                .hasMessageContaining("Portfolio Reference")
+                .hasMessageNotContaining("90000101");
+    }
+
+    @Test
+    void two_recordings_of_the_same_request_name_the_files_not_the_prompt() throws IOException {
+        String recording = """
+                {
+                  "request": { "model": "claude-sonnet-5-5", "system": "Parse.", "prompt": "a gated prompt" },
+                  "response": { "model": "claude-sonnet-5-5", "text": "[]" }
+                }
+                """;
+        Files.writeString(recordings.resolve("first.json"), recording);
+        Files.writeString(recordings.resolve("second.json"), recording);
+
+        assertThatThrownBy(() -> new ReplayLlmEgress(recordings))
+                .hasMessageContaining("first.json")
+                .hasMessageContaining("second.json")
+                .hasMessageNotContaining("a gated prompt");
+    }
+
+    @Test
+    void a_malformed_recording_names_its_file_not_its_content() throws IOException {
+        Files.writeString(recordings.resolve("broken.json"), "{ \"request\": { \"prompt\": \"a gated prompt\" ");
+
+        assertThatThrownBy(() -> new ReplayLlmEgress(recordings))
+                .hasMessageContaining("broken.json")
+                .hasMessageNotContaining("a gated prompt");
+    }
+
+    @Test
     void a_request_nobody_recorded_fails_loudly_instead_of_calling_the_model() {
         LlmEgress egress = new ReplayLlmEgress(recordings);
 
