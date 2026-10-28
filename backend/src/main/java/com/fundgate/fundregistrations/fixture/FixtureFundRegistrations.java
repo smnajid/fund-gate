@@ -1,14 +1,13 @@
 package com.fundgate.fundregistrations.fixture;
 
-import com.fundgate.bankdata.Country;
 import com.fundgate.bankdata.fixture.FixtureJson;
 import com.fundgate.fundregistrations.FundRegistration;
 import com.fundgate.fundregistrations.FundRegistrations;
-import com.fundgate.fundregistrations.Registration;
 import com.fundgate.bankdata.FundDataUnavailable;
 import com.fundgate.shareclasses.Isin;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
 
@@ -22,12 +21,10 @@ public class FixtureFundRegistrations implements FundRegistrations {
     }
 
     @Override
-    public Registration registration(Isin isin, Country country) {
+    public Optional<FundRegistration> fundRegistration(Isin isin) {
         return read().stream()
                 .filter(fundRegistration -> fundRegistration.isin().equals(isin))
-                .findFirst()
-                .map(fundRegistration -> fundRegistration.in(country))
-                .orElseGet(Registration.Unknown::new);
+                .findFirst();
     }
 
     private List<FundRegistration> read() {

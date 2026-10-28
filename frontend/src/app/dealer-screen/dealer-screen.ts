@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { AnswerControllerService, AnswerResponse, Check } from '../generated/api';
+import { AnswerControllerService, AnswerResponse, Check, Outcome } from '../generated/api';
 
 /** The answer sheet (screens.md, Dealer screen): paste a Requester's email, get one sentence per check and the reply. */
 @Component({
@@ -45,6 +45,31 @@ export class DealerScreen {
       case 'NEEDS_REVIEW':
         return 'needs review to buy';
     }
+  }
+
+  protected ruleName(rule: Outcome.RuleEnum): string {
+    switch (rule) {
+      case 'INVESTOR_CATEGORY':
+        return 'Investor category';
+      case 'US_PERSON_EXCLUSION':
+        return 'US Person exclusion';
+      case 'MINIMUM_INITIAL_SUBSCRIPTION':
+        return 'Minimum initial subscription';
+      case 'MANDATE_ONLY_CLASS':
+        return 'Mandate-only class';
+      case 'KID_REQUIRED_FOR_RETAIL':
+        return 'KID required for retail';
+      case 'UNMODELLED_RESTRICTION':
+        return 'Unmodelled Restrictions';
+      case 'TARGET_MARKET':
+        return 'Target Market';
+      case 'FUND_REGISTRATION':
+        return 'Fund Registration';
+    }
+  }
+
+  protected outcomeName(outcome: Outcome.OutcomeEnum): string {
+    return outcome.charAt(0) + outcome.slice(1).toLowerCase();
   }
 
   /** The first characters of a Portfolio Id: enough to show the swap, as on the Privacy Gate line. */

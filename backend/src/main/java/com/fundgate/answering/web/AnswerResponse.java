@@ -1,9 +1,12 @@
 package com.fundgate.answering.web;
 
 import com.fundgate.answering.Answer;
+import com.fundgate.citation.Citation;
+import com.fundgate.eligibility.RuleOutcome;
 import com.fundgate.eligibility.SubscriptionRequest.ClientInitiated;
 import com.fundgate.eligibility.SubscriptionRequest.Money;
 import com.fundgate.eligibility.Verdict;
+import com.fundgate.rulecard.RuleKind;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.util.List;
@@ -59,14 +62,48 @@ public record AnswerResponse(
             String currency,
             @Schema(requiredMode = Schema.RequiredMode.REQUIRED) ClientInitiated clientInitiated,
             @Schema(requiredMode = Schema.RequiredMode.REQUIRED) Verdict verdict,
-            @Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<String> notices) {
+            @Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<String> notices,
+            @Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<Outcome> outcomes) {
 
         static Check of(Answer.Check check) {
             Money amount = check.request().amount().orElse(null);
             return new Check(check.checkId(), check.portfolioRef().value(), check.request().shareClass().value(),
                     amount == null ? null : amount.amount(), amount == null ? null : amount.currency(),
                     check.request().clientInitiated(), check.result().verdict(),
-                    check.result().justification().notices());
+                    check.result().justification().notices(),
+                    check.result().justification().outcomes().stream().map(Outcome::of).toList());
+        }
+    }
+
+    /** The Full Justification: one rule's outcome, why, and what it relies on. */
+    public record Outcome(
+            @Schema(requiredMode = Schema.RequiredMode.REQUIRED) RuleKind rule,
+            @Schema(requiredMode = Schema.RequiredMode.REQUIRED) RuleOutcome.Outcome outcome,
+            @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String reason,
+            @Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<Cited> citations) {
+
+        static Outcome of(RuleOutcome outcome) {
+            return new Outcome(outcome.rule(), outcome.outcome(), outcome.reason(),
+                    outcome.citations().stream().map(Cited::of).toList());
+        }
+    }
+
+    /** One Citation, as the screen shows it: where it comes from and, for a passage, its verbatim quote. */
+    public record Cited(
+            @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String source,
+            String quote) {
+
+        static Cited of(Citation citation) {
+            return switch (citation) {
+                case Citation.Document document ->
+                        new Cited(document.document().value() + ", p." + document.page(), document.quote());
+                case Citation.ClientProfileField field -> new Cited(field.field() + " = " + field.value(), null);
+                case Citation.FundRegistration registration -> new Cited("Fund Registration " + registration.isin()
+                        + " " + registration.country() + ": " + registration.entry()
+                        + ", read " + registration.retrievedAt(), null);
+                case Citation.FxRate rate -> new Cited("FX " + rate.pair() + " " + rate.rate().toPlainString()
+                        + " on " + rate.date() + " (" + rate.source() + ")", null);
+            };
         }
     }
 }

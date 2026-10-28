@@ -11,8 +11,10 @@ git_push.sh
 index.ts
 model/answerResponse.ts
 model/check.ts
+model/cited.ts
 model/emailToAnswer.ts
 model/models.ts
+model/outcome.ts
 model/refusal.ts
 model/reply.ts
 model/swap.ts

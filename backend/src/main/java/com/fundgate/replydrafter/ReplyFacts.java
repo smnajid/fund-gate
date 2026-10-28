@@ -13,7 +13,7 @@ import java.util.Optional;
 
 /**
  * One checked request as the Reply Drafter sees it: the Portfolio Id, never the reference, and every rule outcome
- * with its Citations except the Client Profile values, which stay in the Check Record (ADR 0004).
+ * with its Fund Documentation Citations only; Client Profile values stay in the Check Record (ADR 0004).
  */
 public record ReplyFacts(PortfolioId portfolioId, Isin shareClass, Optional<Money> amount, Verdict verdict,
         List<RuleOutcome> outcomes, List<String> notices) {
@@ -29,9 +29,14 @@ public record ReplyFacts(PortfolioId portfolioId, Isin shareClass, Optional<Mone
                 result.justification().notices());
     }
 
+    /**
+     * Only passages of the Fund Documentation pass, an allow-list: a Fund Registration citation names the client's
+     * country, and the engine's reasons quote client facts ("a retail client", "not registered in US"), so the
+     * reason is left out too.
+     */
     private static RuleOutcome withoutClientProfileValues(RuleOutcome outcome) {
-        return new RuleOutcome(outcome.rule(), outcome.outcome(), outcome.reason(), outcome.citations().stream()
-                .filter(citation -> !(citation instanceof Citation.ClientProfileField))
+        return new RuleOutcome(outcome.rule(), outcome.outcome(), "", outcome.citations().stream()
+                .filter(Citation.Document.class::isInstance)
                 .toList());
     }
 }

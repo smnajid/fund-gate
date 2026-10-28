@@ -10,6 +10,8 @@ import com.fundgate.clientprofiles.PortfolioReference;
 import com.fundgate.eligibility.SubscriptionRequest.ClientInitiated;
 import com.fundgate.eligibility.SubscriptionRequest.Money;
 import com.fundgate.shareclasses.Isin;
+import com.fundgate.shareclasses.ShareClass;
+import com.fundgate.shareclasses.fixture.FixtureShareClasses;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -68,6 +70,8 @@ public class AnsweringSteps {
 
     private static final Path DEMO_DATASET = Path.of("../docs/playbook/demo-dataset.md");
 
+    private static final Path SHARE_CLASSES = Path.of("../docs/playbook/contracts/fixtures/share-classes.json");
+
     @Autowired
     private AnswerRequests answerRequests;
 
@@ -81,6 +85,9 @@ public class AnsweringSteps {
 
     private Answer answer;
 
+    /** The first answer, when a step answered the same request twice. */
+    private Answer.Answered previous;
+
     @Before
     public void startWithNothingSentToTheLlm() {
         llm.reset();
@@ -91,11 +98,6 @@ public class AnsweringSteps {
         if (clientProfiles.portfolioId(new PortfolioReference("LOC90000101")).isEmpty()) {
             throw new IllegalStateException("The demo dataset's Client Profile fixtures are missing");
         }
-    }
-
-    @Given("the Validated Rule Cards of the sample funds")
-    public void theValidatedRuleCardsOfTheSampleFunds() {
-        // No Rule Card store yet: the stub Rule Engine reads none (#57)
     }
 
     @Given("the Requester's email:")
@@ -164,6 +166,32 @@ public class AnsweringSteps {
                 Optional.of(money(amount)), ClientInitiated.UNKNOWN)));
     }
 
+    /** "EUR 80,000" or, in the answer key, "no amount"; "at the client's initiative" or "client initiated: yes". */
+    @When("^(\\w+) asks to subscribe (\\w{3} [\\d,]+|an unstated amount|no amount) to ([A-Z]+-[A-Z0-9]+)"
+            + "( at the client's initiative|, client initiated: (?:yes|no))?$")
+    public void asksToSubscribe(String ref, String amount, String shareClass, String initiative) {
+        answer = subscribe(ref, amount, shareClass(shareClass), initiative);
+    }
+
+    @When("^(\\w+) asks to subscribe (\\w{3} [\\d,]+) to the placeholder class (\\w{12})$")
+    public void asksToSubscribeToThePlaceholderClass(String ref, String amount, String isin) {
+        answer = subscribe(ref, amount, new Isin(isin), null);
+    }
+
+    @When("^(\\w+) asks to subscribe (\\w{3} [\\d,]+) to ([A-Z]+-[A-Z0-9]+) twice$")
+    public void asksToSubscribeTwice(String ref, String amount, String shareClass) {
+        previous = subscribe(ref, amount, shareClass(shareClass), null);
+        answer = subscribe(ref, amount, shareClass(shareClass), null);
+    }
+
+    /** The same request, answered again from scratch: for the steps that compare two checks. */
+    public Answer.Answered subscribe(String ref, String amount, Isin shareClass, String initiative) {
+        Optional<Money> money = amount.matches("\\w{3} [\\d,]+") ? Optional.of(money(amount)) : Optional.empty();
+        boolean clientInitiated = initiative != null && !initiative.endsWith("no");
+        return answerRequests.answerByHand(List.of(new RequestByHand(new PortfolioReference(ref), shareClass, money,
+                clientInitiated ? ClientInitiated.YES : ClientInitiated.NO)));
+    }
+
     @Then("no LLM call is made")
     public void noLlmCallIsMade() {
         assertThat(llm.sent()).isEmpty();
@@ -173,6 +201,11 @@ public class AnsweringSteps {
     public Answer.Answered answered() {
         assertThat(answer).as("the answer").isInstanceOf(Answer.Answered.class);
         return (Answer.Answered) answer;
+    }
+
+    public Answer.Answered previous() {
+        assertThat(previous).as("the first of two answers").isNotNull();
+        return previous;
     }
 
     public Answer answer() {
@@ -192,9 +225,16 @@ public class AnsweringSteps {
         return (Answer.Answered) withLlm;
     }
 
-    /** A Share Class by its demo code, e.g. GCE-BI, from the Share Class table of demo-dataset.md. */
+    /**
+     * A Share Class by its demo code, e.g. GCE-BI, from the Share Class table of demo-dataset.md. A class whose ISIN
+     * the dataset leaves to confirm, e.g. SL-ICAP, is the fixture's placeholder of the same umbrella and class name.
+     */
     public static Isin shareClass(String code) {
-        return new Isin(demoShareClasses().get(code).isin());
+        DemoShareClass demo = demoShareClasses().get(code);
+        if (demo == null) {
+            throw new IllegalArgumentException("No Share Class " + code + " in the demo dataset");
+        }
+        return demo.isin().orElseGet(() -> placeholderIsin(demo));
     }
 
     /** The class name the demo dataset gives a code, e.g. BP-EUR for GCE-BP. */
@@ -208,19 +248,30 @@ public class AnsweringSteps {
         return new Money(new BigDecimal(currencyAndValue[1].replace(",", "")).stripTrailingZeros(), currencyAndValue[0]);
     }
 
-    private record DemoShareClass(String isin, String name) {
+    private record DemoShareClass(String fund, String name, Optional<Isin> isin) {
     }
 
     private static Map<String, DemoShareClass> demoShareClasses() {
-        Pattern row = Pattern.compile("^\\| ([A-Z]+-[A-Z0-9]+) \\| [^|]*, ([^|,]+) \\| `([A-Z0-9]{12})` \\|");
+        Pattern row = Pattern.compile("^\\| ([A-Z]+-[A-Z0-9]+) \\| ([^|]*), ([^|,]+) \\| (?:`([A-Z0-9]{12})`|[^|]*) \\|");
         try {
             return Files.readAllLines(DEMO_DATASET).stream()
                     .map(row::matcher)
                     .filter(Matcher::find)
                     .collect(Collectors.toMap(found -> found.group(1),
-                            found -> new DemoShareClass(found.group(3), found.group(2).strip()), (first, same) -> first));
+                            found -> new DemoShareClass(found.group(2).strip(), found.group(3).strip(),
+                                    Optional.ofNullable(found.group(4)).map(Isin::new)),
+                            (first, same) -> first));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    private static Isin placeholderIsin(DemoShareClass demo) {
+        return new FixtureShareClasses(SHARE_CLASSES).all().stream()
+                .filter(fixture -> fixture.shareClassName().equals(demo.name())
+                        && fixture.umbrellaName().orElse(fixture.fundName()).equals(demo.fund()))
+                .map(ShareClass::isin)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No fixture Share Class " + demo.fund() + ", " + demo.name()));
     }
 }
