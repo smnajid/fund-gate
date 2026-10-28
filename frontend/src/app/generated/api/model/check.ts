@@ -7,6 +7,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { Outcome } from './outcome';
 
 
 export interface Check { 
@@ -18,6 +19,7 @@ export interface Check {
     clientInitiated: Check.ClientInitiatedEnum;
     verdict: Check.VerdictEnum;
     notices: Array<string>;
+    outcomes: Array<Outcome>;
 }
 export namespace Check {
     export const ClientInitiatedEnum = {

@@ -40,8 +40,10 @@ class AnswerControllerTest {
                 .asArray().containsExactly("LOC90000101", "LOC90000102");
         assertThat(response).bodyJson().extractingPath("$.checks[*].shareClass")
                 .asArray().containsOnly("LU0348927095");
+        // Rows 1 and 26 of the answer key: the advisory portfolio is not institutional; the stub Request Parser
+        // names no amount, so the discretionary mandate's minimum needs review until the parser is built (#61)
         assertThat(response).bodyJson().extractingPath("$.checks[*].verdict")
-                .asArray().containsOnly("NEEDS_REVIEW");
+                .asArray().containsExactly("NOT_ELIGIBLE", "NEEDS_REVIEW");
         assertThat(response).bodyJson().extractingPath("$.reply.text")
                 .asString().contains("LOC90000101", "LOC90000102");
     }

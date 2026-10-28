@@ -73,3 +73,35 @@ button {
   font-weight: normal;
   color: var(--muted);
 }
+
+.justification {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.justification dt {
+  margin-top: 0.5rem;
+}
+
+.justification dt[data-outcome='FAIL'] strong {
+  color: var(--not-eligible);
+}
+
+.justification dt[data-outcome='REVIEW'] strong {
+  color: var(--review);
+}
+
+.justification dd {
+  margin: 0 0 0 1rem;
+}
+
+.citations {
+  margin: 0.25rem 0 0;
+  padding-left: 1rem;
+  color: var(--muted);
+}
+
+.citations q {
+  display: block;
+  font-style: italic;
+}

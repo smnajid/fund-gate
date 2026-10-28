@@ -6,8 +6,12 @@ import com.fundgate.funddocuments.FundDocuments;
 import com.fundgate.funddocuments.folder.FolderFundDocuments;
 import com.fundgate.fundregistrations.FundRegistrations;
 import com.fundgate.fundregistrations.fixture.FixtureFundRegistrations;
+import com.fundgate.fxrates.FxRates;
+import com.fundgate.fxrates.fixture.FixtureFxRates;
 import com.fundgate.llm.LlmEgress;
 import com.fundgate.llm.replay.ReplayLlmEgress;
+import com.fundgate.rulecard.RuleCards;
+import com.fundgate.rulecard.fixture.FixtureRuleCards;
 import com.fundgate.shareclasses.ShareClasses;
 import com.fundgate.shareclasses.fixture.FixtureShareClasses;
 import java.nio.file.Path;
@@ -37,17 +41,26 @@ public class AdaptersConfiguration {
         FundRegistrations fundRegistrations(@Value("${fundeli5.fixtures.dir}") String fixtures) {
             return new FixtureFundRegistrations(Path.of(fixtures, "fund-registrations.json"));
         }
-    }
-
-    @Configuration
-    @Profile("pipeline")
-    static class Pipeline {
 
         @Bean
-        FundDocuments fundDocuments(@Value("${fundeli5.fixtures.dir}") String fixtures,
-                @Value("${fundeli5.documents.folder}") String folder, ShareClasses shareClasses) {
-            return new FolderFundDocuments(Path.of(fixtures, "fund-documents.json"), Path.of(folder), shareClasses);
+        FxRates fxRates(@Value("${fundeli5.fixtures.dir}") String fixtures) {
+            return new FixtureFxRates(Path.of(fixtures, "fx-rates.json"));
         }
+
+        @Bean
+        RuleCards ruleCards(@Value("${fundeli5.fixtures.dir}") String fixtures) {
+            return new FixtureRuleCards(Path.of(fixtures, "rule-cards"));
+        }
+    }
+
+    /**
+     * Public data, read by both runtimes: the pipeline drafts from the documents, the dealer app reads only the
+     * editions FMD lists, to warn of a Stale Rule Card.
+     */
+    @Bean
+    FundDocuments fundDocuments(@Value("${fundeli5.fixtures.dir}") String fixtures,
+            @Value("${fundeli5.documents.folder}") String folder, ShareClasses shareClasses) {
+        return new FolderFundDocuments(Path.of(fixtures, "fund-documents.json"), Path.of(folder), shareClasses);
     }
 
     /** Public data, read by both runtimes: the dealer app's catalog and the pipeline's fund boundaries. */

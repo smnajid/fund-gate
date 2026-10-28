@@ -32,6 +32,29 @@
           @for (notice of check.notices; track $index) {
             <span class="notice">{{ notice }}</span>
           }
+          @if (check.outcomes.length > 0) {
+            <details class="justification">
+              <summary>Full Justification</summary>
+              <dl>
+                @for (outcome of check.outcomes; track outcome.rule) {
+                  <dt [attr.data-outcome]="outcome.outcome">
+                    {{ ruleName(outcome.rule) }}: <strong>{{ outcomeName(outcome.outcome) }}</strong>
+                  </dt>
+                  <dd>
+                    {{ outcome.reason }}
+                    <ul class="citations">
+                      @for (cited of outcome.citations; track $index) {
+                        <li>
+                          <cite>{{ cited.source }}</cite>
+                          @if (cited.quote) { <q>{{ cited.quote }}</q> }
+                        </li>
+                      }
+                    </ul>
+                  </dd>
+                }
+              </dl>
+            </details>
+          }
         </li>
       }
     </ul>

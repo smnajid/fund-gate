@@ -68,7 +68,8 @@ public class AnswerRequests {
             PortfolioId id = clientProfiles.portfolioId(byHand.portfolioRef())
                     .orElseThrow(() -> new PortfolioNotFound(byHand.portfolioRef()));
             refs.put(id, byHand.portfolioRef());
-            checked.add(check(new SubscriptionRequest(id, byHand.shareClass(), byHand.amount(), byHand.clientInitiated())));
+            checked.add(check(new SubscriptionRequest(id, byHand.shareClass(), byHand.amount(), byHand.clientInitiated()),
+                    byHand.portfolioRef()));
         }
         DraftedReply reply = new DraftedReply(
                 ReplyTemplate.write(facts(checked), id -> refs.get(id).value()), false, List.of());
@@ -81,7 +82,9 @@ public class AnswerRequests {
         if (!parsed.requests().stream().allMatch(request -> gated.swaps().containsKey(request.portfolioId()))) {
             return new Answer.Refused("The request names a portfolio the email does not", List.of());
         }
-        List<Checked> checked = parsed.requests().stream().map(this::check).toList();
+        List<Checked> checked = parsed.requests().stream()
+                .map(request -> check(request, gated.swaps().get(request.portfolioId())))
+                .toList();
         DraftedReply drafted = replyDrafter.draft(gated.pseudonymised(), facts(checked));
         List<Answer.Swap> swaps = gated.swaps().entrySet().stream()
                 .map(swap -> new Answer.Swap(swap.getValue(), swap.getKey()))
@@ -94,8 +97,8 @@ public class AnswerRequests {
     private record Checked(SubscriptionRequest request, EligibilityResult result) {
     }
 
-    private Checked check(SubscriptionRequest request) {
-        return new Checked(request, ruleEngine.check(request));
+    private Checked check(SubscriptionRequest request, PortfolioReference portfolioRef) {
+        return new Checked(request, ruleEngine.check(request, clientProfiles.clientProfile(portfolioRef)));
     }
 
     private static List<ReplyFacts> facts(List<Checked> checked) {

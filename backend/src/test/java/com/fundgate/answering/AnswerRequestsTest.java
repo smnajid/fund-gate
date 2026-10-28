@@ -158,7 +158,7 @@ class AnswerRequestsTest {
                         new Citation.ClientProfileField("client.birthDate", "1961-03-02")));
         AnswerRequests answering = new AnswerRequests(clientProfiles, new StubPrivacyGate(clientProfiles),
                 new StubRequestParser(),
-                request -> new EligibilityResult(Verdict.NOT_ELIGIBLE,
+                (request, profile) -> new EligibilityResult(Verdict.NOT_ELIGIBLE,
                         new Justification(List.of(investorCategory), List.of())),
                 (email, facts) -> {
                     drafted.set(facts);
@@ -183,9 +183,9 @@ class AnswerRequestsTest {
         AnswerRequests answering = new AnswerRequests(clientProfiles, new StubPrivacyGate(clientProfiles),
                 email -> new ParsedEmail(List.of(new SubscriptionRequest(elsewhere, new Isin("LU0348927095"),
                         Optional.empty(), ClientInitiated.UNKNOWN)), List.of()),
-                request -> {
+                (request, profile) -> {
                     checked.add(request);
-                    return new StubRuleEngine().check(request);
+                    return new StubRuleEngine().check(request, profile);
                 },
                 new StubReplyDrafter(), new CheckRecords() {
                     @Override

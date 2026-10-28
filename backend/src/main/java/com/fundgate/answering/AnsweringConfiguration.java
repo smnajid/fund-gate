@@ -3,14 +3,18 @@ package com.fundgate.answering;
 import com.fundgate.checkrecord.CheckRecords;
 import com.fundgate.checkrecord.memory.InMemoryCheckRecords;
 import com.fundgate.clientprofiles.ClientProfiles;
+import com.fundgate.funddocuments.FundDocuments;
+import com.fundgate.fundregistrations.FundRegistrations;
+import com.fundgate.fxrates.FxRates;
 import com.fundgate.privacygate.PrivacyGate;
 import com.fundgate.privacygate.stub.StubPrivacyGate;
 import com.fundgate.replydrafter.ReplyDrafter;
 import com.fundgate.replydrafter.stub.StubReplyDrafter;
 import com.fundgate.requestparser.RequestParser;
 import com.fundgate.requestparser.stub.StubRequestParser;
+import com.fundgate.rulecard.RuleCards;
+import com.fundgate.ruleengine.FixedRuleEngine;
 import com.fundgate.ruleengine.RuleEngine;
-import com.fundgate.ruleengine.stub.StubRuleEngine;
 import java.time.Clock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,8 +36,9 @@ public class AnsweringConfiguration {
     }
 
     @Bean
-    RuleEngine ruleEngine() {
-        return new StubRuleEngine();
+    RuleEngine ruleEngine(RuleCards ruleCards, FundDocuments fundDocuments, FundRegistrations fundRegistrations,
+            FxRates fxRates) {
+        return new FixedRuleEngine(ruleCards, fundDocuments, fundRegistrations, fxRates);
     }
 
     @Bean

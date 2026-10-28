@@ -14,11 +14,11 @@ const ANNAS_ANSWER: AnswerResponse = {
   checks: [
     {
       checkId: 'c1', portfolioRef: 'LOC90000101', shareClass: 'LU0348927095', clientInitiated: 'UNKNOWN',
-      verdict: 'NOT_ELIGIBLE', notices: []
+      verdict: 'NOT_ELIGIBLE', notices: [], outcomes: []
     },
     {
       checkId: 'c2', portfolioRef: 'LOC90000102', shareClass: 'LU0348927095', clientInitiated: 'UNKNOWN',
-      verdict: 'ELIGIBLE', notices: []
+      verdict: 'ELIGIBLE', notices: [], outcomes: []
     }
   ],
   reply: { text: 'Hello,\n\nLOC90000101 cannot subscribe.\nLOC90000102 can subscribe.', draftedByAi: false }
