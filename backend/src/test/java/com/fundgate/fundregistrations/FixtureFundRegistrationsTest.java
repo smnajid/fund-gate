@@ -3,7 +3,7 @@ package com.fundgate.fundregistrations;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fundgate.bankdata.Country;
-import com.fundgate.fundregistrations.Registration.InvestorType;
+import com.fundgate.bankdata.InvestorType;
 import com.fundgate.fundregistrations.fixture.FixtureFundRegistrations;
 import com.fundgate.shareclasses.Isin;
 import java.nio.file.Path;
