@@ -2,6 +2,10 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.26.
 
+## Generated API client
+
+`npm run generate-api` regenerates `src/app/generated/api` from the backend's OpenAPI spec. Run it after every API change, and never edit the generated files by hand. It needs Java, and the network on its first run, which downloads the generator.
+
 ## Development server
 
 To start a local development server, run:

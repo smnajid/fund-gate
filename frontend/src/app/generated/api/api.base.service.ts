@@ -1,5 +1,5 @@
 /**
- * OpenAPI definition
+ * FundEli5
  *
  * 
  *
@@ -13,7 +13,7 @@ import { Configuration } from './configuration';
 import { OpenApiHttpParams, QueryParamStyle, concatHttpParamsObject} from './query.params';
 
 export class BaseService {
-    protected basePath = 'http://localhost:52512';
+    protected basePath = 'http://localhost';
     public defaultHeaders = new HttpHeaders();
     public configuration: Configuration;
     public encoder: HttpParameterCodec;

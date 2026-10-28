@@ -39,15 +39,15 @@ class SpecificationRunsTest {
     }
 
     @Test
-    void a_scenario_with_unwritten_steps_is_undefined_not_an_error() {
+    void only_a_scenario_that_really_fails_or_errors_fails_the_build() {
         Events scenarios = runSpecification();
 
         assertThat(scenarios.count()).isPositive();
-        List<String> notUndefined = scenarios.stream()
-                .filter(event -> !isUndefined(event))
+        List<String> broken = scenarios.stream()
+                .filter(event -> !passed(event) && !isUndefined(event))
                 .map(event -> event.getTestDescriptor().getDisplayName())
                 .toList();
-        assertThat(notUndefined).isEmpty();
+        assertThat(broken).isEmpty();
     }
 
     @Test
@@ -71,6 +71,12 @@ class SpecificationRunsTest {
                 .execute()
                 .testEvents()
                 .finished();
+    }
+
+    private static boolean passed(Event finished) {
+        return finished.getPayload(TestExecutionResult.class)
+                .map(result -> result.getStatus() == TestExecutionResult.Status.SUCCESSFUL)
+                .orElse(false);
     }
 
     private static boolean isUndefined(Event finished) {

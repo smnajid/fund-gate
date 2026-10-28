@@ -32,7 +32,8 @@ class OpenApiSpecTest {
                 HttpResponse.BodyHandlers.ofString());
 
         assertThat(response.statusCode()).isEqualTo(200);
-        assertThat(response.body()).contains("\"openapi\":\"3.");
+        // What the client generator needs: an OpenAPI 3 document with info, and a server URL that does not change per run
+        assertThat(response.body()).contains("\"openapi\":\"3.", "\"info\":{", "\"servers\":[{\"url\":\"/\"");
         Files.writeString(SPEC, response.body());
     }
 }
