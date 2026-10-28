@@ -84,6 +84,24 @@ class ReplayLlmEgressTest {
     }
 
     @Test
+    void a_recordings_folder_that_is_not_there_fails_at_startup() {
+        assertThatThrownBy(() -> new ReplayLlmEgress(recordings.resolve("no-such-folder")))
+                .hasMessageContaining("no-such-folder");
+    }
+
+    @Test
+    void a_recording_with_a_misspelt_key_is_refused_not_left_unmatched() throws IOException {
+        Files.writeString(recordings.resolve("misspelt.json"), """
+                {
+                  "request": { "model": "claude-sonnet-5-5", "sytem": "Parse.", "prompt": "a gated prompt" },
+                  "response": { "model": "claude-sonnet-5-5", "text": "[]" }
+                }
+                """);
+
+        assertThatThrownBy(() -> new ReplayLlmEgress(recordings)).hasMessageContaining("misspelt.json");
+    }
+
+    @Test
     void a_request_nobody_recorded_fails_loudly_instead_of_calling_the_model() {
         LlmEgress egress = new ReplayLlmEgress(recordings);
 

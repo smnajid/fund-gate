@@ -32,12 +32,20 @@ public class FixtureClientProfiles implements ClientProfiles {
     }
 
     private Optional<ClientProfile> read(PortfolioReference ref) {
+        // A missing folder is the bank's data being unavailable, not every portfolio being unknown
+        if (!Files.isDirectory(directory)) {
+            throw new ClientDataUnavailable("No Client Profile fixtures in " + directory, null);
+        }
         Path file = directory.resolve(ref.value() + ".json");
         if (!Files.isRegularFile(file)) {
             return Optional.empty();
         }
         try {
-            return Optional.of(FixtureJson.read(file, ClientProfile.class));
+            ClientProfile profile = FixtureJson.read(file, ClientProfile.class);
+            if (!profile.portfolioRef().equals(ref)) {
+                throw new ClientDataUnavailable("The Client Profile fixture of " + ref + " holds another portfolio", null);
+            }
+            return Optional.of(profile);
         } catch (JacksonException e) {
             // The file name holds the reference, so the message gives the masked one
             throw new ClientDataUnavailable("Cannot read the Client Profile fixture of " + ref + " in " + directory, e);

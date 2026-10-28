@@ -34,11 +34,6 @@ public class AdaptersConfiguration {
         }
 
         @Bean
-        ShareClasses shareClasses(@Value("${fundeli5.fixtures.dir}") String fixtures) {
-            return new FixtureShareClasses(Path.of(fixtures, "share-classes.json"));
-        }
-
-        @Bean
         FundRegistrations fundRegistrations(@Value("${fundeli5.fixtures.dir}") String fixtures) {
             return new FixtureFundRegistrations(Path.of(fixtures, "fund-registrations.json"));
         }
@@ -49,10 +44,16 @@ public class AdaptersConfiguration {
     static class Pipeline {
 
         @Bean
-        FundDocuments fundDocuments(
-                @Value("${fundeli5.fixtures.dir}") String fixtures, @Value("${fundeli5.documents.folder}") String folder) {
-            return new FolderFundDocuments(Path.of(fixtures, "fund-documents.json"), Path.of(folder));
+        FundDocuments fundDocuments(@Value("${fundeli5.fixtures.dir}") String fixtures,
+                @Value("${fundeli5.documents.folder}") String folder, ShareClasses shareClasses) {
+            return new FolderFundDocuments(Path.of(fixtures, "fund-documents.json"), Path.of(folder), shareClasses);
         }
+    }
+
+    /** Public data, read by both runtimes: the dealer app's catalog and the pipeline's fund boundaries. */
+    @Bean
+    ShareClasses shareClasses(@Value("${fundeli5.fixtures.dir}") String fixtures) {
+        return new FixtureShareClasses(Path.of(fixtures, "share-classes.json"));
     }
 
     @Bean

@@ -1,9 +1,11 @@
 package com.fundgate.clientprofiles;
 
 import com.fundgate.bankdata.BankCode;
+import com.fundgate.bankdata.Country;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -19,12 +21,23 @@ public record ClientProfile(
         Optional<Classification> classification,
         Optional<Portfolio> portfolio) {
 
+    /** The required fields: a fixture or bank answer without them is refused, never read as null. */
+    public ClientProfile {
+        Objects.requireNonNull(portfolioRef, "portfolioRef");
+        Objects.requireNonNull(portfolioId, "portfolioId");
+        Objects.requireNonNull(legalEntity, "legalEntity");
+        Objects.requireNonNull(retrievedAt, "retrievedAt");
+        if (!legalEntity.equals(portfolioRef.legalEntity())) {
+            throw new IllegalArgumentException("legalEntity " + legalEntity + " is not the Legal Entity of " + portfolioRef);
+        }
+    }
+
     /** Facts about the person. */
     public record Client(
-            Optional<String> residenceCountry,
-            Optional<List<String>> nationalities,
-            Optional<List<String>> taxResidences,
-            Optional<String> birthCountry,
+            Optional<Country> residenceCountry,
+            Optional<List<Country>> nationalities,
+            Optional<List<Country>> taxResidences,
+            Optional<Country> birthCountry,
             Optional<UsPerson> usPerson,
             Optional<List<KnowledgeAndExperience>> knowledgeAndExperience) {
     }
@@ -34,7 +47,8 @@ public record ClientProfile(
 
     public enum FatcaStatus { US_PERSON, NON_US_PERSON }
 
-    public record KnowledgeAndExperience(BankCode productType, BankCode level) {
+    /** An entry missing its product type or level is ignored by the Target Market, as the contract says. */
+    public record KnowledgeAndExperience(Optional<BankCode> productType, Optional<BankCode> level) {
     }
 
     /** The Investor Classification the portfolio's Legal Entity gives the client. */
@@ -51,6 +65,10 @@ public record ClientProfile(
         public enum Category { RETAIL, PROFESSIONAL, INSTITUTIONAL }
 
         public record Declaration(DeclarationType type, Optional<LocalDate> date, Optional<String> label) {
+
+            public Declaration {
+                Objects.requireNonNull(type, "declaration type: an unmapped code is OTHER, never absent");
+            }
         }
 
         public enum DeclarationType {
@@ -69,7 +87,8 @@ public record ClientProfile(
             Optional<InvestmentProfile> investmentProfile) {
     }
 
-    public record Mandate(MandateType type, Optional<LocalDate> startDate, Optional<Manager> manager) {
+    /** {@code type} is empty when the bank's code matches no value: unknown, never a guess. */
+    public record Mandate(Optional<MandateType> type, Optional<LocalDate> startDate, Optional<Manager> manager) {
     }
 
     public enum MandateType { ADVISORY, DISCRETIONARY, EXECUTION_ONLY }

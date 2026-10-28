@@ -37,7 +37,7 @@ public record CheckRecord(
         llmCalls = List.copyOf(llmCalls);
     }
 
-    public record RuleCardVersion(String fundName, int version) {
+    public record RuleCardVersion(Optional<String> fundId, String fundName, int version) {
     }
 
     /** One LLM call: exactly what went out, after the Privacy Gate, and what came back. */

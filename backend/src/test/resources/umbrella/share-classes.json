@@ -1,0 +1,8 @@
+[
+  { "isin": "LU0348926287", "fundName": "Nordea 1 – Global Climate and Environment Fund", "umbrellaName": "Nordea 1, SICAV",
+    "shareClassName": "BP-EUR", "currency": "EUR", "retrievedAt": "2026-11-02T08:00:00Z" },
+  { "isin": "LU0348927095", "fundName": "Nordea 1 – Global Climate and Environment Fund", "umbrellaName": "Nordea 1, SICAV",
+    "shareClassName": "BI-EUR", "currency": "EUR", "retrievedAt": "2026-11-02T08:00:00Z" },
+  { "isin": "LU0064675639", "fundName": "Nordea 1 – Nordic Equity Fund", "umbrellaName": "Nordea 1, SICAV",
+    "shareClassName": "BP-EUR", "currency": "EUR", "retrievedAt": "2026-11-02T08:00:00Z" }
+]

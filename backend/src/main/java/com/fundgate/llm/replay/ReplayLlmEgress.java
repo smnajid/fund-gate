@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 import tools.jackson.core.JacksonException;
+import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
@@ -22,7 +23,10 @@ import tools.jackson.databind.json.JsonMapper;
  */
 public class ReplayLlmEgress implements LlmEgress {
 
-    private static final JsonMapper JSON = JsonMapper.builder().build();
+    // A misspelt key is refused: it would otherwise load as null and never match
+    private static final JsonMapper JSON = JsonMapper.builder()
+            .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .build();
 
     private final Path recordings;
     private final Map<LlmRequest, LlmResponse> answers;
@@ -48,8 +52,9 @@ public class ReplayLlmEgress implements LlmEgress {
 
     /** Every failure names the file only: a recording's content is a prompt, and only the Check Record keeps prompts. */
     private static Map<LlmRequest, LlmResponse> load(Path recordings) {
+        // A wrong path would otherwise look like "the prompt has changed" on every call
         if (!Files.isDirectory(recordings)) {
-            return Map.of();
+            throw new IllegalStateException("No recordings folder at " + recordings);
         }
         Map<LlmRequest, LlmResponse> answers = new HashMap<>();
         Map<LlmRequest, Path> recordedIn = new HashMap<>();

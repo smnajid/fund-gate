@@ -3,6 +3,7 @@ package com.fundgate.clientprofiles;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.fundgate.bankdata.Country;
 import com.fundgate.clientprofiles.ClientProfile.Classification.Category;
 import com.fundgate.clientprofiles.ClientProfile.Classification.DeclarationType;
 import com.fundgate.clientprofiles.ClientProfile.Classification.Regime;
@@ -25,7 +26,7 @@ class FixtureClientProfilesTest {
         ClientProfile tom = clientProfiles.clientProfile(new PortfolioReference("LOC90000201"));
 
         assertThat(tom.legalEntity()).isEqualTo("LOC");
-        assertThat(tom.client().orElseThrow().nationalities()).contains(List.of("CH", "US"));
+        assertThat(tom.client().orElseThrow().nationalities()).contains(List.of(new Country("CH"), new Country("US")));
         ClientProfile.Classification classification = tom.classification().orElseThrow();
         assertThat(classification.regime()).contains(Regime.FINSA);
         assertThat(classification.category()).contains(Category.PROFESSIONAL);
@@ -65,6 +66,32 @@ class FixtureClientProfilesTest {
         assertThatThrownBy(() -> withATypo.clientProfile(new PortfolioReference("LOC90000101")))
                 .isInstanceOf(ClientDataUnavailable.class)
                 .rootCause().hasMessageContaining("nationalitys");
+    }
+
+    @Test
+    void a_mandate_type_the_bank_code_matches_no_value_for_is_unknown() {
+        // The CRM adapter leaves mandate.type absent for an unmapped code (contract, CRM adapter step 4)
+        ClientProfiles unmapped = new FixtureClientProfiles(Path.of("src/test/resources/client-profiles-unknown-mandate"));
+
+        ClientProfile profile = unmapped.clientProfile(new PortfolioReference("LOC90000102"));
+
+        assertThat(profile.portfolio().orElseThrow().mandate().orElseThrow().type()).isEmpty();
+    }
+
+    @Test
+    void a_fixture_missing_a_required_field_is_refused_not_read_as_null() {
+        ClientProfiles missingId = new FixtureClientProfiles(Path.of("src/test/resources/client-profiles-missing-id"));
+
+        assertThatThrownBy(() -> missingId.portfolioId(new PortfolioReference("LOC90000101")))
+                .isInstanceOf(ClientDataUnavailable.class);
+    }
+
+    @Test
+    void a_fixtures_folder_that_is_not_there_is_unavailable_data_not_an_unknown_portfolio() {
+        ClientProfiles nowhere = new FixtureClientProfiles(Path.of("no-such-folder"));
+
+        assertThatThrownBy(() -> nowhere.portfolioId(new PortfolioReference("LOC90000101")))
+                .isInstanceOf(ClientDataUnavailable.class);
     }
 
     @Test

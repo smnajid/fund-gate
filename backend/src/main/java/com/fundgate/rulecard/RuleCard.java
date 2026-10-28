@@ -12,6 +12,8 @@ import java.util.Optional;
  * edited, only superseded. Only a Validated card decides; a Draft card gives Needs Review (ADR 0001).
  */
 public record RuleCard(
+        /** FMD's fund id, when it has one (an open question for the desk); the card is stored under it. */
+        Optional<String> fundId,
         String fundName,
         /** The classes this card covers: the join from a Share Class to its card. */
         List<Isin> shareClasses,

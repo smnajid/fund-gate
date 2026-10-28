@@ -6,10 +6,13 @@ import com.fundgate.funddocuments.DocumentUnavailable;
 import com.fundgate.funddocuments.FundDocument;
 import com.fundgate.funddocuments.FundDocuments;
 import com.fundgate.shareclasses.Isin;
+import com.fundgate.shareclasses.ShareClass;
+import com.fundgate.shareclasses.ShareClasses;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import tools.jackson.core.type.TypeReference;
@@ -19,22 +22,36 @@ public class FolderFundDocuments implements FundDocuments {
 
     private final List<FundDocument> manifest;
     private final Path folder;
+    private final ShareClasses catalog;
 
-    public FolderFundDocuments(Path manifest, Path folder) {
+    /** The catalog says which classes make up a fund; a document's own ISIN list can span an umbrella's sub-funds. */
+    public FolderFundDocuments(Path manifest, Path folder, ShareClasses catalog) {
         this.manifest = List.copyOf(FixtureJson.read(manifest, new TypeReference<List<FundDocument>>() {}));
         this.folder = folder;
+        this.catalog = catalog;
     }
 
     @Override
     public List<FundDocument> documents(Isin anyShareClassOfTheFund) {
-        // The prospectus lists every class of the fund, so the classes sharing a document with this one are its fund
-        Set<Isin> fund = manifest.stream()
-                .filter(document -> document.isins().contains(anyShareClassOfTheFund))
-                .flatMap(document -> document.isins().stream())
-                .collect(Collectors.toSet());
+        Set<Isin> fund = classesOfTheSameFund(anyShareClassOfTheFund);
         return manifest.stream()
                 .filter(document -> document.isins().stream().anyMatch(fund::contains))
                 .toList();
+    }
+
+    /** Same fundId when the catalog has one, else the same fund (sub-fund) name. */
+    private Set<Isin> classesOfTheSameFund(Isin isin) {
+        List<ShareClass> classes = catalog.all();
+        return classes.stream()
+                .filter(shareClass -> shareClass.isin().equals(isin))
+                .findFirst()
+                .map(asked -> classes.stream()
+                        .filter(other -> asked.fundId().isPresent()
+                                ? asked.fundId().equals(other.fundId())
+                                : Objects.equals(asked.fundName(), other.fundName()))
+                        .map(ShareClass::isin)
+                        .collect(Collectors.toSet()))
+                .orElse(Set.of(isin));
     }
 
     @Override
