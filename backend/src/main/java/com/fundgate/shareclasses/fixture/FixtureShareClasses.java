@@ -1,7 +1,7 @@
 package com.fundgate.shareclasses.fixture;
 
 import com.fundgate.bankdata.fixture.FixtureJson;
-import com.fundgate.shareclasses.FundDataUnavailable;
+import com.fundgate.bankdata.FundDataUnavailable;
 import com.fundgate.shareclasses.ShareClass;
 import com.fundgate.shareclasses.ShareClasses;
 import java.nio.file.Path;
