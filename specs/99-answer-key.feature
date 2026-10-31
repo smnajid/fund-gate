@@ -11,6 +11,39 @@ Feature: Answer key
   such rule, or, on rows 24 and 25, that no rule is evaluated. Rows 4 to 9 are
   Tom's reverse lookup.
 
+  # Legend, a reading aid only: the source of truth is docs/playbook/demo-dataset.md
+  # (portfolios) and docs/playbook/contracts/fixtures/rule-cards/ (classes).
+  #
+  # Portfolios: residence, Investor Classification, mandate, and what the rows test
+  #   LOC90000101  Anna    CH  retail                         advisory
+  #   LOC90000102  Anna    CH  retail                         discretionary mandate
+  #   LOC90000201  Tom     CH  professional, HNWI opt-out     advisory; CH+US citizen, FATCA US person
+  #   LUX90000301  Claire  LU  retail                         advisory; Income, limited loss, 2y, funds basic
+  #   LUX90000401          LU  professional (per se)          advisory
+  #   LUX90000501          LU  retail + well-informed conf.   advisory; Income, 5y, private equity informed
+  #   LUX90000601          LU  retail + well-informed conf.   advisory; private equity knowledge none
+  #   LOC90000701          CH  professional, HNWI opt-out     advisory
+  #   LUX90000801          LU  retail                         advisory
+  #   LOC90000901          CH  professional, HNWI opt-out     advisory
+  #   LOC90001001          CH  retail                         discretionary mandate, not with Swiss Life
+  #   LOC90001101          CH  retail                         discretionary mandate
+  #   LOC90001201          CH  retail                         advisory; US Person status missing
+  #   SIN90001301          SG  Singapore entity               regime not covered
+  #   LOC90001401          CH  retail                         advisory
+  #
+  # Classes: who may buy, minimum, US Person definition, where registered
+  #   GCE-BP    Nordea 1 Global Climate BP-EUR  all investors                   none           Reg S             CH, LU
+  #   GCE-BI    Nordea 1 Global Climate BI-EUR  institutional (art. 174)        EUR 75,000     Reg S             CH, LU
+  #   SIF-W     Nordea SIF Private Equity BW    well-informed                   EUR 100,000    Reg S             LU only
+  #   BNP-A     BNP (CH) Bonds CHF A            all investors                   none           Reg S + citizens  CH only
+  #   BNP-AAC   BNP (CH) Bonds CHF A AC         Draft Rule Card only
+  #   BNP-I     BNP (CH) Bonds CHF I            qualified                       CHF 1,000,000  Reg S + citizens  CH only
+  #   SL-ICAP   Swiss Life iFunds I Cap         qualified                       none           any US citizen    CH only
+  #   SL-AMCAP  Swiss Life iFunds AM Cap        qualified, no HNWI opt-outs,    none           any US citizen    CH only
+  #                                             no 10(3ter) mandate clients; Swiss Life mandate only
+  #   SL-IA1    Swiss Life iFunds I-A 1         qualified, no 10(3ter) mandate  none           any US citizen    CH only
+  #                                             clients; Swiss Life mandate only
+
   Background:
     Given the demo dataset
     And the Validated Rule Cards of the sample funds
