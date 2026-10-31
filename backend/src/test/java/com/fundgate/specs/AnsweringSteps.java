@@ -70,7 +70,7 @@ public class AnsweringSteps {
 
     private static final Path DEMO_DATASET = Path.of("../docs/playbook/demo-dataset.md");
 
-    private static final Path SHARE_CLASSES = Path.of("../docs/playbook/contracts/fixtures/share-classes.json");
+    private static final Path SHARE_CLASSES = Path.of("src/test/resources/fixtures/share-classes.json");
 
     @Autowired
     private AnswerRequests answerRequests;

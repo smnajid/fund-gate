@@ -16,10 +16,10 @@ import org.junit.jupiter.api.io.TempDir;
 /** The FundDocuments port over the sample documents' manifest (contracts/fund-documents.md). */
 class FolderFundDocumentsTest {
 
-    private static final Path MANIFEST = Path.of("../docs/playbook/contracts/fixtures/fund-documents.json");
+    private static final Path MANIFEST = Path.of("src/test/resources/fixtures/fund-documents.json");
     private static final Isin GCE_BI = new Isin("LU0348927095");
     private static final ShareClasses CATALOG =
-            new FixtureShareClasses(Path.of("../docs/playbook/contracts/fixtures/share-classes.json"));
+            new FixtureShareClasses(Path.of("src/test/resources/fixtures/share-classes.json"));
 
     @TempDir
     Path folder;

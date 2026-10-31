@@ -19,7 +19,7 @@ class FixtureFundRegistrationsTest {
     private static final Isin NOT_COVERED = new Isin("XXNOTCOV0001");
 
     private final FundRegistrations fundRegistrations =
-            new FixtureFundRegistrations(Path.of("../docs/playbook/contracts/fixtures/fund-registrations.json"));
+            new FixtureFundRegistrations(Path.of("src/test/resources/fixtures/fund-registrations.json"));
 
     @Test
     void a_class_registered_for_everyone_in_its_home_country() {

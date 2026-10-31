@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 class FixtureShareClassesTest {
 
     private final ShareClasses shareClasses =
-            new FixtureShareClasses(Path.of("../docs/playbook/contracts/fixtures/share-classes.json"));
+            new FixtureShareClasses(Path.of("src/test/resources/fixtures/share-classes.json"));
 
     @Test
     void the_catalog_holds_the_nine_demo_classes_and_two_with_no_rule_card() {
