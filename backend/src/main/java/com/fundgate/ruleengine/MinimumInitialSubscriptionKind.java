@@ -32,11 +32,6 @@ public final class MinimumInitialSubscriptionKind
     }
 
     @Override
-    public String name() {
-        return "minimum_initial_subscription";
-    }
-
-    @Override
     public Class<MinimumInitialSubscription> condition() {
         return MinimumInitialSubscription.class;
     }

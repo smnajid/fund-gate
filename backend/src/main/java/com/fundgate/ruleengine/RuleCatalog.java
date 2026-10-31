@@ -16,8 +16,9 @@ public final class RuleCatalog {
             new MinimumInitialSubscriptionKind(),
             new MandateOnlyClassKind(),
             new KidRequiredForRetailKind(),
-            new UnmodelledRestrictionKind(),
-            new TargetMarketKind());
+            new TargetMarketKind(),
+            // Last: its prompt line says "fits none of the kinds above"
+            new UnmodelledRestrictionKind());
 
     private RuleCatalog() {
     }

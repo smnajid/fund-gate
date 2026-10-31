@@ -30,6 +30,14 @@ class RuleCatalogTest {
     }
 
     @Test
+    void the_kinds_come_in_the_drafting_prompt_s_order_unmodelled_restrictions_last() {
+        // DraftPrompt (#65) lists them so, and the unmodelled line means "fits none of the kinds above"
+        assertThat(RuleCatalog.KINDS).extracting(RuleKindPlugin::name).containsExactly("investor_category",
+                "us_person_exclusion", "minimum_initial_subscription", "mandate_only_class",
+                "kid_required_for_retail", "target_market", "unmodelled_restriction");
+    }
+
+    @Test
     void each_plug_in_prompts_for_its_own_kind() {
         assertThat(RuleCatalog.KINDS)
                 .allSatisfy(plugin -> assertThat(plugin.prompt()).startsWith("- " + plugin.name() + ": "));

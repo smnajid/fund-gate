@@ -22,11 +22,6 @@ public final class TargetMarketKind implements RuleKindPlugin<TargetMarketKind.T
     }
 
     @Override
-    public String name() {
-        return "target_market";
-    }
-
-    @Override
     public Class<TargetMarket> condition() {
         return TargetMarket.class;
     }

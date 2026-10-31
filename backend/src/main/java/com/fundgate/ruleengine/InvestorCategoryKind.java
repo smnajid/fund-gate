@@ -38,11 +38,6 @@ public final class InvestorCategoryKind implements RuleKindPlugin<InvestorCatego
     }
 
     @Override
-    public String name() {
-        return "investor_category";
-    }
-
-    @Override
     public Class<InvestorCategory> condition() {
         return InvestorCategory.class;
     }

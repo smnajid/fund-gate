@@ -31,11 +31,6 @@ public final class UsPersonExclusionKind implements RuleKindPlugin<UsPersonExclu
     }
 
     @Override
-    public String name() {
-        return "us_person_exclusion";
-    }
-
-    @Override
     public Class<UsPersonExclusion> condition() {
         return UsPersonExclusion.class;
     }
@@ -51,11 +46,11 @@ public final class UsPersonExclusionKind implements RuleKindPlugin<UsPersonExclu
      * is residence, a Green Card included; some funds add citizenship; the IRC adds FATCA status.
      */
     @Override
-    public Optional<Finding> evaluate(UsPersonExclusion condition, Facts given, Lookups lookups) {
+    public Optional<Finding> evaluate(UsPersonExclusion condition, Facts facts, Lookups lookups) {
         if (condition.definition() == UsPersonExclusion.UsPersonDefinition.MIXED) {
             return Optional.of(Finding.review("the documents mix US Person definitions"));
         }
-        Optional<ClientProfile.Client> client = given.profile().client();
+        Optional<ClientProfile.Client> client = facts.profile().client();
         Optional<Country> residence = client.flatMap(ClientProfile.Client::residenceCountry);
         Optional<Boolean> greenCard = client.flatMap(ClientProfile.Client::usPerson)
                 .flatMap(ClientProfile.UsPerson::usPermanentResident);
@@ -63,26 +58,26 @@ public final class UsPersonExclusionKind implements RuleKindPlugin<UsPersonExclu
         Optional<ClientProfile.FatcaStatus> fatca = client.flatMap(ClientProfile.Client::usPerson)
                 .flatMap(ClientProfile.UsPerson::fatcaStatus);
 
-        List<Finding> facts = new ArrayList<>();
+        List<Finding> usPersonFacts = new ArrayList<>();
         if (condition.definition() != UsPersonExclusion.UsPersonDefinition.FATCA) {
-            facts.add(fact(residence.map(US::equals), "resident in the United States",
+            usPersonFacts.add(fact(residence.map(US::equals), "resident in the United States",
                     Facts.field("client.residenceCountry", residence)));
-            facts.add(fact(greenCard, "a US permanent resident",
+            usPersonFacts.add(fact(greenCard, "a US permanent resident",
                     Facts.field("client.usPerson.usPermanentResident", greenCard)));
         }
         if (condition.excludesUsCitizens() || condition.definition() == UsPersonExclusion.UsPersonDefinition.IRC_CITIZENSHIP) {
-            facts.add(fact(nationalities.map(all -> all.contains(US)), "a US citizen",
+            usPersonFacts.add(fact(nationalities.map(all -> all.contains(US)), "a US citizen",
                     Facts.field("client.nationalities", nationalities)));
         }
         if (condition.definition() == UsPersonExclusion.UsPersonDefinition.IRC_CITIZENSHIP
                 || condition.definition() == UsPersonExclusion.UsPersonDefinition.FATCA) {
-            facts.add(fact(fatca.map(ClientProfile.FatcaStatus.US_PERSON::equals), "a US Person for FATCA",
+            usPersonFacts.add(fact(fatca.map(ClientProfile.FatcaStatus.US_PERSON::equals), "a US Person for FATCA",
                     Facts.field("client.usPerson.fatcaStatus", fatca)));
         }
-        Finding worst = Finding.worst(facts);
+        Finding worst = Finding.worst(usPersonFacts);
         return Optional.of(switch (worst.outcome()) {
             case PASS -> Finding.pass("not a US Person under the fund's definition")
-                    .citing(facts.stream().flatMap(fact -> fact.citations().stream()).toList());
+                    .citing(usPersonFacts.stream().flatMap(fact -> fact.citations().stream()).toList());
             case REVIEW -> Finding.review("US Person status unknown: " + worst.reason()).citing(worst.citations());
             default -> worst;
         });

@@ -2,23 +2,30 @@ package com.fundgate.ruleengine;
 
 import com.fundgate.rulecard.Condition;
 import com.fundgate.rulecard.RuleKind;
+import java.util.Locale;
 import java.util.Optional;
 
 /**
  * One kind of rule on a Rule Card, whole: its condition, how the engine decides it, and how the LLM is asked to draft
- * it (issue #79). A kind the business adds is one plug-in, listed in {@link RuleCatalog}; nothing else in the engine
- * knows a kind.
+ * it (issue #79). Every Hard Restriction, the Unmodelled Restriction and the Target Market are kinds. A kind the
+ * business adds is one plug-in, listed in {@link RuleCatalog}, plus its {@link RuleKind} constant, which the API
+ * names; nothing else in the engine knows a kind.
  */
 interface RuleKindPlugin<C extends Condition> {
 
     RuleKind kind();
 
     /** The kind's name in a card's JSON and in the drafting prompt, e.g. investor_category. */
-    String name();
+    default String name() {
+        return kind().name().toLowerCase(Locale.ROOT);
+    }
 
     Class<C> condition();
 
-    /** The kind's line in the drafting prompt, as DraftPrompt states it today (#65 assembles them). */
+    /**
+     * The kind's line in the drafting prompt, copied from the pipeline's DraftPrompt (#65, not merged yet), which
+     * will assemble the lines in catalog order.
+     */
     String prompt();
 
     /** Fixed code, the card only fills in the parameters. Empty when the engine does not decide this kind yet. */

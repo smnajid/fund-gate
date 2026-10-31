@@ -25,11 +25,6 @@ public final class UnmodelledRestrictionKind
     }
 
     @Override
-    public String name() {
-        return "unmodelled_restriction";
-    }
-
-    @Override
     public Class<UnmodelledRestriction> condition() {
         return UnmodelledRestriction.class;
     }

@@ -23,11 +23,6 @@ public final class MandateOnlyClassKind implements RuleKindPlugin<MandateOnlyCla
     }
 
     @Override
-    public String name() {
-        return "mandate_only_class";
-    }
-
-    @Override
     public Class<MandateOnlyClass> condition() {
         return MandateOnlyClass.class;
     }

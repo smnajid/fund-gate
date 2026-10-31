@@ -17,11 +17,6 @@ public final class KidRequiredForRetailKind implements RuleKindPlugin<KidRequire
     }
 
     @Override
-    public String name() {
-        return "kid_required_for_retail";
-    }
-
-    @Override
     public Class<KidRequiredForRetail> condition() {
         return KidRequiredForRetail.class;
     }
