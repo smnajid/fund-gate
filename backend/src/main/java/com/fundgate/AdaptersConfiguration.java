@@ -12,6 +12,7 @@ import com.fundgate.llm.LlmEgress;
 import com.fundgate.llm.replay.ReplayLlmEgress;
 import com.fundgate.rulecard.RuleCards;
 import com.fundgate.rulecard.fixture.FixtureRuleCards;
+import com.fundgate.ruleengine.RuleCatalog;
 import com.fundgate.shareclasses.ShareClasses;
 import com.fundgate.shareclasses.fixture.FixtureShareClasses;
 import java.nio.file.Path;
@@ -49,7 +50,7 @@ public class AdaptersConfiguration {
 
         @Bean
         RuleCards ruleCards(@Value("${fundeli5.fixtures.dir}") String fixtures) {
-            return new FixtureRuleCards(Path.of(fixtures, "rule-cards"));
+            return new FixtureRuleCards(Path.of(fixtures, "rule-cards"), RuleCatalog.conditionTypes());
         }
     }
 

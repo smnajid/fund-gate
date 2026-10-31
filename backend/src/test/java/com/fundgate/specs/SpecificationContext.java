@@ -3,6 +3,7 @@ package com.fundgate.specs;
 import com.fundgate.funddocuments.folder.FolderFundDocuments;
 import com.fundgate.llm.replay.ReplayLlmEgress;
 import com.fundgate.rulecard.fixture.FixtureRuleCards;
+import com.fundgate.ruleengine.RuleCatalog;
 import com.fundgate.shareclasses.ShareClasses;
 import com.fundgate.specs.ruleengine.EditableRuleCards;
 import com.fundgate.specs.ruleengine.ListedEditions;
@@ -36,7 +37,8 @@ public class SpecificationContext {
         @Bean
         @Primary
         EditableRuleCards editableRuleCards(@Value("${fundeli5.fixtures.dir}") String fixtures) {
-            return new EditableRuleCards(new FixtureRuleCards(Path.of(fixtures, "rule-cards")));
+            return new EditableRuleCards(new FixtureRuleCards(Path.of(fixtures, "rule-cards"),
+                    RuleCatalog.conditionTypes()));
         }
 
         @Bean
