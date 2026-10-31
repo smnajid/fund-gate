@@ -119,7 +119,7 @@ class FourPromisesTest {
         assertThat(sent.getFirst()).contains(portfolioId("LOC90000101"), portfolioId("LOC90000102"));
     }
 
-    /** Architecture, Audit: every check writes one Check Record of exactly what the Fund Dealer was shown. */
+    /** architecture.md, Audit: every check writes one Check Record of exactly what the Fund Dealer was shown. */
     @Test
     void every_eligibility_check_writes_one_check_record_with_the_verdict_shown() {
         CheckRecords checkRecords = new InMemoryCheckRecords();
@@ -140,7 +140,10 @@ class FourPromisesTest {
         assertThat(written).hasSize(3);
     }
 
-    /** ADR 0002: fixed rules decide; any Fail gives Not Eligible, otherwise any Review gives Needs Review. */
+    /**
+     * ADR 0002: fixed rules decide; any Fail gives Not Eligible, otherwise any Review gives Needs Review, otherwise
+     * Eligible. A check with no rule outcome (a Draft card or none, a regime not covered) needs review.
+     */
     @Test
     void any_fail_gives_not_eligible_otherwise_any_review_gives_needs_review_otherwise_eligible() {
         assertThat(check("LOC90000101", "LU0348927095", "80000", "EUR").verdict()).isEqualTo(Verdict.NOT_ELIGIBLE);
