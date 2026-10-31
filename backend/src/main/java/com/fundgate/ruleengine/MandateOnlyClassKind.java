@@ -15,10 +15,6 @@ public final class MandateOnlyClassKind implements RuleKindPlugin<MandateOnlyCla
 
     /** A class reserved to mandates, with the manager it names, if any. */
     public record MandateOnlyClass(Optional<String> manager) implements Condition {
-
-        public RuleKind kind() {
-            return RuleKind.MANDATE_ONLY_CLASS;
-        }
     }
 
     @Override

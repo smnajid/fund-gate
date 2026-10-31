@@ -56,6 +56,12 @@ class ArchitectureTest {
             .and().haveSimpleNameNotEndingWith("Configuration")
             .should().dependOnClassesThat().resideInAPackage("org.springframework..");
 
+    /** Issue #79: the Rule Card knows no kind of rule; the engine's catalog brings them, so a kind is added there only. */
+    @ArchTest
+    static final ArchRule the_rule_card_never_depends_on_the_rule_engine = noClasses()
+            .that().resideInAPackage("com.fundgate.rulecard..")
+            .should().dependOnClassesThat().resideInAPackage("com.fundgate.ruleengine..");
+
     /** Issue #79: a kind of rule is one plug-in, so its condition is used by its plug-in alone. */
     @ArchTest
     static final ArchRule a_kind_s_condition_is_used_only_by_its_plug_in = classes()

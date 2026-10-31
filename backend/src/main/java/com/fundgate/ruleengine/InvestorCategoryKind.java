@@ -30,10 +30,6 @@ public final class InvestorCategoryKind implements RuleKindPlugin<InvestorCatego
             allowed = Set.copyOf(Objects.requireNonNull(allowed, "allowed"));
             excluded = Set.copyOf(Objects.requireNonNull(excluded, "excluded: an empty list when none"));
         }
-
-        public RuleKind kind() {
-            return RuleKind.INVESTOR_CATEGORY;
-        }
     }
 
     @Override

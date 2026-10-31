@@ -23,10 +23,6 @@ public final class UsPersonExclusionKind implements RuleKindPlugin<UsPersonExclu
         }
 
         public enum UsPersonDefinition { REG_S, FATCA, IRC_CITIZENSHIP, MIXED }
-
-        public RuleKind kind() {
-            return RuleKind.US_PERSON_EXCLUSION;
-        }
     }
 
     @Override

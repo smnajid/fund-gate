@@ -14,10 +14,6 @@ public final class TargetMarketKind implements RuleKindPlugin<TargetMarketKind.T
 
         /** Positive: who the fund is for. Negative: who it is not for. */
         public enum Polarity { POSITIVE, NEGATIVE }
-
-        public RuleKind kind() {
-            return RuleKind.TARGET_MARKET;
-        }
     }
 
     @Override

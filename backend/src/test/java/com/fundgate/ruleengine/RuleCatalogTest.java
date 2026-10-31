@@ -2,7 +2,12 @@ package com.fundgate.ruleengine;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fundgate.rulecard.Condition;
 import com.fundgate.rulecard.RuleKind;
+import com.tngtech.archunit.core.domain.JavaClass;
+import com.tngtech.archunit.core.domain.JavaClasses;
+import com.tngtech.archunit.core.importer.ClassFileImporter;
+import com.tngtech.archunit.core.importer.ImportOption;
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
@@ -28,6 +33,18 @@ class RuleCatalogTest {
     void each_plug_in_prompts_for_its_own_kind() {
         assertThat(RuleCatalog.KINDS)
                 .allSatisfy(plugin -> assertThat(plugin.prompt()).startsWith("- " + plugin.name() + ": "));
+    }
+
+    @Test
+    void every_condition_belongs_to_a_plug_in() {
+        JavaClasses main = new ClassFileImporter().withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
+                .importPackages("com.fundgate");
+        assertThat(main.stream()
+                .filter(type -> type.isAssignableTo(Condition.class) && !type.isEquivalentTo(Condition.class))
+                .map(JavaClass::getName))
+                .containsExactlyInAnyOrderElementsOf(RuleCatalog.KINDS.stream()
+                        .map(plugin -> plugin.condition().getName())
+                        .toList());
     }
 
     @Test

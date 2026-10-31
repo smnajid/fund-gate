@@ -17,10 +17,6 @@ public final class UnmodelledRestrictionKind
         }
 
         public enum Status { BLOCKING, NOTED }
-
-        public RuleKind kind() {
-            return RuleKind.UNMODELLED_RESTRICTION;
-        }
     }
 
     @Override

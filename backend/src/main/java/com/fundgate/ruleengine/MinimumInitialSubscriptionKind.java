@@ -24,10 +24,6 @@ public final class MinimumInitialSubscriptionKind
             Objects.requireNonNull(amount, "amount");
             Objects.requireNonNull(currency, "currency");
         }
-
-        public RuleKind kind() {
-            return RuleKind.MINIMUM_INITIAL_SUBSCRIPTION;
-        }
     }
 
     @Override

@@ -9,10 +9,6 @@ import java.util.Optional;
 public final class KidRequiredForRetailKind implements RuleKindPlugin<KidRequiredForRetailKind.KidRequiredForRetail> {
 
     public record KidRequiredForRetail(boolean kidAvailable) implements Condition {
-
-        public RuleKind kind() {
-            return RuleKind.KID_REQUIRED_FOR_RETAIL;
-        }
     }
 
     @Override

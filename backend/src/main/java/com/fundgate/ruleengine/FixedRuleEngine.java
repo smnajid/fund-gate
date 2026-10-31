@@ -69,7 +69,7 @@ public class FixedRuleEngine implements RuleEngine {
         for (Rule rule : rulesFor(card.get(), request.shareClass())) {
             evaluate(RuleCatalog.of(rule.condition()), rule.condition(), facts)
                     .map(finding -> contradicted(rule, finding).citing(rule.citations()))
-                    .ifPresent(finding -> findings.computeIfAbsent(rule.condition().kind(), kind -> new ArrayList<>())
+                    .ifPresent(finding -> findings.computeIfAbsent(kindOf(rule), kind -> new ArrayList<>())
                             .add(finding));
         }
         findings.put(RuleKind.FUND_REGISTRATION, List.of(fundRegistration.evaluate(facts)));
@@ -86,6 +86,11 @@ public class FixedRuleEngine implements RuleEngine {
     private <C extends Condition> Optional<Finding> evaluate(RuleKindPlugin<C> plugin, Condition condition,
             Facts facts) {
         return plugin.evaluate(plugin.condition().cast(condition), facts, lookups);
+    }
+
+    /** The plug-in holding a rule's condition says its kind. */
+    private static RuleKind kindOf(Rule rule) {
+        return RuleCatalog.of(rule.condition()).kind();
     }
 
     /** Fund Registration is not on the card, so no plug-in: its one finding decides. */
@@ -136,11 +141,11 @@ public class FixedRuleEngine implements RuleEngine {
                 .filter(rule -> rule.shareClass().equals(Optional.of(shareClass)))
                 .toList();
         Set<RuleKind> overridden = classRules.stream()
-                .map(rule -> rule.condition().kind())
+                .map(FixedRuleEngine::kindOf)
                 .filter(kind -> !accumulates(kind))
                 .collect(Collectors.toSet());
         List<Rule> rules = new ArrayList<>(kept.stream()
-                .filter(rule -> rule.shareClass().isEmpty() && !overridden.contains(rule.condition().kind()))
+                .filter(rule -> rule.shareClass().isEmpty() && !overridden.contains(kindOf(rule)))
                 .toList());
         rules.addAll(classRules);
         return rules;
