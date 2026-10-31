@@ -59,8 +59,8 @@ class FourPromisesTest {
     private final FixtureShareClasses shareClasses = new FixtureShareClasses(FIXTURES.resolve("share-classes.json"));
     private final RuleEngine engine = new FixedRuleEngine(
             new FixtureRuleCards(FIXTURES.resolve("rule-cards"), RuleCatalog.conditionTypes()),
-            new FolderFundDocuments(FIXTURES.resolve("fund-documents.json"),
-                    Path.of("../spikes/java-rule-card-extraction/docs"), shareClasses),
+            // A check reads only the manifest's editions, never a PDF, so the folder holds none
+            new FolderFundDocuments(FIXTURES.resolve("fund-documents.json"), FIXTURES, shareClasses),
             new FixtureFundRegistrations(FIXTURES.resolve("fund-registrations.json")),
             new FixtureFxRates(FIXTURES.resolve("fx-rates.json")));
     private final Clock clock = Clock.fixed(Instant.parse("2026-11-04T09:30:00Z"), ZoneOffset.UTC);
@@ -80,22 +80,52 @@ class FourPromisesTest {
                     llmCalls.incrementAndGet();
                     return new StubReplyDrafter().draft(email, facts);
                 },
-                recording(written), clock);
+                recording(written, new InMemoryCheckRecords()), clock);
 
         Answer answer = answering.answer("Hi desk, can LOC90000101 and LOC90009999 subscribe EUR 80,000 to "
                 + "Nordea Global Climate BI-EUR?");
 
-        assertThat(answer).isInstanceOf(Answer.Refused.class);
+        assertThat(answer).isInstanceOfSatisfying(Answer.Refused.class,
+                refused -> assertThat(refused.found()).containsExactly("LOC90009999"));
         assertThat(llmCalls).hasValue(0);
         assertThat(written).isEmpty();
+    }
+
+    /**
+     * ADR 0004: what reaches the modules that call the LLM names portfolios by Portfolio Id only, never by Portfolio
+     * Reference. (That the reply facts carry no Client Profile value is AnswerRequestsTest's.)
+     */
+    @Test
+    void what_reaches_an_llm_names_portfolios_by_their_portfolio_id_only() {
+        List<String> sent = new ArrayList<>();
+        AnswerRequests answering = new AnswerRequests(clientProfiles, new StubPrivacyGate(clientProfiles),
+                email -> {
+                    sent.add(email.toString());
+                    return new StubRequestParser().parse(email);
+                },
+                engine,
+                (email, facts) -> {
+                    sent.add(email.toString());
+                    sent.add(facts.toString());
+                    return new StubReplyDrafter().draft(email, facts);
+                },
+                new InMemoryCheckRecords(), clock);
+
+        Answer answer = answering.answer("Hi desk, can LOC90000101 and LOC90000102 subscribe EUR 80,000 to "
+                + "Nordea Global Climate BI-EUR?");
+
+        assertThat(answer).isInstanceOf(Answer.Answered.class);
+        assertThat(sent).hasSize(3).noneMatch(text -> PortfolioReference.FORMAT.matcher(text).find());
+        assertThat(sent.getFirst()).contains(portfolioId("LOC90000101"), portfolioId("LOC90000102"));
     }
 
     /** Architecture, Audit: every check writes one Check Record of exactly what the Fund Dealer was shown. */
     @Test
     void every_eligibility_check_writes_one_check_record_with_the_verdict_shown() {
         CheckRecords checkRecords = new InMemoryCheckRecords();
+        List<CheckRecord> written = new ArrayList<>();
         AnswerRequests answering = new AnswerRequests(clientProfiles, new StubPrivacyGate(clientProfiles),
-                new StubRequestParser(), engine, new StubReplyDrafter(), checkRecords, clock);
+                new StubRequestParser(), engine, new StubReplyDrafter(), recording(written, checkRecords), clock);
 
         Answer.Answered answer = answering.answerByHand(List.of(
                 byHand("LOC90000101", "LU0348927095", "80000", "EUR"),
@@ -107,6 +137,7 @@ class FourPromisesTest {
             assertThat(record.verdict()).isEqualTo(check.result().verdict());
             assertThat(record.justification()).isEqualTo(check.result().justification());
         });
+        assertThat(written).hasSize(3);
     }
 
     /** ADR 0002: fixed rules decide; any Fail gives Not Eligible, otherwise any Review gives Needs Review. */
@@ -187,16 +218,22 @@ class FourPromisesTest {
                 Optional.of(new Money(new BigDecimal(amount), currency)), ClientInitiated.NO);
     }
 
-    private static CheckRecords recording(List<CheckRecord> written) {
+    private String portfolioId(String portfolio) {
+        return clientProfiles.portfolioId(new PortfolioReference(portfolio)).orElseThrow().toString();
+    }
+
+    /** Keeps every record written, and writes it on to the Check Records. */
+    private static CheckRecords recording(List<CheckRecord> written, CheckRecords checkRecords) {
         return new CheckRecords() {
             @Override
             public void write(CheckRecord record) {
                 written.add(record);
+                checkRecords.write(record);
             }
 
             @Override
             public Optional<CheckRecord> find(UUID checkId) {
-                return Optional.empty();
+                return checkRecords.find(checkId);
             }
         };
     }

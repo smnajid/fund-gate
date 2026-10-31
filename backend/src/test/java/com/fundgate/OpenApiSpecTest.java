@@ -17,7 +17,9 @@ import org.springframework.boot.test.web.server.LocalServerPort;
  * The backend serves its OpenAPI spec, the one source of the Angular client (hackathon-kit.md, section 5).
  * The spec is saved to target/openapi.json, where the frontend's generate-api script reads it.
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+// The platform reads its own frozen fixtures, never the demo content the team rewrites (#80)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = "fundeli5.fixtures.dir=src/test/resources/fixtures")
 class OpenApiSpecTest {
 
     static final Path SPEC = Path.of("target/openapi.json");

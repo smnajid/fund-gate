@@ -15,7 +15,8 @@ import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import tools.jackson.databind.json.JsonMapper;
 
 /** The dealer screen's one call: a pasted email in, the Verdicts and the reply out (issue #57). */
-@WebMvcTest(AnswerController.class)
+// The platform reads its own frozen fixtures, never the demo content the team rewrites (#80)
+@WebMvcTest(value = AnswerController.class, properties = "fundeli5.fixtures.dir=src/test/resources/fixtures")
 @Import({AdaptersConfiguration.class, AnsweringConfiguration.class})
 class AnswerControllerTest {
 
