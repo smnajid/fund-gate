@@ -10,7 +10,20 @@ import java.util.List;
  */
 public sealed interface Resolution {
 
-    /** The Share Classes of one fund the mention names, in catalog order; a fund named without a class gives all. */
+    /**
+     * The Share Classes of one fund the mention names, in catalog order. The invariant, kept by the matcher and
+     * checked over generated catalogs:
+     * <ul>
+     * <li>every class of the fund only when the mention names the fund and no class: each typed word is a word of the
+     * fund or umbrella name, as many times as typed, or an ISIN or Valor prefix every class of the fund shares;</li>
+     * <li>one class only when its ISIN or Valor pins it, or its whole class name is in the typed words (counted; words
+     * the fund name also uses may count) and no other class of the fund whose whole name is typed has a longer name
+     * that contains it or the same name;</li>
+     * <li>never classes of two funds.</li>
+     * </ul>
+     * Everything else that matches is {@link Ambiguous}: a class name typed in part, a class left only by its
+     * currency, or two class names typed.
+     */
     record Resolved(List<ShareClass> shareClasses) implements Resolution {
 
         public Resolved {

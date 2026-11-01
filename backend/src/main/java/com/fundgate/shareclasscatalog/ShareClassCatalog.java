@@ -43,9 +43,10 @@ public final class ShareClassCatalog {
     }
 
     /**
-     * What a mention or ISIN names: the Share Classes of one fund, in catalog order (a fund named without a class
-     * gives all its classes), the candidate funds when it matches several, or nothing. Of several funds, the one whose
-     * whole name the mention gives is the one it means; a class the mention leaves in doubt is Ambiguous too. The
+     * What a mention or ISIN names: the Share Classes of one fund the rule of {@link Resolved} allows, the candidate
+     * funds when it matches several, the candidate classes when it leaves the class of one fund in doubt, or nothing.
+     * Of several funds, the one whose whole name the mention gives is the one it means. A candidate fund is shown under
+     * the name of its first class in catalog order, since classes sharing a fund id may carry different names. The
      * reverse-lookup search lists every match of the same matcher instead ({@link ShareClassMatcher#match}).
      */
     public Resolution resolve(String mentionOrIsin) {
@@ -55,11 +56,11 @@ public final class ShareClassCatalog {
         }
         List<FundMatch> namedInFull = funds.stream().filter(FundMatch::fundNamedInFull).toList();
         List<FundMatch> meant = namedInFull.size() == 1 ? namedInFull : funds;
-        if (meant.size() == 1 && !meant.getFirst().classInDoubt()) {
+        if (meant.size() == 1 && meant.getFirst().named()) {
             return new Resolved(meant.getFirst().shareClasses());
         }
         return new Ambiguous(meant.stream()
-                .map(fund -> new CandidateFund(fund.shareClasses().getFirst().fundName(), fund.shareClasses()))
+                .map(fund -> new CandidateFund(fund.fundName(), fund.shareClasses()))
                 .toList());
     }
 }
