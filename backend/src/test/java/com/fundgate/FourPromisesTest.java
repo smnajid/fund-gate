@@ -7,6 +7,7 @@ import com.fundgate.answering.AnswerRequests;
 import com.fundgate.answering.RequestByHand;
 import com.fundgate.checkrecord.CheckRecord;
 import com.fundgate.checkrecord.CheckRecords;
+import com.fundgate.checkrecord.RecordChecks;
 import com.fundgate.checkrecord.memory.InMemoryCheckRecords;
 import com.fundgate.clientprofiles.PortfolioReference;
 import com.fundgate.clientprofiles.fixture.FixtureClientProfiles;
@@ -23,6 +24,7 @@ import com.fundgate.fxrates.fixture.FixtureFxRates;
 import com.fundgate.privacygate.stub.StubPrivacyGate;
 import com.fundgate.replydrafter.stub.StubReplyDrafter;
 import com.fundgate.requestparser.stub.StubRequestParser;
+import com.fundgate.rulecard.RuleCards;
 import com.fundgate.rulecard.fixture.FixtureRuleCards;
 import com.fundgate.ruleengine.FixedRuleEngine;
 import com.fundgate.ruleengine.RuleCatalog;
@@ -57,8 +59,9 @@ class FourPromisesTest {
 
     private final FixtureClientProfiles clientProfiles = new FixtureClientProfiles(FIXTURES.resolve("client-profiles"));
     private final FixtureShareClasses shareClasses = new FixtureShareClasses(FIXTURES.resolve("share-classes.json"));
-    private final RuleEngine engine = new FixedRuleEngine(
-            new FixtureRuleCards(FIXTURES.resolve("rule-cards"), RuleCatalog.conditionTypes()),
+    private final RuleCards ruleCards =
+            new FixtureRuleCards(FIXTURES.resolve("rule-cards"), RuleCatalog.conditionTypes());
+    private final RuleEngine engine = new FixedRuleEngine(ruleCards,
             // A check reads only the manifest's editions, never a PDF, so the folder holds none
             new FolderFundDocuments(FIXTURES.resolve("fund-documents.json"), FIXTURES, shareClasses),
             new FixtureFundRegistrations(FIXTURES.resolve("fund-registrations.json")),
@@ -80,7 +83,7 @@ class FourPromisesTest {
                     llmCalls.incrementAndGet();
                     return new StubReplyDrafter().draft(email, facts);
                 },
-                recording(written, new InMemoryCheckRecords()), clock);
+                recordChecks(recording(written, new InMemoryCheckRecords())));
 
         Answer answer = answering.answer("Hi desk, can LOC90000101 and LOC90009999 subscribe EUR 80,000 to "
                 + "Nordea Global Climate BI-EUR?");
@@ -109,7 +112,7 @@ class FourPromisesTest {
                     sent.add(facts.toString());
                     return new StubReplyDrafter().draft(email, facts);
                 },
-                new InMemoryCheckRecords(), clock);
+                recordChecks(new InMemoryCheckRecords()));
 
         Answer answer = answering.answer("Hi desk, can LOC90000101 and LOC90000102 subscribe EUR 80,000 to "
                 + "Nordea Global Climate BI-EUR?");
@@ -125,7 +128,8 @@ class FourPromisesTest {
         CheckRecords checkRecords = new InMemoryCheckRecords();
         List<CheckRecord> written = new ArrayList<>();
         AnswerRequests answering = new AnswerRequests(clientProfiles, new StubPrivacyGate(clientProfiles),
-                new StubRequestParser(), engine, new StubReplyDrafter(), recording(written, checkRecords), clock);
+                new StubRequestParser(), engine, new StubReplyDrafter(),
+                recordChecks(recording(written, checkRecords)));
 
         Answer.Answered answer = answering.answerByHand(List.of(
                 byHand("LOC90000101", "LU0348927095", "80000", "EUR"),
@@ -226,6 +230,10 @@ class FourPromisesTest {
     }
 
     /** Keeps every record written, and writes it on to the Check Records. */
+    private RecordChecks recordChecks(CheckRecords checkRecords) {
+        return new RecordChecks(checkRecords, ruleCards, "test", clock);
+    }
+
     private static CheckRecords recording(List<CheckRecord> written, CheckRecords checkRecords) {
         return new CheckRecords() {
             @Override

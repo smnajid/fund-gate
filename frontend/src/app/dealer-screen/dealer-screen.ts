@@ -1,6 +1,13 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { AnswerControllerService, AnswerResponse, Check, Outcome } from '../generated/api';
+import {
+  AnswerControllerService,
+  AnswerResponse,
+  Check,
+  CheckRecordControllerService,
+  CheckRecordResponse,
+  Outcome
+} from '../generated/api';
 
 /** The answer sheet (screens.md, Dealer screen): paste a Requester's email, get one sentence per check and the reply. */
 @Component({
@@ -11,16 +18,22 @@ import { AnswerControllerService, AnswerResponse, Check, Outcome } from '../gene
 })
 export class DealerScreen {
   private readonly answers = inject(AnswerControllerService);
+  private readonly checkRecords = inject(CheckRecordControllerService);
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly email = signal('');
   protected readonly answer = signal<AnswerResponse | undefined>(undefined);
   protected readonly answering = signal(false);
   protected readonly failed = signal(false);
+  /** "What the AI saw": the side drawer is open while a check is set; its record arrives after. */
+  protected readonly openedCheck = signal<Check | undefined>(undefined);
+  protected readonly checkRecord = signal<CheckRecordResponse | undefined>(undefined);
+  protected readonly checkRecordFailed = signal(false);
 
   protected answerIt(): void {
     // An earlier email's Verdicts must never stay on screen for this one
     this.answer.set(undefined);
+    this.closeCheckRecord();
     this.failed.set(false);
     this.answering.set(true);
     this.answers
@@ -34,6 +47,34 @@ export class DealerScreen {
           this.answering.set(false);
         }
       });
+  }
+
+  protected openCheckRecord(check: Check): void {
+    // Another check's record must never stay in the drawer while this one loads
+    this.openedCheck.set(check);
+    this.checkRecord.set(undefined);
+    this.checkRecordFailed.set(false);
+    this.checkRecords
+      .checkRecord(check.checkId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: record => {
+          if (this.openedCheck() === check) {
+            this.checkRecord.set(record);
+          }
+        },
+        error: () => {
+          if (this.openedCheck() === check) {
+            this.checkRecordFailed.set(true);
+          }
+        }
+      });
+  }
+
+  protected closeCheckRecord(): void {
+    this.openedCheck.set(undefined);
+    this.checkRecord.set(undefined);
+    this.checkRecordFailed.set(false);
   }
 
   protected verdictPhrase(verdict: Check.VerdictEnum): string {
