@@ -32,7 +32,13 @@ public final class UnmodelledRestrictionKind
     @Override
     public String prompt() {
         return "- unmodelled_restriction: any other restriction on who may subscribe, or on accepting a subscription, "
-                + "that fits none of the kinds above.";
+                + "that fits none of the kinds above; status is blocking.";
+    }
+
+    /** ADR 0003: an unreviewed clause never passes silently, so a draft is Blocking whatever the model said. */
+    @Override
+    public UnmodelledRestriction asDrafted(UnmodelledRestriction drafted) {
+        return new UnmodelledRestriction(UnmodelledRestriction.Status.BLOCKING, Optional.empty());
     }
 
     /** ADR 0003: Blocking gives Review; Noted passes and stays in the Justification with its Citation. */

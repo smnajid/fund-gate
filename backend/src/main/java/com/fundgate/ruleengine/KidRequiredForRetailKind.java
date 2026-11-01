@@ -23,7 +23,7 @@ public final class KidRequiredForRetailKind implements RuleKindPlugin<KidRequire
 
     @Override
     public String prompt() {
-        return "- kid_required_for_retail: kid_available says whether a PRIIPs KID exists for the class.";
+        return "- kid_required_for_retail: kidAvailable says whether a PRIIPs KID exists for the class.";
     }
 
     @Override

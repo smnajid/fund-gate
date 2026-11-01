@@ -37,8 +37,8 @@ public final class UsPersonExclusionKind implements RuleKindPlugin<UsPersonExclu
 
     @Override
     public String prompt() {
-        return "- us_person_exclusion: US persons are excluded; us_person_definition is reg_s, fatca, irc_citizenship "
-                + "or mixed; excludes_us_citizens says whether US citizenship alone excludes.";
+        return "- us_person_exclusion: US persons are excluded; definition is reg_s, fatca, irc_citizenship or "
+                + "mixed; excludesUsCitizens says whether US citizenship alone excludes.";
     }
 
     /**

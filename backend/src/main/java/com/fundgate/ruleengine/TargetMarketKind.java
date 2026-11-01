@@ -28,10 +28,11 @@ public final class TargetMarketKind implements RuleKindPlugin<TargetMarketKind.T
 
     @Override
     public String prompt() {
-        return "- target_market: one rule per dimension: client_type (all, retail, professional, institutional), "
-                + "knowledge_experience (basic, informed, advanced), loss_bearing (no_loss, limited_loss, full_loss), "
-                + "risk_sri and horizon_years (plain numbers); polarity is positive (who the fund is for) or negative "
-                + "(who it is not for).";
+        return "- target_market: one rule per dimension, which is client_type, knowledge_and_experience, "
+                + "ability_to_bear_losses, risk_sri or horizon_years; value is all, retail, professional or "
+                + "institutional for client_type, basic, informed or advanced for knowledge_and_experience, no_loss, "
+                + "limited_loss or full_loss for ability_to_bear_losses, and a plain number for risk_sri and "
+                + "horizon_years; polarity is positive (who the fund is for) or negative (who it is not for).";
     }
 
     /** Empty until the Scale Mapping matches the dimension (#59). */
