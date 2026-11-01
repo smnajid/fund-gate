@@ -21,6 +21,7 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +70,10 @@ public class RuleCardPipeline {
             return draftOrRefuse(anyShareClassOfTheFund);
         } catch (Refusal refusal) {
             return new Drafted.Refused(refusal.getMessage());
+        } catch (RuntimeException e) {
+            // An unreadable PDF or catalog stops this fund only; the run goes on with the next
+            return new Drafted.Refused("The pipeline failed on " + anyShareClassOfTheFund.value() + ": "
+                    + e.getClass().getSimpleName() + ": " + e.getMessage());
         }
     }
 
@@ -79,7 +84,8 @@ public class RuleCardPipeline {
         if (sources.isEmpty()) {
             throw new Refusal("There is no Fund Documentation for " + fundName);
         }
-        List<DraftPrompt.Pages> read = sources.stream().map(document -> read(document, fundName)).toList();
+        String subFund = subFundName(fundName);
+        List<DraftPrompt.Pages> read = sources.stream().map(document -> read(document, subFund)).toList();
         LlmResponse answer;
         try {
             answer = llm.complete(DraftPrompt.request(model, fundName, classes, read));
@@ -88,9 +94,21 @@ public class RuleCardPipeline {
             throw new Refusal("The model gave no answer for " + fundName + ": " + e.getMessage());
         }
         Instant now = clock.instant();
-        Map<DocumentId, List<String>> pages = read.stream()
-                .collect(Collectors.toMap(document -> document.document().documentId(), DraftPrompt.Pages::text));
-        List<Rule> rules = rules(answer, classes, pages, now);
+        Map<DocumentId, List<String>> pages = read.stream().collect(Collectors.toMap(
+                document -> document.document().documentId(), DraftPrompt.Pages::text, (first, second) -> {
+                    throw new Refusal("Two documents of " + fundName + " have the same id");
+                }));
+        List<Rule> rules = new ArrayList<>();
+        List<String> notRead = new ArrayList<>();
+        JsonNode drafted = drafted(answer);
+        Map<String, Optional<Isin>> named = classesByName(classes);
+        for (int index = 0; index < drafted.size(); index++) {
+            try {
+                rules.add(rule(drafted.get(index), index + 1, named, pages, answer.model(), now));
+            } catch (Refusal refusal) {
+                notRead.add(refusal.getMessage());
+            }
+        }
         return new Drafted.Draft(new RuleCard(
                 classes.getFirst().fundId(),
                 fundName,
@@ -100,7 +118,31 @@ public class RuleCardPipeline {
                 rules,
                 sources.stream().map(RuleCardPipeline::source).toList(),
                 new RuleCard.Drafting(answer.model(), endpoint, now),
-                Optional.empty()));
+                Optional.empty()), notRead);
+    }
+
+    /**
+     * The name a prospectus gives the sub-fund's own section: an umbrella prospectus names "Global Climate and
+     * Environment Fund", seldom "Nordea 1 – Global Climate and Environment Fund". The spike selected on it.
+     */
+    static String subFundName(String fundName) {
+        int dash = fundName.lastIndexOf(" – ");
+        return dash < 0 ? fundName : fundName.substring(dash + 3);
+    }
+
+    /**
+     * Each class by its name and by its ISIN, as the prompt lists them, e.g. "BP-EUR (LU0348926287)". A name two
+     * classes share maps to none: a rule naming it is not read rather than put on a class by guess.
+     */
+    private static Map<String, Optional<Isin>> classesByName(List<ShareClass> classes) {
+        Map<String, Optional<Isin>> named = new HashMap<>();
+        for (ShareClass shareClass : classes) {
+            Optional<Isin> isin = Optional.of(shareClass.isin());
+            named.merge(shareClass.shareClassName(), isin, (first, second) -> Optional.empty());
+            named.put(shareClass.isin().value(), isin);
+            named.put(shareClass.shareClassName() + " (" + shareClass.isin().value() + ")", isin);
+        }
+        return named;
     }
 
     /** Same fundId when the catalog has one, else the same fund (sub-fund) name, as the documents adapter does. */
@@ -143,8 +185,7 @@ public class RuleCardPipeline {
         return new DraftPrompt.Pages(document, text, PageSelection.select(text, fundName, MAX_PAGES));
     }
 
-    private static List<Rule> rules(LlmResponse answer, List<ShareClass> classes, Map<DocumentId, List<String>> pages,
-            Instant now) {
+    private static JsonNode drafted(LlmResponse answer) {
         JsonNode drafted;
         try {
             drafted = JSON.readTree(withoutFence(answer.text())).path("rules");
@@ -155,22 +196,17 @@ public class RuleCardPipeline {
         if (!drafted.isArray()) {
             throw new Refusal("The model's answer has no list of rules");
         }
-        Map<String, Isin> byName = classes.stream()
-                .collect(Collectors.toMap(ShareClass::shareClassName, ShareClass::isin, (first, second) -> first));
-        List<Rule> rules = new ArrayList<>();
-        for (int index = 0; index < drafted.size(); index++) {
-            rules.add(rule(drafted.get(index), index + 1, byName, pages, answer.model(), now));
-        }
-        return rules;
+        return drafted;
     }
 
-    private static Rule rule(JsonNode drafted, int number, Map<String, Isin> classes,
+    /** A rule that cannot be read is left off the card and listed for the validator, never guessed. */
+    private static Rule rule(JsonNode drafted, int number, Map<String, Optional<Isin>> classes,
             Map<DocumentId, List<String>> pages, String model, Instant now) {
-        String shareClass = drafted.path("share_class").asString("*");
-        Optional<Isin> isin = shareClass.equals("*") ? Optional.empty() : Optional.of(Optional
-                .ofNullable(classes.get(shareClass))
+        String shareClass = drafted.path("share_class").asString("*").strip();
+        Optional<Isin> isin = shareClass.equals("*") ? Optional.empty() : Optional.of(classes
+                .getOrDefault(shareClass, Optional.empty())
                 .orElseThrow(() -> new Refusal("Rule " + number + " names the Share Class " + shareClass
-                        + ", which the fund does not have")));
+                        + ", which is not one class of the fund")));
         Condition condition = condition(drafted.path("condition"), number);
         List<Citation.Document> citations = new ArrayList<>();
         for (JsonNode citation : drafted.path("citations")) {

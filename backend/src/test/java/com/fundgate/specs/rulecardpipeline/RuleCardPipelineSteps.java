@@ -27,8 +27,8 @@ import io.cucumber.java.en.When;
 import java.nio.file.Path;
 import java.time.Clock;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -129,12 +129,15 @@ public class RuleCardPipelineSteps {
 
     @Then("the {string} clause is an Unmodelled Restriction marked Blocking")
     public void theClauseIsAnUnmodelledRestrictionMarkedBlocking(String clause) {
-        List<String> words = List.of(clause.toLowerCase(Locale.ROOT).split("\\W+"));
+        // "reject or close" is cited as e.g. "Reject or cancel any application ..." and "Soft or hard close a fund"
+        List<Pattern> words = Stream.of(clause.split("\\W+")).filter(word -> word.length() > 3)
+                .map(word -> Pattern.compile("\\b" + Pattern.quote(word) + "\\b", Pattern.CASE_INSENSITIVE))
+                .toList();
         assertThat(draft().card().rules())
+                .filteredOn(rule -> rule.condition() instanceof UnmodelledRestriction)
                 .filteredOn(rule -> rule.citations().stream().anyMatch(citation -> words.stream()
-                        .filter(word -> word.length() > 3)
-                        .anyMatch(citation.quote().toLowerCase(Locale.ROOT)::contains)))
-                .as("rules citing the \"%s\" clause", clause)
+                        .anyMatch(word -> word.matcher(citation.quote()).find())))
+                .as("Unmodelled Restrictions citing the \"%s\" clause", clause)
                 .isNotEmpty()
                 .allSatisfy(rule -> assertThat(rule.condition())
                         .isEqualTo(new UnmodelledRestriction(UnmodelledRestriction.Status.BLOCKING, Optional.empty())));

@@ -33,6 +33,22 @@ class QuoteCheckTest {
     }
 
     @Test
+    void words_run_together_are_not_the_quote() {
+        assertThat(QuoteCheck.onPage("USpersons may not", PAGES, 1)).isFalse();
+        assertThat(QuoteCheck.onPage("S persons may", PAGES, 1)).isFalse();
+    }
+
+    @Test
+    void a_quote_followed_by_punctuation_on_the_page_is_found() {
+        assertThat(QuoteCheck.onPage("may reject any application", PAGES, 2)).isTrue();
+    }
+
+    @Test
+    void a_quote_of_fewer_than_three_words_proves_nothing() {
+        assertThat(QuoteCheck.onPage("US persons", PAGES, 1)).isFalse();
+    }
+
+    @Test
     void an_empty_quote_is_never_found() {
         assertThat(QuoteCheck.onPage("  ", PAGES, 1)).isFalse();
     }

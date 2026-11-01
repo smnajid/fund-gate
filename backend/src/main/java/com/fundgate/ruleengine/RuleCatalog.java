@@ -36,7 +36,7 @@ public final class RuleCatalog {
         return KINDS.stream().map(RuleKindPlugin::prompt).collect(Collectors.joining("\n"));
     }
 
-        /** The condition a Draft card proposes for what the model drafted, as the kind's plug-in says. */
+    /** The condition a Draft card proposes for what the model drafted, as the kind's plug-in says. */
     public static Condition asDrafted(Condition drafted) {
         return asDrafted(of(drafted), drafted);
     }

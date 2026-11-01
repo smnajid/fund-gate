@@ -107,6 +107,7 @@ class RuleCardPipelineTest {
     void a_quote_not_found_on_its_page_is_flagged_not_dropped() {
         Draft draft = (Draft) pipeline(documents(prospectus(), kidBp()), answering(ANSWER)).draft(BI);
 
+        assertThat(draft.rulesNotRead()).isEmpty();
         assertThat(draft.quotesNotFound()).singleElement().satisfies(citation -> {
             assertThat(citation.quote()).isEqualTo("Minimum initial investment EUR 75,000");
             assertThat(citation.quoteFoundOnPage()).contains(false);
@@ -235,29 +236,58 @@ class RuleCardPipelineTest {
     }
 
     @Test
-    void drafts_nothing_when_the_model_names_a_share_class_the_fund_does_not_have() {
+    void a_rule_naming_a_share_class_the_fund_does_not_have_is_listed_not_read() {
         String answer = """
                 {"rules": [{"share_class": "Z-USD", "condition": {"kind": "kid_required_for_retail",
                   "kidAvailable": true}, "contradiction": false, "confidence": 0.9, "summary": "KID.",
                   "citations": [{"document": "kid-bp", "page": 1, "quote": "classified this Fund"}]}]}""";
 
-        Drafted drafted = pipeline(documents(prospectus(), kidBp()), answering(answer)).draft(BI);
+        Draft draft = (Draft) pipeline(documents(prospectus(), kidBp()), answering(answer)).draft(BI);
 
-        assertThat(drafted).isInstanceOfSatisfying(Refused.class,
-                refused -> assertThat(refused.reason()).contains("Z-USD"));
+        assertThat(draft.card().rules()).isEmpty();
+        assertThat(draft.rulesNotRead()).singleElement().asString().contains("Rule 1", "Z-USD");
     }
 
     @Test
-    void drafts_nothing_when_a_condition_has_a_field_its_kind_does_not_have() {
+    void a_rule_whose_condition_has_a_field_its_kind_does_not_have_is_listed_not_read() {
         String answer = """
                 {"rules": [{"share_class": "*", "condition": {"kind": "kid_required_for_retail",
                   "kid_available": true}, "contradiction": false, "confidence": 0.9, "summary": "KID.",
                   "citations": [{"document": "kid-bp", "page": 1, "quote": "classified this Fund"}]}]}""";
 
-        Drafted drafted = pipeline(documents(prospectus(), kidBp()), answering(answer)).draft(BI);
+        Draft draft = (Draft) pipeline(documents(prospectus(), kidBp()), answering(answer)).draft(BI);
 
-        assertThat(drafted).isInstanceOfSatisfying(Refused.class, refused -> assertThat(refused.reason())
-                .contains("Rule 1").contains("kid_required_for_retail").doesNotContain("kid_available"));
+        assertThat(draft.card().rules()).isEmpty();
+        assertThat(draft.rulesNotRead()).singleElement().asString()
+                .contains("Rule 1", "kid_required_for_retail").doesNotContain("kid_available");
+    }
+
+    @Test
+    void a_rule_may_name_its_share_class_by_isin_or_as_the_prompt_lists_it() {
+        String answer = """
+                {"rules": [
+                  {"share_class": "LU0348927095", "condition": {"kind": "kid_required_for_retail",
+                   "kidAvailable": true}, "summary": "KID.", "citations": []},
+                  {"share_class": "BP-EUR (LU0348926287)", "condition": {"kind": "kid_required_for_retail",
+                   "kidAvailable": true}, "summary": "KID.", "citations": []}]}""";
+
+        Draft draft = (Draft) pipeline(documents(prospectus(), kidBp()), answering(answer)).draft(BI);
+
+        assertThat(draft.card().rules()).extracting(Rule::shareClass).containsExactly(Optional.of(BI), Optional.of(BP));
+        assertThat(draft.rulesNotRead()).isEmpty();
+    }
+
+    @Test
+    void any_failure_on_one_fund_refuses_that_fund_rather_than_throwing() {
+        ShareClasses down = () -> {
+            throw new IllegalStateException("The catalog cannot be read");
+        };
+
+        Drafted drafted = new RuleCardPipeline(documents(prospectus()), down, answering(ANSWER), "claude-test",
+                "replay", Clock.fixed(NOW, ZoneOffset.UTC)).draft(BI);
+
+        assertThat(drafted).isInstanceOfSatisfying(Refused.class,
+                refused -> assertThat(refused.reason()).contains("The catalog cannot be read"));
     }
 
     @Test
@@ -267,10 +297,18 @@ class RuleCardPipelineTest {
                   "kidAvailable": true}, "contradiction": false, "confidence": 0.9, "summary": "KID.",
                   "citations": [{"document": "kid-elsewhere", "page": 1, "quote": "classified this Fund"}]}]}""";
 
+
         Draft draft = (Draft) pipeline(documents(prospectus(), kidBp()), answering(answer)).draft(BI);
 
         assertThat(draft.quotesNotFound()).singleElement()
                 .satisfies(citation -> assertThat(citation.document()).isEqualTo(new DocumentId("kid-elsewhere")));
+    }
+
+    @Test
+    void selects_pages_on_the_sub_fund_s_own_name() {
+        assertThat(RuleCardPipeline.subFundName("Nordea 1 – Global Climate and Environment Fund"))
+                .isEqualTo("Global Climate and Environment Fund");
+        assertThat(RuleCardPipeline.subFundName("BNP PARIBAS (CH) Bonds CHF")).isEqualTo("BNP PARIBAS (CH) Bonds CHF");
     }
 
     @Test
