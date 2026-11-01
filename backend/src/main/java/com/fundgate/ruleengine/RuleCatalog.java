@@ -36,7 +36,16 @@ public final class RuleCatalog {
         return KINDS.stream().map(RuleKindPlugin::prompt).collect(Collectors.joining("\n"));
     }
 
-        static RuleKindPlugin<?> of(Condition condition) {
+        /** The condition a Draft card proposes for what the model drafted, as the kind's plug-in says. */
+    public static Condition asDrafted(Condition drafted) {
+        return asDrafted(of(drafted), drafted);
+    }
+
+    private static <C extends Condition> C asDrafted(RuleKindPlugin<C> plugin, Condition drafted) {
+        return plugin.asDrafted(plugin.condition().cast(drafted));
+    }
+
+    static RuleKindPlugin<?> of(Condition condition) {
         return KINDS.stream()
                 .filter(plugin -> plugin.condition().isInstance(condition))
                 .findFirst()

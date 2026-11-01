@@ -11,9 +11,7 @@ import com.fundgate.llm.LlmResponse;
 import com.fundgate.rulecard.Condition;
 import com.fundgate.rulecard.Rule;
 import com.fundgate.rulecard.RuleCard;
-import com.fundgate.rulecard.RuleKind;
 import com.fundgate.ruleengine.RuleCatalog;
-import com.fundgate.ruleengine.UnmodelledRestrictionKind;
 import com.fundgate.shareclasses.Isin;
 import com.fundgate.shareclasses.ShareClass;
 import com.fundgate.shareclasses.ShareClasses;
@@ -25,7 +23,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -33,7 +30,6 @@ import java.util.stream.Collectors;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Drafts the Rule Card of one fund from its public Fund Documentation (ADR 0001, ADR 0004): checks each document is
@@ -192,21 +188,16 @@ public class RuleCardPipeline {
                         condition)));
     }
 
-    /** ADR 0003: every Unmodelled Restriction is proposed Blocking, whatever the model says; only a validator notes one. */
+    /** Read as a card's condition is, then as its kind proposes it, e.g. an Unmodelled Restriction Blocking (ADR 0003). */
     private static Condition condition(JsonNode drafted, int number) {
-        if (!(drafted instanceof ObjectNode condition)) {
+        if (!drafted.isObject()) {
             throw new Refusal("Rule " + number + " has no condition");
         }
-        ObjectNode copy = condition.deepCopy();
-        if (copy.path("kind").asString("").equals(RuleKind.UNMODELLED_RESTRICTION.name().toLowerCase(Locale.ROOT))) {
-            copy.remove("notedReason");
-            copy.put("status", UnmodelledRestrictionKind.UnmodelledRestriction.Status.BLOCKING.name());
-        }
         try {
-            return JSON.treeToValue(copy, Condition.class);
+            return RuleCatalog.asDrafted(JSON.treeToValue(drafted, Condition.class));
         } catch (JacksonException e) {
             throw new Refusal("Rule " + number + " has a condition outside the Rule Card schema (kind "
-                    + copy.path("kind").asString("missing") + ")");
+                    + drafted.path("kind").asString("missing") + ")");
         }
     }
 

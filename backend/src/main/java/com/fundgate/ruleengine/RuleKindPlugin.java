@@ -28,6 +28,11 @@ interface RuleKindPlugin<C extends Condition> {
      */
     String prompt();
 
+    /** The condition a Draft card proposes for what the model drafted. Most kinds keep it as drafted. */
+    default C asDrafted(C drafted) {
+        return drafted;
+    }
+
     /** Fixed code, the card only fills in the parameters. Empty when the engine does not decide this kind yet. */
     Optional<Finding> evaluate(C condition, Facts facts, Lookups lookups);
 
