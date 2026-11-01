@@ -12,6 +12,7 @@ import com.fundgate.funddocuments.FundDocument;
 import com.fundgate.funddocuments.FundDocuments;
 import com.fundgate.fundregistrations.FundRegistrations;
 import com.fundgate.fxrates.FxRates;
+import com.fundgate.rulecard.Condition;
 import com.fundgate.rulecard.Rule;
 import com.fundgate.rulecard.RuleCard;
 import com.fundgate.rulecard.RuleCards;
@@ -37,7 +38,7 @@ public class FixedRuleEngine implements RuleEngine {
 
     private final RuleCards ruleCards;
     private final FundDocuments fundDocuments;
-    private final HardRestrictions hardRestrictions;
+    private final RuleKindPlugin.Lookups lookups;
     private final FundRegistrationRule fundRegistration;
 
     public FixedRuleEngine(RuleCards ruleCards, FundDocuments fundDocuments, FundRegistrations fundRegistrations,
@@ -46,7 +47,7 @@ public class FixedRuleEngine implements RuleEngine {
         InvestorTypes investorTypes = new InvestorTypes(money);
         this.ruleCards = ruleCards;
         this.fundDocuments = fundDocuments;
-        this.hardRestrictions = new HardRestrictions(investorTypes, money);
+        this.lookups = new RuleKindPlugin.Lookups(investorTypes, money);
         this.fundRegistration = new FundRegistrationRule(fundRegistrations, investorTypes);
     }
 
@@ -66,20 +67,35 @@ public class FixedRuleEngine implements RuleEngine {
         Facts facts = new Facts(request, profile);
         Map<RuleKind, List<Finding>> findings = new EnumMap<>(RuleKind.class);
         for (Rule rule : rulesFor(card.get(), request.shareClass())) {
-            hardRestrictions.evaluate(rule.condition(), facts)
+            evaluate(RuleCatalog.of(rule.condition()), rule.condition(), facts)
                     .map(finding -> contradicted(rule, finding).citing(rule.citations()))
-                    .ifPresent(finding -> findings.computeIfAbsent(rule.condition().kind(), kind -> new ArrayList<>())
+                    .ifPresent(finding -> findings.computeIfAbsent(kindOf(rule), kind -> new ArrayList<>())
                             .add(finding));
         }
         findings.put(RuleKind.FUND_REGISTRATION, List.of(fundRegistration.evaluate(facts)));
 
         List<RuleOutcome> outcomes = findings.entrySet().stream()
-                .map(kind -> outcome(kind.getKey(), kind.getKey() == RuleKind.UNMODELLED_RESTRICTION
+                .map(kind -> outcome(kind.getKey(), accumulates(kind.getKey())
                         ? Finding.all(kind.getValue())
                         : Finding.worst(kind.getValue())))
                 .toList();
         return new EligibilityResult(verdict(outcomes),
                 new Justification(outcomes, staleWarning(card.get(), request.shareClass()).stream().toList()));
+    }
+
+    private <C extends Condition> Optional<Finding> evaluate(RuleKindPlugin<C> plugin, Condition condition,
+            Facts facts) {
+        return plugin.evaluate(plugin.condition().cast(condition), facts, lookups);
+    }
+
+    /** The plug-in holding a rule's condition says its kind. */
+    private static RuleKind kindOf(Rule rule) {
+        return RuleCatalog.of(rule.condition()).kind();
+    }
+
+    /** Fund Registration is not on the card, so no plug-in: its one finding decides. */
+    private static boolean accumulates(RuleKind kind) {
+        return RuleCatalog.of(kind).map(RuleKindPlugin::accumulates).orElse(false);
     }
 
     /**
@@ -115,18 +131,21 @@ public class FixedRuleEngine implements RuleEngine {
         return newer(one, other) ? one : other;
     }
 
-    /** Fund-level rules apply to every class; a class-level rule overrides the fund-level rules of its kind. */
+    /**
+     * Fund-level rules apply to every class; a class-level rule overrides the fund-level rules of its kind, unless
+     * its kind accumulates.
+     */
     private static List<Rule> rulesFor(RuleCard card, Isin shareClass) {
         List<Rule> kept = card.rules().stream().filter(rule -> !rejected(rule)).toList();
         List<Rule> classRules = kept.stream()
                 .filter(rule -> rule.shareClass().equals(Optional.of(shareClass)))
                 .toList();
         Set<RuleKind> overridden = classRules.stream()
-                .map(rule -> rule.condition().kind())
-                .filter(kind -> kind != RuleKind.UNMODELLED_RESTRICTION)
+                .map(FixedRuleEngine::kindOf)
+                .filter(kind -> !accumulates(kind))
                 .collect(Collectors.toSet());
         List<Rule> rules = new ArrayList<>(kept.stream()
-                .filter(rule -> rule.shareClass().isEmpty() && !overridden.contains(rule.condition().kind()))
+                .filter(rule -> rule.shareClass().isEmpty() && !overridden.contains(kindOf(rule)))
                 .toList());
         rules.addAll(classRules);
         return rules;

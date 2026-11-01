@@ -2,15 +2,23 @@ package com.fundgate;
 
 import static com.tngtech.archunit.core.domain.JavaCall.Predicates.target;
 import static com.tngtech.archunit.core.domain.properties.HasOwner.Predicates.With.owner;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.base.DescribedPredicate.describe;
 
 import com.fundgate.clientprofiles.PortfolioReference;
 import com.fundgate.privacygate.GatedEmail;
+import com.fundgate.rulecard.Condition;
+import com.fundgate.rulecard.RuleKind;
+import com.tngtech.archunit.core.domain.JavaClass;
+import com.tngtech.archunit.core.domain.JavaFieldAccess;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
+import com.tngtech.archunit.lang.ArchCondition;
 import com.tngtech.archunit.lang.ArchRule;
+import com.tngtech.archunit.lang.ConditionEvents;
+import com.tngtech.archunit.lang.SimpleConditionEvent;
 
 /**
  * The boundaries the ADRs draw, checked on every build rather than left to review: the Rule Engine never reaches an
@@ -47,4 +55,39 @@ class ArchitectureTest {
             .that().resideOutsideOfPackages("com.fundgate", "com.fundgate..web..")
             .and().haveSimpleNameNotEndingWith("Configuration")
             .should().dependOnClassesThat().resideInAPackage("org.springframework..");
+
+    /** Issue #79: the Rule Card knows no kind of rule; the engine's catalog brings them, so a kind is added there only. */
+    @ArchTest
+    static final ArchRule the_rule_card_never_depends_on_the_rule_engine = noClasses()
+            .that().resideInAPackage("com.fundgate.rulecard..")
+            .should().dependOnClassesThat().resideInAPackage("com.fundgate.ruleengine..");
+
+    /** Issue #79: a kind of rule is one plug-in, so its condition is used by its plug-in alone. */
+    @ArchTest
+    static final ArchRule a_kind_s_condition_is_used_only_by_its_plug_in = classes()
+            .that().implement(Condition.class)
+            .should(new ArchCondition<>("be used only by the plug-in that holds it") {
+                @Override
+                public void check(JavaClass condition, ConditionEvents events) {
+                    JavaClass plugin = outermost(condition);
+                    condition.getDirectDependenciesToSelf().stream()
+                            .filter(dependency -> !outermost(dependency.getOriginClass()).equals(plugin))
+                            .forEach(dependency -> events.add(SimpleConditionEvent.violated(dependency,
+                                    dependency.getDescription())));
+                }
+            });
+
+    /** Issue #79: outside the plug-ins, no code names a kind on the card; Fund Registration is not on the card. */
+    @ArchTest
+    static final ArchRule only_the_plug_ins_name_a_kind_on_the_card = noClasses()
+            .that(describe("are outside the plug-ins and RuleKind", (JavaClass owner) ->
+                    !outermost(owner).isAssignableTo("com.fundgate.ruleengine.RuleKindPlugin")
+                            && !owner.isEquivalentTo(RuleKind.class)))
+            .should().accessFieldWhere(describe("a kind on the card", (JavaFieldAccess access) ->
+                    access.getTargetOwner().isEquivalentTo(RuleKind.class)
+                            && !access.getName().equals(RuleKind.FUND_REGISTRATION.name())));
+
+    private static JavaClass outermost(JavaClass type) {
+        return type.getEnclosingClass().map(ArchitectureTest::outermost).orElse(type);
+    }
 }

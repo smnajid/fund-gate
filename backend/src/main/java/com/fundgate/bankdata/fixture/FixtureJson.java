@@ -1,10 +1,12 @@
 package com.fundgate.bankdata.fixture;
 
 import java.nio.file.Path;
+import java.util.Map;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.MapperFeature;
 import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.jsontype.NamedType;
 
 /** Reads a fixture file into its canonical model, as the contract writes it. */
 public final class FixtureJson {
@@ -26,5 +28,14 @@ public final class FixtureJson {
     /** Throws {@link tools.jackson.core.JacksonException} when the file is unreadable or outside the contract. */
     public static <T> T read(Path file, TypeReference<T> type) {
         return JSON.readValue(file.toFile(), type);
+    }
+
+    /** The same reader, also knowing these subtypes by name, e.g. the kinds of rule a card may hold. */
+    public static JsonMapper knowing(Map<String, ? extends Class<?>> subtypes) {
+        return JSON.rebuild()
+                .registerSubtypes(subtypes.entrySet().stream()
+                        .map(subtype -> new NamedType(subtype.getValue(), subtype.getKey()))
+                        .toArray(NamedType[]::new))
+                .build();
     }
 }
