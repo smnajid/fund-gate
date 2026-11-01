@@ -11,18 +11,19 @@ import java.util.List;
 public sealed interface Resolution {
 
     /**
-     * The Share Classes of one fund the mention names, in catalog order. The invariant, kept by the matcher and
-     * checked over generated catalogs:
+     * The Share Classes of one fund the mention names, in catalog order. Words of the fund or umbrella name never count
+     * toward a class name: a class is named only when the typed words left once those are taken (counted: a word typed
+     * more often than the names use it keeps the extra) hold its whole class name, with a word some other class of the
+     * fund does not carry. Kept by the matcher and checked over generated catalogs:
      * <ul>
-     * <li>every class of the fund only when the mention names the fund and no class: each typed word is a word of the
-     * fund or umbrella name, as many times as typed, or an ISIN or Valor prefix every class of the fund shares;</li>
-     * <li>one class only when its ISIN or Valor pins it, or its whole class name is in the typed words (counted; words
-     * the fund name also uses may count) and no other class of the fund whose whole name is typed has a longer name
-     * that contains it or the same name;</li>
-     * <li>never classes of two funds.</li>
+     * <li>every class of the fund when no typed word is left but an ISIN or Valor prefix they all share;</li>
+     * <li>the one class an ISIN or Valor prefix pins;</li>
+     * <li>the one named class every other named class's name is part of, when no class whose name is typed in full,
+     * fund words included, has the same name or a longer one containing it;</li>
+     * <li>never classes of two funds: a mention matching several funds is {@link Ambiguous}.</li>
      * </ul>
-     * Everything else that matches is {@link Ambiguous}: a class name typed in part, a class left only by its
-     * currency, or two class names typed.
+     * Everything else that matches is {@link Ambiguous}: a word left that names no class (a currency or fund type every
+     * class shares, a class name typed in part or only with the fund's words), or two class names typed.
      */
     record Resolved(List<ShareClass> shareClasses) implements Resolution {
 

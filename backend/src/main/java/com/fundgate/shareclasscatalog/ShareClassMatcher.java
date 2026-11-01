@@ -4,6 +4,7 @@ import com.fundgate.shareclasses.ShareClass;
 import java.text.Normalizer;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -55,33 +56,55 @@ public final class ShareClassMatcher {
                 .toList();
     }
 
-    /** A Share Class with the words the matcher reads, split once (the catalog keeps these for every mention). */
-    record IndexedClass(ShareClass shareClass, Set<String> textWords, Map<String, Long> fundNameWords,
-            Map<String, Long> fundWords, Map<String, Long> classWords, List<String> identifiers) {
+    /**
+     * A Share Class with the words the matcher reads, split once (the catalog keeps these for every mention): the
+     * words of its fund and umbrella names, counted, of its class name, counted, and the words it carries beyond its
+     * fund's: class name, currency, fund type and the bank's own code.
+     */
+    record IndexedClass(ShareClass shareClass, Set<String> textWords, Map<String, Long> fundWords,
+            Map<String, Long> classWords, Set<String> ownWords, List<String> identifiers) {
     }
 
     /**
-     * The matches of one fund, under the name of its first class in catalog order. {@code named}: the classes are the
-     * ones the text names, by the rule of {@link Resolution.Resolved}; otherwise they are the candidates the dealer
-     * chooses from. {@code fundNamedInFull}: the text gives every word of the fund's name.
+     * The classes of one fund, under the name of its first class in catalog order, and the words every one of them
+     * carries beyond the fund's (none for a fund of one class): such a word tells no class from another.
      */
-    record FundMatch(String fundName, List<ShareClass> shareClasses, boolean named, boolean fundNamedInFull) {
+    record IndexedFund(String fundName, List<IndexedClass> shareClasses, Set<String> wordsEveryClassCarries) {
+    }
+
+    /**
+     * The matches of one fund. {@code named}: the classes are the ones the text names, by the rule of
+     * {@link Resolution.Resolved}; otherwise they are the candidates the dealer chooses from.
+     */
+    record FundMatch(String fundName, List<ShareClass> shareClasses, boolean named) {
     }
 
     static List<IndexedClass> index(List<ShareClass> shareClasses) {
         return shareClasses.stream().map(ShareClassMatcher::indexed).toList();
     }
 
+    /** The catalog's classes, indexed and grouped by fund, in catalog order. */
+    static List<IndexedFund> indexByFund(List<ShareClass> shareClasses) {
+        Map<String, List<IndexedClass>> byFund = index(shareClasses).stream().collect(Collectors.groupingBy(
+                shareClass -> fundKey(shareClass.shareClass()), LinkedHashMap::new, Collectors.toList()));
+        return byFund.values().stream().map(ShareClassMatcher::indexedFund).toList();
+    }
+
+    private static IndexedFund indexedFund(List<IndexedClass> shareClasses) {
+        Set<String> carried = new HashSet<>(shareClasses.getFirst().ownWords());
+        shareClasses.forEach(shareClass -> carried.retainAll(shareClass.ownWords()));
+        return new IndexedFund(shareClasses.getFirst().shareClass().fundName(), shareClasses,
+                shareClasses.size() == 1 ? Set.of() : Set.copyOf(carried));
+    }
+
     /** {@link #match}, fund by fund, in catalog order, each fund with what the text names of it. */
-    static List<FundMatch> matchByFund(String text, List<IndexedClass> catalog) {
+    static List<FundMatch> matchByFund(String text, List<IndexedFund> catalog) {
         List<Typed> typed = typed(text);
         if (typed.isEmpty()) {
             return List.of();
         }
-        Map<String, List<IndexedClass>> byFund = catalog.stream().collect(Collectors.groupingBy(
-                shareClass -> fundKey(shareClass.shareClass()), LinkedHashMap::new, Collectors.toList()));
-        return byFund.values().stream()
-                .map(fundClasses -> fundMatch(typed, fundClasses))
+        return catalog.stream()
+                .map(fund -> fundMatch(typed, fund))
                 .flatMap(Optional::stream)
                 .toList();
     }
@@ -95,64 +118,68 @@ public final class ShareClassMatcher {
     }
 
     /**
-     * What the text names of one fund, by the rule of {@link Resolution.Resolved}: the one class an ISIN or Valor
-     * prefix leaves (a prefix that other classes of the fund share, narrowed by a word, is in doubt),
-     * every class when each typed word is the fund's or the umbrella's, or the one class whose whole name is typed and
-     * that no longer or equal typed class name of the fund contains, whatever else matched (two classes I Cap told apart
-     * only by currency are the dealer's to pick). A class name typed beyond the fund's own words outranks one that needs
-     * them ("Bond Fund I P Cap" is class P Cap, not class I), unless a longer class name needs them ("Bonds CHF Hedged"
-     * may be class Hedged or class CHF Hedged). Anything else gives the matched classes whose whole name is typed, or
-     * failing those every matched class, as candidates.
+     * What the text names of one fund, by the rule of {@link Resolution.Resolved}. The typed words, ISIN and Valor
+     * prefixes aside, less the words of a class's fund and umbrella names (counted: a word typed more often than those
+     * names use it keeps the extra), name that class when they hold its whole class name and one of its words some
+     * class of the fund does not carry. Then:
+     * <ul>
+     * <li>an ISIN or Valor prefix some classes of the fund share and others not: the one class it leaves, or else the
+     * classes it leaves as candidates;</li>
+     * <li>no word left beyond the fund and umbrella names: every class of the fund;</li>
+     * <li>one named class every other named class's name is part of, and no class whose name is typed in full, fund
+     * words included, with that name or a longer one containing it: that class;</li>
+     * <li>anything else: the matched classes named, or failing those every matched class, as candidates.</li>
+     * </ul>
      */
-    private static Optional<FundMatch> fundMatch(List<Typed> typed, List<IndexedClass> fundClasses) {
+    private static Optional<FundMatch> fundMatch(List<Typed> typed, IndexedFund fund) {
+        List<IndexedClass> fundClasses = fund.shareClasses();
         List<IndexedClass> matched = fundClasses.stream().filter(shareClass -> matchesAll(typed, shareClass)).toList();
         if (matched.isEmpty()) {
             return Optional.empty();
         }
-        String fundName = fundClasses.getFirst().shareClass().fundName();
+        boolean narrowedByPrefix = typed.stream()
+                .map(word -> fundClasses.stream().filter(word::isIdentifierPrefixOf).count())
+                .anyMatch(count -> count > 0 && count < fundClasses.size());
+        if (narrowedByPrefix) {
+            boolean pinned = matched.size() == 1 && typed.stream().anyMatch(word -> fundClasses.stream()
+                    .filter(word::isIdentifierPrefixOf).toList().equals(matched));
+            return Optional.of(fundMatch(fund, matched, pinned));
+        }
         Map<String, Long> words = counts(typed.stream()
                 .filter(word -> fundClasses.stream().noneMatch(word::isIdentifierPrefixOf))
                 .flatMap(word -> word.words().stream()));
-        boolean fundNamedInFull = matched.stream().anyMatch(shareClass -> containsAll(words, shareClass.fundNameWords()));
-        Function<List<IndexedClass>, FundMatch> named = classes ->
-                new FundMatch(fundName, shareClassesOf(classes), true, fundNamedInFull);
-        Function<List<IndexedClass>, FundMatch> candidates = classes ->
-                new FundMatch(fundName, shareClassesOf(classes), false, fundNamedInFull);
-
-        List<List<IndexedClass>> prefixed = typed.stream()
-                .map(word -> fundClasses.stream().filter(word::isIdentifierPrefixOf).toList())
-                .filter(classes -> !classes.isEmpty() && classes.size() < fundClasses.size())
-                .toList();
-        if (!prefixed.isEmpty()) {
-            return Optional.of(prefixed.contains(matched) && matched.size() == 1
-                    ? named.apply(matched) : candidates.apply(matched));
+        if (fundClasses.stream().allMatch(shareClass -> minus(words, shareClass.fundWords()).isEmpty())) {
+            return Optional.of(fundMatch(fund, fundClasses, true));
         }
-        if (matched.equals(fundClasses)
-                && fundClasses.stream().allMatch(shareClass -> containsAll(shareClass.fundWords(), words))) {
-            return Optional.of(named.apply(fundClasses));
-        }
-        List<IndexedClass> typedInFull = fundClasses.stream()
-                .filter(shareClass -> containsAll(words, shareClass.classWords()))
+        List<IndexedClass> named = fundClasses.stream()
+                .filter(shareClass -> isNamed(shareClass, words, fund.wordsEveryClassCarries()))
                 .toList();
-        List<IndexedClass> typedBeyondFund = typedInFull.stream()
-                .filter(shareClass -> containsAll(minus(words, shareClass.fundWords()), shareClass.classWords()))
-                .toList();
-        Optional<IndexedClass> pick = longest(typedBeyondFund.isEmpty() ? typedInFull : typedBeyondFund)
-                .filter(shareClass -> matched.contains(shareClass)
-                        && typedInFull.stream().noneMatch(other -> other != shareClass
+        Optional<IndexedClass> pick = mostSpecific(named)
+                .filter(shareClass -> matched.contains(shareClass) && fundClasses.stream().noneMatch(other ->
+                        !other.equals(shareClass) && containsAll(words, other.classWords())
                                 && containsAll(other.classWords(), shareClass.classWords())));
         if (pick.isPresent()) {
-            return Optional.of(named.apply(List.of(pick.get())));
+            return Optional.of(fundMatch(fund, List.of(pick.get()), true));
         }
-        List<IndexedClass> matchedInFull = matched.stream().filter(typedInFull::contains).toList();
-        return Optional.of(candidates.apply(matchedInFull.isEmpty() ? matched : matchedInFull));
+        List<IndexedClass> matchedAndNamed = matched.stream().filter(named::contains).toList();
+        return Optional.of(fundMatch(fund, matchedAndNamed.isEmpty() ? matched : matchedAndNamed, false));
+    }
+
+    private static FundMatch fundMatch(IndexedFund fund, List<IndexedClass> shareClasses, boolean named) {
+        return new FundMatch(fund.fundName(), shareClassesOf(shareClasses), named);
+    }
+
+    /** Its whole class name in the words its fund and umbrella names leave, with a word that tells it from another. */
+    private static boolean isNamed(IndexedClass shareClass, Map<String, Long> words, Set<String> everyClassCarries) {
+        return containsAll(minus(words, shareClass.fundWords()), shareClass.classWords())
+                && !everyClassCarries.containsAll(shareClass.classWords().keySet());
     }
 
     /** The class whose name contains every other's and is longer: class A AC of A and A AC; none of I and P Cap. */
-    private static Optional<IndexedClass> longest(List<IndexedClass> shareClasses) {
+    private static Optional<IndexedClass> mostSpecific(List<IndexedClass> shareClasses) {
         return shareClasses.stream()
                 .filter(shareClass -> shareClasses.stream()
-                        .allMatch(other -> other == shareClass || hasLongerName(shareClass, other)))
+                        .allMatch(other -> other.equals(shareClass) || hasLongerName(shareClass, other)))
                 .findFirst();
     }
 
@@ -190,16 +217,16 @@ public final class ShareClassMatcher {
      */
     private static IndexedClass indexed(ShareClass shareClass) {
         String fundType = shareClass.fundType().map(type -> type.name().replace('_', ' ')).orElse("");
-        Set<String> textWords = Set.copyOf(words(String.join(" ", shareClass.fundName(),
-                shareClass.umbrellaName().orElse(""), shareClass.shareClassName(), shareClass.currency(), fundType,
-                shareClass.internalCode().orElse(""))));
+        List<String> ownWords = words(String.join(" ", shareClass.shareClassName(), shareClass.currency(), fundType,
+                shareClass.internalCode().orElse("")));
+        List<String> fundWords = words(shareClass.fundName() + " " + shareClass.umbrellaName().orElse(""));
+        Set<String> textWords = Stream.concat(fundWords.stream(), ownWords.stream()).collect(Collectors.toSet());
         List<String> identifiers = Stream.of(Optional.of(shareClass.isin().value()), shareClass.valor())
                 .flatMap(Optional::stream)
                 .map(ShareClassMatcher::compact)
                 .toList();
-        return new IndexedClass(shareClass, textWords, counts(words(shareClass.fundName()).stream()),
-                counts(words(shareClass.fundName() + " " + shareClass.umbrellaName().orElse("")).stream()),
-                counts(words(shareClass.shareClassName()).stream()), identifiers);
+        return new IndexedClass(shareClass, Set.copyOf(textWords), counts(fundWords.stream()),
+                counts(words(shareClass.shareClassName()).stream()), Set.copyOf(ownWords), identifiers);
     }
 
     /** One typed word, which may hold several words once punctuation is dropped ("BI-EUR"). */
