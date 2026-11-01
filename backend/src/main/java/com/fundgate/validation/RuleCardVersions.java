@@ -21,7 +21,14 @@ public class RuleCardVersions implements RuleCards {
 
     /** The cards as their files number them, e.g. the Validated fixtures. */
     public RuleCardVersions(List<RuleCard> cards) {
-        versions.addAll(cards);
+        for (RuleCard card : cards) {
+            // Two files of one version: which one decides, or is validated, would be a guess
+            if (versions.stream().anyMatch(other -> sameFund(card, other) && other.version() == card.version())) {
+                throw new IllegalArgumentException("Two Rule Cards of " + card.fundName() + " are version "
+                        + card.version());
+            }
+            versions.add(card);
+        }
     }
 
     /** The latest Validated version decides while a newer one is still a Draft (Stale Rule Card, GLOSSARY.md). */

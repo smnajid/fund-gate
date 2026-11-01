@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Observable } from 'rxjs';
+import { Observable, Subscription, finalize } from 'rxjs';
 import { CardView, CitationView, RuleView, ValidationControllerService } from '../generated/api';
 
 /** A cited page split around its quote, so the quote can be highlighted; null when the quote is not on the page. */
@@ -10,22 +10,28 @@ export interface Highlighted {
   after: string;
 }
 
-/** Finds the quote on the page as the quote check does: case and line breaks aside. */
+/** Typographic quotes and dashes as their plain forms, one character for one, so positions on the page stay put. */
+function plain(text: string): string {
+  return text.replace(/[’‘]/g, "'").replace(/[“”]/g, '"').replace(/[–—]/g, '-');
+}
+
+/**
+ * Finds the quote on the page as the backend's quote check does (QuoteCheck): typographic quotes and dashes, case
+ * and runs of whitespace aside, and never inside a word. So the highlight agrees with the "quote found" signal.
+ */
 export function highlight(page: string, quote: string): Highlighted | null {
-  const words = quote.trim().split(/\s+/).filter(word => word.length > 0);
+  const words = plain(quote).trim().split(/\s+/).filter(word => word.length > 0);
   if (words.length === 0) {
     return null;
   }
-  const pattern = new RegExp(words.map(word => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\\s+'), 'i');
-  const found = pattern.exec(page);
+  const quoted = words.map(word => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\\s+');
+  const pattern = new RegExp(`(?<![\\p{L}\\p{N}])${quoted}(?![\\p{L}\\p{N}])`, 'iu');
+  const found = pattern.exec(plain(page));
   if (!found) {
     return null;
   }
-  return {
-    before: page.slice(0, found.index),
-    quote: found[0],
-    after: page.slice(found.index + found[0].length)
-  };
+  const end = found.index + found[0].length;
+  return { before: page.slice(0, found.index), quote: page.slice(found.index, end), after: page.slice(end) };
 }
 
 /**
@@ -51,8 +57,12 @@ export class ValidationScreen {
   protected readonly edited = signal('');
   protected readonly notedReason = signal('');
   protected readonly error = signal<string | undefined>(undefined);
+  /** A step is on its way: its buttons wait, so a double click never sends it twice. */
+  protected readonly busy = signal(false);
+  private pageRequest?: Subscription;
 
-  protected readonly rule = computed(() => this.card()?.rules[this.selected()]);
+  /** selected holds a rule's index on the card, which every view of a rule carries. */
+  protected readonly rule = computed(() => this.card()?.rules.find(rule => rule.index === this.selected()));
   protected readonly cited = computed<CitationView | undefined>(() => this.rule()?.citations[this.citation()]);
   protected readonly highlighted = computed(() => {
     const page = this.page();
@@ -77,7 +87,7 @@ export class ValidationScreen {
           // The demo opens on the first Draft: the card the validator has work on
           const first = cards.find(card => card.status === 'DRAFT') ?? cards[0];
           if (first) {
-            this.show(first, 0);
+            this.show(first, first.rules[0]?.index ?? 0);
           }
         },
         error: () => this.error.set('Could not load the Rule Cards.')
@@ -87,10 +97,11 @@ export class ValidationScreen {
   protected open(index: number): void {
     const card = this.cards()[index];
     if (card) {
-      this.show(card, 0);
+      this.show(card, card.rules[0]?.index ?? 0);
     }
   }
 
+  /** {@code index} is the rule's index on the card. */
   protected select(index: number): void {
     const card = this.card();
     if (card) {
@@ -117,24 +128,31 @@ export class ValidationScreen {
   }
 
   protected saveCorrection(): void {
-    let condition: { [key: string]: unknown };
+    let condition: unknown;
     try {
       condition = JSON.parse(this.edited());
     } catch {
       this.error.set('The corrected value is not JSON.');
       return;
     }
-    this.correct(condition);
+    if (typeof condition !== 'object' || condition === null || Array.isArray(condition)) {
+      this.error.set('The corrected value is a condition: an object with its kind.');
+      return;
+    }
+    this.correct(condition as { [key: string]: unknown });
   }
 
-  /** ADR 0003: Blocking gives Review on every check; Noted passes and stays in the Justification. */
+  /**
+   * ADR 0003: Blocking gives Review on every check; Noted passes and stays in the Justification, so the card keeps
+   * why the clause sets no condition on the client.
+   */
   protected mark(status: 'BLOCKING' | 'NOTED'): void {
     const reason = this.notedReason().trim();
-    this.correct({
-      kind: 'unmodelled_restriction',
-      status,
-      notedReason: status === 'NOTED' && reason ? reason : null
-    });
+    if (status === 'NOTED' && !reason) {
+      this.error.set('Say why the clause sets no condition on the client before marking it Noted.');
+      return;
+    }
+    this.correct({ kind: 'unmodelled_restriction', status, notedReason: status === 'NOTED' ? reason : null });
   }
 
   protected validate(): void {
@@ -144,7 +162,9 @@ export class ValidationScreen {
     }
     this.call(this.api.validate(this.shareClass(), this.version(), { validator: this.validator() }), validated => {
       this.replace(validated);
-      this.show(validated, this.selected());
+      if (this.showing(validated)) {
+        this.show(validated, this.selected());
+      }
     });
   }
 
@@ -180,7 +200,8 @@ export class ValidationScreen {
       return '';
     }
     return rules
-      .map(index => card.rules[index])
+      .map(index => card.rules.find(rule => rule.index === index))
+      .filter((rule): rule is RuleView => rule !== undefined)
       .map(rule => `${rule.citations[0] ? this.documentName(rule.citations[0]) : 'no quote'}: ${rule.summary}`)
       .join('; ');
   }
@@ -191,7 +212,10 @@ export class ValidationScreen {
     );
   }
 
-  /** A review step on the selected rule, then the next open rule. */
+  /**
+   * A review step on the selected rule, then the next open rule. A validator who moved to another card or rule
+   * meanwhile stays there.
+   */
   private step(call: (rule: RuleView) => Observable<CardView>): void {
     const rule = this.rule();
     if (!rule) {
@@ -199,8 +223,11 @@ export class ValidationScreen {
     }
     this.call(call(rule), reviewed => {
       this.replace(reviewed);
-      const next = reviewed.rules.findIndex(other => other.status === 'OPEN' || other.unsettledContradiction);
-      this.show(reviewed, next < 0 ? rule.index : next);
+      if (!this.showing(reviewed) || this.selected() !== rule.index) {
+        return;
+      }
+      const next = reviewed.rules.find(other => other.status === 'OPEN' || other.unsettledContradiction);
+      this.show(reviewed, next?.index ?? rule.index);
     });
   }
 
@@ -209,18 +236,30 @@ export class ValidationScreen {
       this.error.set('Enter your name first: every step records who took it.');
       return;
     }
+    if (this.busy()) {
+      return;
+    }
     this.error.set(undefined);
-    request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    this.busy.set(true);
+    request.pipe(finalize(() => this.busy.set(false)), takeUntilDestroyed(this.destroyRef)).subscribe({
       next,
       error: failure => this.error.set(failure?.error?.detail ?? 'That step failed, try again.')
     });
   }
 
+  /** The same version of the same card is still on screen. */
+  private showing(card: CardView): boolean {
+    const shown = this.card();
+    return shown?.shareClasses[0] === card.shareClasses[0] && shown.version === card.version;
+  }
+
+  /** {@code rule} is the rule's index on the card. */
   private show(card: CardView, rule: number): void {
     this.card.set(card);
     this.selected.set(rule);
     this.citation.set(0);
-    const shown = card.rules[rule];
+    this.error.set(undefined);
+    const shown = card.rules.find(other => other.index === rule);
     this.edited.set(shown ? JSON.stringify(shown.condition, null, 2) : '');
     this.notedReason.set(shown && typeof shown.condition['notedReason'] === 'string' ? shown.condition['notedReason'] : '');
     this.loadPage();
@@ -232,13 +271,15 @@ export class ValidationScreen {
     );
   }
 
+  /** Only the page of the citation on screen: an earlier, slower answer is dropped, never shown. */
   private loadPage(): void {
+    this.pageRequest?.unsubscribe();
     const cited = this.cited();
     this.page.set(undefined);
     if (!cited) {
       return;
     }
-    this.api
+    this.pageRequest = this.api
       .page(cited.document, cited.page)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({

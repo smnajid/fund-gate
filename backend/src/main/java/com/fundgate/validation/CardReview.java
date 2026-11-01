@@ -81,6 +81,9 @@ public record CardReview(
     }
 
     private static Status status(Rule rule) {
+        if (rule.history().isEmpty()) {
+            return Status.OPEN;
+        }
         return switch (rule.history().getLast().action()) {
             case DRAFTED -> Status.OPEN;
             case ACCEPTED -> Status.ACCEPTED;

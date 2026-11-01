@@ -25,6 +25,9 @@ final class ConditionJson {
 
     /** Throws {@link IllegalArgumentException} for a condition outside the Rule Card schema. */
     Condition read(Map<String, Object> fields) {
+        if (fields == null) {
+            throw new IllegalArgumentException("A correction sends the corrected condition");
+        }
         try {
             return json.convertValue(fields, Condition.class);
         } catch (JacksonException e) {

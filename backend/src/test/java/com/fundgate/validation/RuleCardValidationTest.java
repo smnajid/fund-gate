@@ -81,6 +81,25 @@ class RuleCardValidationTest {
     @Test
     void every_step_names_its_validator() {
         assertThatThrownBy(() -> validation.accept(GCE_BP, 2, 0, " ")).isInstanceOf(IllegalArgumentException.class);
+        validation.follow(GCE_BP, 2, PROSPECTUS, "Cynthia");
+        reviewEveryRule();
+        assertThatThrownBy(() -> validation.validate(GCE_BP, 2, null)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void a_card_with_every_rule_rejected_is_never_ready_as_fund_registration_alone_would_decide() {
+        for (CardReview.RuleReview rule : validation.review(GCE_BP, 2).rules()) {
+            validation.reject(GCE_BP, 2, rule.index(), "Cynthia");
+        }
+
+        assertThat(validation.review(GCE_BP, 2).readyToValidate()).isFalse();
+        assertThatThrownBy(() -> validation.validate(GCE_BP, 2, "Cynthia")).isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void two_files_of_one_version_are_refused() {
+        assertThatThrownBy(() -> new RuleCardVersions(java.util.List.of(firstVersion, firstVersion)))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     private void reviewEveryRule() {

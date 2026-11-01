@@ -125,7 +125,7 @@ textarea {
   margin-bottom: 0.5rem;
 }
 
-.tabs button[aria-selected='true'] {
+.tabs button[aria-pressed='true'] {
   font-weight: bold;
 }
 

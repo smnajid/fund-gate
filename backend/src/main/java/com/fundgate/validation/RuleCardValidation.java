@@ -16,6 +16,7 @@ import java.util.Optional;
  * What a Rule Card Validator does to a Draft card (ADR 0001, ADR 0003): accepts, corrects or rejects each rule,
  * settles each contradiction by following one document, and validates the card once every rule is reviewed. Each
  * step is appended to the rule's history with who and when; marking an Unmodelled Restriction Noted is a correction.
+ * The steps run one at a time, so a step read from the card is never lost to one saved meanwhile.
  */
 public class RuleCardValidation {
 
@@ -51,17 +52,17 @@ public class RuleCardValidation {
         return CardReview.of(card, kinds, inForce);
     }
 
-    public RuleCard accept(Isin shareClass, int version, int rule, String validator) {
+    public synchronized RuleCard accept(Isin shareClass, int version, int rule, String validator) {
         return revise(shareClass, version, rule, validator, Revision.Action.ACCEPTED, Optional.empty());
     }
 
     /** The condition the validator read on the cited page instead of the drafted one. */
-    public RuleCard correct(Isin shareClass, int version, int rule, Condition corrected, String validator) {
+    public synchronized RuleCard correct(Isin shareClass, int version, int rule, Condition corrected, String validator) {
         return revise(shareClass, version, rule, validator, Revision.Action.EDITED, Optional.of(corrected));
     }
 
     /** A rule the documents do not support: it stays in the history and never decides. */
-    public RuleCard reject(Isin shareClass, int version, int rule, String validator) {
+    public synchronized RuleCard reject(Isin shareClass, int version, int rule, String validator) {
         return revise(shareClass, version, rule, validator, Revision.Action.REJECTED, Optional.empty());
     }
 
@@ -69,7 +70,7 @@ public class RuleCardValidation {
      * Settles a contradiction: this rule's document governs, and the rules of the same kind and scope that
      * contradict it are rejected.
      */
-    public RuleCard follow(Isin shareClass, int version, int rule, String validator) {
+    public synchronized RuleCard follow(Isin shareClass, int version, int rule, String validator) {
         RuleCard card = draft(shareClass, version);
         Rule followed = ruleAt(card, rule);
         if (!followed.contradiction()) {
@@ -88,21 +89,27 @@ public class RuleCardValidation {
     }
 
     /** Records who validated this version and when; from then on it decides Verdicts for its classes. */
-    public RuleCard validate(Isin shareClass, int version, String validator) {
+    public synchronized RuleCard validate(Isin shareClass, int version, String validator) {
+        named(validator);
         RuleCard card = draft(shareClass, version);
         if (!readyToValidate(card)) {
-            throw new IllegalStateException("Every rule must be reviewed and every contradiction settled first");
+            throw new IllegalStateException("Every rule must be reviewed and every contradiction settled first, "
+                    + "and at least one rule left to decide");
         }
         RuleCard validated = new RuleCard(card.fundId(), card.fundName(), card.shareClasses(), card.version(),
                 RuleCard.Status.VALIDATED, card.rules(), card.sources(), card.drafting(),
-                Optional.of(new RuleCard.Validation(validator, clock.instant())));
+                Optional.of(new RuleCard.Validation(validator.strip(), clock.instant())));
         versions.replaceDraft(validated);
         return validated;
     }
 
-    /** A Draft whose every rule is reviewed and whose every contradiction is settled. */
+    /**
+     * A Draft whose every rule is reviewed and whose every contradiction is settled. A card left with no rule that
+     * decides is never ready: validated, it would let Fund Registration alone give Eligible.
+     */
     public static boolean readyToValidate(RuleCard card) {
         return card.status() == RuleCard.Status.DRAFT
+                && card.rules().stream().anyMatch(rule -> !rejected(rule))
                 && card.rules().stream().allMatch(rule -> rule.reviewed() && settled(rule));
     }
 
@@ -112,7 +119,7 @@ public class RuleCardValidation {
     }
 
     public static boolean rejected(Rule rule) {
-        return rule.history().getLast().action() == Revision.Action.REJECTED;
+        return !rule.history().isEmpty() && rule.history().getLast().action() == Revision.Action.REJECTED;
     }
 
     private RuleCard revise(Isin shareClass, int version, int rule, String validator, Revision.Action action,
@@ -124,14 +131,18 @@ public class RuleCardValidation {
     }
 
     private Rule revised(Rule rule, Revision.Action action, String validator, Optional<Condition> corrected) {
-        if (validator == null || validator.isBlank()) {
-            throw new IllegalArgumentException("Every review step names its validator");
-        }
+        named(validator);
         Condition condition = corrected.orElse(rule.condition());
         List<Revision> history = new ArrayList<>(rule.history());
         history.add(new Revision(action, validator.strip(), clock.instant(), condition));
         return new Rule(rule.scope(), rule.shareClass(), condition, rule.citations(), rule.summary(),
                 rule.confidence(), rule.contradiction(), history);
+    }
+
+    private static void named(String validator) {
+        if (validator == null || validator.isBlank()) {
+            throw new IllegalArgumentException("Every review step names its validator");
+        }
     }
 
     private RuleCard save(RuleCard card, List<Rule> rules) {

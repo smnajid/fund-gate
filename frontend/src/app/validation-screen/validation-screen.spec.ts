@@ -43,6 +43,15 @@ describe('highlight', () => {
   it('gives null when the quote is not on the page', () => {
     expect(highlight('All investors', 'Institutional investors')).toBeNull();
   });
+
+  it('folds typographic quotes and dashes as the quote check does, and keeps the page\'s own characters', () => {
+    expect(highlight('the fund’s board – at its discretion', "fund's board - at")?.quote).toBe('fund’s board – at');
+  });
+
+  it('never matches inside a word', () => {
+    expect(highlight('Distribution and other investors', 'other investors')?.before).toBe('Distribution and ');
+    expect(highlight('Brothers investors', 'other investors')).toBeNull();
+  });
 });
 
 describe('ValidationScreen', () => {
@@ -103,6 +112,80 @@ describe('ValidationScreen', () => {
 
     const request = http.expectOne('/api/rule-cards/LU0348926287/versions/2/rules/0/follow');
     expect(request.request.body).toEqual({ validator: 'Cynthia' });
+  });
+
+  async function named(fixture: Awaited<ReturnType<typeof openTheDraft>>) {
+    const name = (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>('#validator')!;
+    name.value = 'Cynthia';
+    name.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+  }
+
+  it('drops a page that answers after the validator moved to another rule', async () => {
+    const fixture = await openTheDraft();
+    const screen: HTMLElement = fixture.nativeElement;
+    (screen.querySelectorAll('.rules button')[1] as HTMLButtonElement).click();
+    const kid = http.expectOne('/api/rule-cards/documents/nordea1-gce-kid-bi-eur/pages/1');
+    (screen.querySelectorAll('.rules button')[0] as HTMLButtonElement).click();
+    const prospectus = http.expectOne('/api/rule-cards/documents/nordea1-prospectus-2026-06/pages/123');
+
+    prospectus.flush({ text: 'Class\nI Institutional investors. Yes None' });
+    expect(kid.cancelled).toBe(true);
+    await fixture.whenStable();
+
+    expect(screen.querySelector('mark')?.textContent).toBe('I Institutional investors.');
+  });
+
+  it('after a step, moves to the next rule still to review', async () => {
+    const fixture = await openTheDraft();
+    const screen: HTMLElement = fixture.nativeElement;
+    await named(fixture);
+
+    button(screen, 'Follow prospectus p.123').click();
+    expect(button(screen, 'Accept').disabled).toBe(false);
+    await fixture.whenStable();
+    expect(button(screen, 'Accept').disabled).toBe(true);
+    http.expectOne('/api/rule-cards/LU0348926287/versions/2/rules/0/follow').flush({
+      ...DRAFT,
+      rules: [
+        { ...DRAFT.rules[0], status: 'FOLLOWED', unsettledContradiction: false },
+        { ...DRAFT.rules[1], status: 'REJECTED', unsettledContradiction: false }
+      ],
+      contradictions: [{ ...DRAFT.contradictions[0], settled: true }],
+      readyToValidate: true
+    });
+    // No rule is left to review: the screen stays on the rule just reviewed, and Validate card is open
+    http.expectOne('/api/rule-cards/documents/nordea1-prospectus-2026-06/pages/123').flush({ text: '' });
+    await fixture.whenStable();
+
+    expect(screen.querySelector('.contradictions')).toBeNull();
+    expect(button(screen, 'Validate card').disabled).toBe(false);
+  });
+
+  it('marks a clause Noted only with the reason it sets no condition on the client', async () => {
+    const fixture = TestBed.createComponent(ValidationScreen);
+    http.expectOne('/api/rule-cards').flush([{
+      ...DRAFT, contradictions: [],
+      rules: [rule(0, { kind: 'unmodelled_restriction', condition: { kind: 'unmodelled_restriction', status: 'BLOCKING', notedReason: null }, citations: [] })]
+    }]);
+    await fixture.whenStable();
+    const screen: HTMLElement = fixture.nativeElement;
+    await named(fixture);
+
+    button(screen, 'Noted').click();
+    await fixture.whenStable();
+    expect(screen.querySelector('[role=alert].failure')?.textContent).toContain('Say why');
+
+    const reason = screen.querySelector<HTMLInputElement>('#reason')!;
+    reason.value = 'The board may reject an application';
+    reason.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    button(screen, 'Noted').click();
+
+    expect(http.expectOne('/api/rule-cards/LU0348926287/versions/2/rules/0/correct').request.body).toEqual({
+      validator: 'Cynthia',
+      condition: { kind: 'unmodelled_restriction', status: 'NOTED', notedReason: 'The board may reject an application' }
+    });
   });
 
   it('asks for the validator\'s name before any step', async () => {

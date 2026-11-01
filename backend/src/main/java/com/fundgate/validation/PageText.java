@@ -21,15 +21,21 @@ public class PageText {
     }
 
     private final FundDocuments documents;
-    private final Map<Page, Optional<String>> read = new ConcurrentHashMap<>();
+    private final Map<Page, String> read = new ConcurrentHashMap<>();
 
     public PageText(FundDocuments documents) {
         this.documents = documents;
     }
 
-    /** Empty when the document's file is not here or has no such page: the screen then shows the quote alone. */
+    /**
+     * Empty when the document's file is not here or has no such page: the screen then shows the quote alone. Only a
+     * page read is kept, so a file that arrives later, e.g. after a pipeline run, is read then.
+     */
     public Optional<String> of(DocumentId document, int page) {
-        return read.computeIfAbsent(new Page(document, page), this::extract);
+        Page cited = new Page(document, page);
+        Optional<String> text = Optional.ofNullable(read.get(cited)).or(() -> extract(cited));
+        text.ifPresent(found -> read.putIfAbsent(cited, found));
+        return text;
     }
 
     private Optional<String> extract(Page cited) {

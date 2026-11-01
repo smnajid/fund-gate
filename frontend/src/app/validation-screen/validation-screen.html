@@ -34,13 +34,13 @@
       <div class="validate">
         <label for="validator">Validator</label>
         <input #name id="validator" [value]="validator()" (input)="validator.set(name.value)" />
-        <button type="button" [disabled]="!card.readyToValidate" (click)="validate()">Validate card</button>
+        <button type="button" [disabled]="!card.readyToValidate || busy()" (click)="validate()">Validate card</button>
       </div>
     }
   </header>
 
   @if (openContradictions().length > 0) {
-    <section class="contradictions" role="alert">
+    <section class="contradictions" role="status">
       <h3>
         {{ openContradictions().length }} {{ openContradictions().length === 1 ? 'contradiction needs' : 'contradictions need' }}
         a decision:
@@ -72,16 +72,16 @@
         @if (rule.citations.length === 0) {
           <p class="warn">No supporting quote: no page backs this value.</p>
         } @else {
-          <div class="tabs" role="tablist">
+          <div class="tabs" aria-label="Citations">
             @for (cited of rule.citations; track $index) {
-              <button type="button" role="tab" [attr.aria-selected]="$index === citation()" (click)="showCitation($index)">
+              <button type="button" [attr.aria-pressed]="$index === citation()" (click)="showCitation($index)">
                 {{ documentName(cited) }}
               </button>
             }
           </div>
           @if (cited(); as cited) {
-            @if (highlighted(); as page) {
-              <pre class="page">{{ page.before }}<mark>{{ page.quote }}</mark>{{ page.after }}</pre>
+            @if (highlighted(); as found) {
+              <pre class="page">{{ found.before }}<mark>{{ found.quote }}</mark>{{ found.after }}</pre>
             } @else {
               @if (page() === undefined) {
                 <p>Loading the page…</p>
@@ -113,22 +113,22 @@
 
         @if (editable()) {
           @if (rule.unsettledContradiction) {
-            <button type="button" (click)="follow()">Follow {{ rule.citations[0] ? documentName(rule.citations[0]) : 'this reading' }}</button>
+            <button type="button" [disabled]="busy()" (click)="follow()">Follow {{ rule.citations[0] ? documentName(rule.citations[0]) : 'this reading' }}</button>
           }
           @if (rule.kind === 'unmodelled_restriction') {
             <label for="reason">Why it sets no condition on the client</label>
             <input #reason id="reason" [value]="notedReason()" (input)="notedReason.set(reason.value)" />
             <div class="actions">
-              <button type="button" (click)="mark('BLOCKING')">Blocking</button>
-              <button type="button" (click)="mark('NOTED')">Noted</button>
+              <button type="button" [disabled]="busy()" (click)="mark('BLOCKING')">Blocking</button>
+              <button type="button" [disabled]="busy()" (click)="mark('NOTED')">Noted</button>
             </div>
           }
           <label for="value">Value</label>
           <textarea #value id="value" rows="8" [value]="edited()" (input)="edited.set(value.value)"></textarea>
           <div class="actions">
-            <button type="button" (click)="accept()">Accept</button>
-            <button type="button" (click)="saveCorrection()">Save correction</button>
-            <button type="button" (click)="reject()">Reject</button>
+            <button type="button" [disabled]="busy()" (click)="accept()">Accept</button>
+            <button type="button" [disabled]="busy()" (click)="saveCorrection()">Save correction</button>
+            <button type="button" [disabled]="busy()" (click)="reject()">Reject</button>
           </div>
         }
       }
