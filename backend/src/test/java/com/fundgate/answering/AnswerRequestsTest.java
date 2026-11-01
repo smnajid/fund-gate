@@ -56,7 +56,7 @@ class AnswerRequestsTest {
             """;
 
     private final ClientProfiles clientProfiles =
-            new FixtureClientProfiles(Path.of("../docs/playbook/contracts/fixtures/client-profiles"));
+            new FixtureClientProfiles(Path.of("src/test/resources/fixtures/client-profiles"));
 
     private final CheckRecords checkRecords = new InMemoryCheckRecords();
 

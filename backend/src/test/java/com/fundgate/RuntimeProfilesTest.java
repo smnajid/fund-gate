@@ -51,6 +51,7 @@ class RuntimeProfilesTest {
     private static ConfigurableApplicationContext start(String... profiles) {
         return new SpringApplicationBuilder(FundEli5Application.class)
                 .profiles(profiles)
-                .run("--server.port=0");
+                // The platform reads its own frozen fixtures, never the demo content the team rewrites (#80)
+                .run("--server.port=0", "--fundeli5.fixtures.dir=src/test/resources/fixtures");
     }
 }

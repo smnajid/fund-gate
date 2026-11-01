@@ -19,7 +19,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 class FixtureClientProfilesTest {
 
     private final ClientProfiles clientProfiles =
-            new FixtureClientProfiles(Path.of("../docs/playbook/contracts/fixtures/client-profiles"));
+            new FixtureClientProfiles(Path.of("src/test/resources/fixtures/client-profiles"));
 
     @Test
     void toms_profile_carries_his_two_nationalities_his_opt_out_and_his_growth_risk_profile() {

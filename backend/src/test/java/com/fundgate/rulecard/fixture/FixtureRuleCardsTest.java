@@ -16,7 +16,7 @@ class FixtureRuleCardsTest {
 
     @Test
     void every_kind_on_a_card_is_read_through_the_catalog() {
-        RuleCards cards = new FixtureRuleCards(Path.of("../docs/playbook/contracts/fixtures/rule-cards"),
+        RuleCards cards = new FixtureRuleCards(Path.of("src/test/resources/fixtures/rule-cards"),
                 RuleCatalog.conditionTypes());
 
         assertThat(cards.forShareClass(BNP_A).orElseThrow().rules()).isNotEmpty();
