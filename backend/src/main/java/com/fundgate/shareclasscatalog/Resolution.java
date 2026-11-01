@@ -12,11 +12,15 @@ public sealed interface Resolution {
 
     /**
      * The Share Classes of one fund the mention names, in catalog order. Words of the fund or umbrella name never count
-     * toward a class name: a class is named only when the typed words left once those are taken (counted: a word typed
-     * more often than the names use it keeps the extra) hold its whole class name, with a word some other class of the
-     * fund does not carry. Kept by the matcher and checked over generated catalogs:
+     * toward a class name, whichever class of the fund carries them (a fund id may group classes under different fund
+     * names, a fund name classes under different umbrellas): a class is named only when the typed words left once
+     * those are taken (counted: a word typed more often than any one class's fund and umbrella names use it keeps the
+     * extra) hold its whole class name, with a word some other class of the fund does not carry. So with fund id F1
+     * over "Bond Fund" class I and "Bond Fund I" class R, "Bond Fund I" is every class of the fund, not class I. Kept
+     * by the matcher and checked over generated catalogs:
      * <ul>
-     * <li>every class of the fund when no typed word is left but an ISIN or Valor prefix they all share;</li>
+     * <li>every class of the fund when no typed word is left but an ISIN or Valor prefix they all share, and the
+     * mention matches each class;</li>
      * <li>the one class an ISIN or Valor prefix pins;</li>
      * <li>the one named class every other named class's name is part of, when no class whose name is typed in full,
      * fund words included, has the same name or a longer one containing it;</li>

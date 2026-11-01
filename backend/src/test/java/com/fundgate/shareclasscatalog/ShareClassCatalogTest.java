@@ -365,17 +365,50 @@ class ShareClassCatalogTest {
     }
 
     /**
+     * A fund id may group classes under different fund names, a fund name classes under different umbrellas: a word of
+     * any of them is the fund's, never a class name, so "Bond Fund I" is the fund whose classes I and R are, and
+     * "Hedged Bond Fund" the fund whose umbrella is "Hedged Funds SICAV", not class Hedged.
+     */
+    @Test
+    void a_fund_or_umbrella_word_of_another_class_of_the_fund_does_not_name_a_class() {
+        ShareClassCatalog renamed = new ShareClassCatalog(() -> List.of(
+                shareClass("XXBFI0000001", Optional.of("F1"), "Bond Fund", "I"),
+                shareClass("XXBFR0000001", Optional.of("F1"), "Bond Fund I", "R")));
+        ShareClassCatalog renamedHedged = new ShareClassCatalog(() -> List.of(
+                shareClass("XXBFH0000001", Optional.of("F1"), "Bond Fund", "Hedged"),
+                shareClass("XXBFP0000001", Optional.of("F1"), "Bond Fund Hedged", "P"),
+                shareClass("XXBFQ0000001", Optional.of("F1"), "Bond Fund Hedged", "Q")));
+        ShareClassCatalog twoUmbrellas = new ShareClassCatalog(() -> List.of(
+                shareClass("XXBFH0000001", Optional.empty(), "Bond Fund", "Hedged"),
+                inUmbrella(shareClass("XXBFP0000001", Optional.empty(), "Bond Fund", "P"), "Hedged Funds SICAV")));
+        ShareClassCatalog fundA = new ShareClassCatalog(() -> List.of(
+                shareClass("XXFA00000001", Optional.of("F0"), "Fund A", "1"),
+                shareClass("XXGBA0000001", Optional.of("F0"), "Global Bond USD", "A")));
+
+        assertThat(isinsOf(resolved(renamed.resolve("Bond Fund I")))).containsExactly("XXBFI0000001", "XXBFR0000001");
+        assertThat(isinsOf(resolved(renamedHedged.resolve("Bond Fund Hedged"))))
+                .containsExactly("XXBFH0000001", "XXBFP0000001", "XXBFQ0000001");
+        assertThat(isinsOf(resolved(twoUmbrellas.resolve("Hedged Bond Fund"))))
+                .containsExactly("XXBFH0000001", "XXBFP0000001");
+        assertThat(candidateIsins(fundA.resolve("Fund A"))).containsExactly(List.of("XXFA00000001"));
+        assertThat(isinsOf(resolved(renamed.resolve("Bond Fund I R")))).containsExactly("XXBFR0000001");
+        assertThat(isinsOf(resolved(renamed.resolve("Bond Fund I I")))).containsExactly("XXBFI0000001");
+    }
+
+    /**
      * The rule of {@link Resolution.Resolved}, restated here, over small catalogs whose fund, umbrella and class names
-     * share words, with fund ids (one fund's classes under different names), Valors, ISIN prefixes several funds share
-     * and fund types, and mentions mixing those words, now and then lowercase (fixed seed, so the same cases every run).
-     * Beside the rule, what it is for: a word every class carries never narrows the fund to one class, one class is
-     * never Resolved without a word of its own name typed beyond the fund's, or its ISIN or Valor, and never two funds.
+     * share words, with fund ids (one fund's classes under different fund names), several umbrellas within one fund,
+     * Valors, ISIN prefixes several funds share and fund types, and mentions mixing those words, now and then lowercase
+     * (fixed seed, so the same cases every run). Beside the rule, what it is for, checked without the rule's own steps:
+     * a Resolved class always matches the mention; one class is never Resolved, but by its ISIN or Valor, when the
+     * mention is all fund name of some class of its fund, nor without a word of its class name typed beyond every fund
+     * and umbrella name of its fund; a word every class carries never narrows the fund to one class; never two funds.
      */
     @Test
     void a_resolved_mention_names_the_fund_alone_or_one_class_in_full() {
         List<String> fundNames = List.of("Bond Fund I", "Bonds CHF", "Fund A", "Bond Fund", "Fund I-A 1", "CHF Bond",
-                "Global Bond USD", "Bond 2 Fund");
-        List<String> umbrellaNames = List.of("", "", "Fund 1", "Bond I", "USD Cap");
+                "Global Bond USD", "Bond 2 Fund", "Bond Fund Hedged");
+        List<String> umbrellaNames = List.of("", "", "Fund 1", "Bond I", "USD Cap", "Hedged Funds SICAV");
         List<String> classNames = List.of("I", "A", "I Cap", "P Cap", "CHF Hedged", "EUR Hedged", "Hedged", "P-acc",
                 "(USD) P-acc", "I-A 1", "I-A 2", "A AC", "1", "A CHF", "EUR", "Cap");
         List<String> currencies = List.of("CHF", "EUR", "USD");
@@ -383,9 +416,12 @@ class ShareClassCatalogTest {
                 Optional.of(FundType.SIF), Optional.of(FundType.PART_II), Optional.of(FundType.CH_SECURITIES_FUND));
         List<String> isinPrefixes = List.of("LU0348", "LU0349", "CH0112");
         List<String> mentionWords = List.of("I", "A", "CHF", "EUR", "USD", "Cap", "Hedged", "P-acc", "1", "2", "Bond",
-                "Bonds", "Fund", "AC", "Global", "I-A", "P", "UCITS", "SIF", "Part", "II", "Securities");
+                "Bonds", "Fund", "AC", "Global", "I-A", "P", "UCITS", "SIF", "Part", "II", "Securities", "Funds",
+                "SICAV");
         Random random = new Random(60);
         Map<String, Integer> outcomes = new TreeMap<>();
+        Map<String, Integer> violationCounts = new TreeMap<>();
+        List<String> violations = new ArrayList<>();
         int sharedWordChecks = 0;
         for (int catalogNo = 0; catalogNo < 1500; catalogNo++) {
             List<ShareClass> classes = new ArrayList<>();
@@ -397,11 +433,13 @@ class ShareClassCatalogTest {
                 Optional<FundType> fundType = pick(random, fundTypes);
                 int classCount = 1 + random.nextInt(3);
                 for (int classNo = 0; classNo < classCount; classNo++) {
+                    String classUmbrella = random.nextInt(4) == 0 ? pick(random, umbrellaNames) : umbrella;
                     classes.add(new ShareClass(
                             new Isin(pick(random, isinPrefixes) + "%06d".formatted(catalogNo * 10 + fund * 4 + classNo)),
-                            fundId, fundId.isPresent() && random.nextInt(3) == 0 ? pick(random, fundNames) : fundName,
-                            umbrella.isEmpty() ? Optional.empty() : Optional.of(umbrella), pick(random, classNames),
-                            pick(random, currencies), Optional.empty(), fundType, Optional.empty(),
+                            fundId, fundId.isPresent() && random.nextInt(2) == 0 ? pick(random, fundNames) : fundName,
+                            classUmbrella.isEmpty() ? Optional.empty() : Optional.of(classUmbrella),
+                            pick(random, classNames), pick(random, currencies), Optional.empty(), fundType,
+                            Optional.empty(),
                             random.nextInt(2) == 0 ? Optional.of(String.valueOf(1_234_000 + random.nextInt(200)))
                                     : Optional.empty(),
                             Optional.empty(), Instant.EPOCH));
@@ -412,10 +450,16 @@ class ShareClassCatalogTest {
                 String mention = mention(random, classes, mentionWords);
                 Resolution resolution = generated.resolve(mention);
                 outcomes.merge(outcome(resolution), 1, Integer::sum);
-                assertResolvedKeepsTheRule(mention, resolution, classes);
+                List<String> found = new ArrayList<>(ruleViolations(mention, resolution, classes));
+                found.addAll(intentViolations(mention, resolution, classes));
+                found.forEach(violation -> violationCounts.merge(violation.substring(0, violation.indexOf(':')), 1,
+                        Integer::sum));
+                violations.addAll(found);
                 sharedWordChecks += assertAWordEveryClassCarriesNeverPicksOne(mention, resolution, classes, generated);
             }
         }
+        assertThat(violations).as("%d violations %s, first: %s", violations.size(), violationCounts,
+                violations.stream().limit(10).toList()).isEmpty();
         assertThat(outcomes.values().stream().mapToInt(Integer::intValue).sum()).isEqualTo(45_000);
         assertThat(outcomes).as("outcomes %s", outcomes)
                 .hasEntrySatisfying("Resolved, one class", count -> assertThat(count).isGreaterThan(4_000))
@@ -458,58 +502,134 @@ class ShareClassCatalogTest {
         return random.nextInt(4) == 0 ? mention.toLowerCase(Locale.ROOT) : mention;
     }
 
+    /** A Resolved mention, read apart from the matcher: the classes of its fund and the words typed, ISIN aside. */
+    private record ResolvedCase(List<ShareClass> named, List<ShareClass> fundClasses, List<String> tokens,
+            Map<String, Long> typed, boolean narrowed, String description) {
+
+        static Optional<ResolvedCase> of(String mention, Resolution resolution, List<ShareClass> all) {
+            if (!(resolution instanceof Resolved resolved)) {
+                return Optional.empty();
+            }
+            List<ShareClass> named = resolved.shareClasses();
+            String fundKey = fundKey(named.getFirst());
+            List<ShareClass> fundClasses = all.stream().filter(shareClass -> fundKey(shareClass).equals(fundKey))
+                    .toList();
+            List<String> tokens = Arrays.asList(mention.split(" "));
+            Map<String, Long> typed = wordCounts(tokens.stream()
+                    .filter(token -> !isIdentifierPrefix(token, fundClasses))
+                    .collect(Collectors.joining(" ")));
+            boolean narrowed = tokens.stream().anyMatch(token -> isIdentifierPrefix(token, fundClasses)
+                    && !fundClasses.stream().allMatch(shareClass -> isIdentifierPrefix(token, List.of(shareClass))));
+            return Optional.of(new ResolvedCase(named, fundClasses, tokens, typed, narrowed,
+                    "'%s' over %s gave %s".formatted(mention, describe(all), describe(named))));
+        }
+
+        ShareClass only() {
+            return named.getFirst();
+        }
+
+        List<ShareClass> others() {
+            return fundClasses.stream().filter(other -> !other.equals(only())).toList();
+        }
+
+        boolean pinned() {
+            return named.size() == 1 && tokens.stream().anyMatch(token -> isIdentifierPrefix(token, List.of(only()))
+                    && !isIdentifierPrefix(token, others()));
+        }
+    }
+
     /**
-     * The rule, written apart from the matcher. Within the fund, the typed words left once the fund and umbrella name
-     * words are taken (counted) name a class when they hold its whole name and one of its name words some class of the
-     * fund does not carry. Resolved is then every class of the fund when no word is left; one class its ISIN or Valor
+     * The rule, written apart from the matcher. Within the fund (fund id, else fund name), the typed words left once
+     * every fund and umbrella name word of its classes is taken (counted, at the most any one class uses it) name a
+     * class when they hold its whole name and one of its name words some class of the fund does not carry. Resolved is
+     * then every class of the fund when no word is left and the mention matches each; one class its ISIN or Valor
      * prefix pins; or the one named class every other named class's name is part of, when no class whose name is typed
      * in full, fund words included, has its name or a longer one containing it.
      */
-    private static void assertResolvedKeepsTheRule(String mention, Resolution resolution, List<ShareClass> all) {
-        if (!(resolution instanceof Resolved resolved)) {
-            return;
+    private static List<String> ruleViolations(String mention, Resolution resolution, List<ShareClass> all) {
+        Optional<ResolvedCase> found = ResolvedCase.of(mention, resolution, all);
+        if (found.isEmpty()) {
+            return List.of();
         }
-        List<ShareClass> named = resolved.shareClasses();
-        String fundKey = fundKey(named.getFirst());
-        List<ShareClass> fundClasses = all.stream().filter(shareClass -> fundKey(shareClass).equals(fundKey)).toList();
-        List<String> tokens = Arrays.asList(mention.split(" "));
-        Map<String, Long> typed = wordCounts(tokens.stream()
-                .filter(token -> !isIdentifierPrefix(token, fundClasses))
-                .collect(Collectors.joining(" ")));
-        boolean narrowed = tokens.stream().anyMatch(token -> isIdentifierPrefix(token, fundClasses)
-                && !fundClasses.stream().allMatch(shareClass -> isIdentifierPrefix(token, List.of(shareClass))));
-        String description = "'%s' over %s gave %s".formatted(mention, describe(all), describe(named));
-
-        assertThat(named).as("never two funds: " + description)
-                .allMatch(shareClass -> fundKey(shareClass).equals(fundKey));
-        boolean fundAlone = named.equals(fundClasses) && !narrowed
-                && fundClasses.stream().allMatch(shareClass -> containsAll(fundWords(shareClass), typed));
-        if (named.size() > 1) {
-            assertThat(fundAlone).as(description).isTrue();
-            return;
+        ResolvedCase resolved = found.get();
+        List<String> violations = new ArrayList<>();
+        String fundKey = fundKey(resolved.only());
+        if (!resolved.named().stream().allMatch(shareClass -> fundKey(shareClass).equals(fundKey))) {
+            violations.add("never two funds: " + resolved.description());
         }
-        ShareClass only = named.getFirst();
-        List<ShareClass> others = fundClasses.stream().filter(other -> !other.equals(only)).toList();
-        boolean pinned = tokens.stream()
-                .anyMatch(token -> isIdentifierPrefix(token, List.of(only)) && !isIdentifierPrefix(token, others));
-        if (!fundAlone) {
-            assertThat(pinned || !Collections.disjoint(minus(typed, fundWords(only)).keySet(),
-                    wordCounts(only.shareClassName()).keySet()))
-                    .as("one class has a word of its name typed beyond the fund's, or its ISIN or Valor: " + description)
-                    .isTrue();
+        Map<String, Long> left = minus(resolved.typed(), fundWordsOf(resolved.fundClasses()));
+        boolean fundAlone = resolved.named().equals(resolved.fundClasses()) && !resolved.narrowed() && left.isEmpty()
+                && resolved.fundClasses().stream().allMatch(shareClass -> matches(resolved.tokens(), shareClass));
+        if (resolved.named().size() > 1) {
+            if (!fundAlone) {
+                violations.add("several classes only for the fund alone: " + resolved.description());
+            }
+            return violations;
         }
-        boolean namedInFull = !narrowed && isNamed(only, typed, fundClasses)
-                && others.stream().filter(other -> isNamed(other, typed, fundClasses))
+        ShareClass only = resolved.only();
+        List<ShareClass> others = resolved.others();
+        List<ShareClass> fundClasses = resolved.fundClasses();
+        boolean namedInFull = !resolved.narrowed() && isNamed(only, left, fundClasses)
+                && others.stream().filter(other -> isNamed(other, left, fundClasses))
                         .allMatch(other -> containsAll(classWords(only), classWords(other)))
-                && others.stream().noneMatch(other -> containsAll(typed, classWords(other))
+                && others.stream().noneMatch(other -> containsAll(resolved.typed(), classWords(other))
                         && containsAll(classWords(other), classWords(only)));
-        assertThat(fundAlone || pinned || namedInFull).as(description).isTrue();
+        if (!(fundAlone || resolved.pinned() || namedInFull)) {
+            violations.add("the rule: " + resolved.description());
+        }
+        return violations;
     }
 
-    private static boolean isNamed(ShareClass shareClass, Map<String, Long> typed, List<ShareClass> fundClasses) {
-        return containsAll(minus(typed, fundWords(shareClass)), classWords(shareClass))
+    private static boolean isNamed(ShareClass shareClass, Map<String, Long> left, List<ShareClass> fundClasses) {
+        return containsAll(left, classWords(shareClass))
                 && (fundClasses.size() == 1 || classWords(shareClass).keySet().stream().anyMatch(word ->
                         fundClasses.stream().anyMatch(other -> !ownWords(other).contains(word))));
+    }
+
+    /**
+     * What Resolved is for, without the rule's steps: a Resolved class matches the mention; and one class of several,
+     * not pinned by its ISIN or Valor, is never Resolved from a mention that is all fund and umbrella name of some class
+     * of its fund, nor without a word of its class name typed beyond every fund and umbrella name of its fund.
+     */
+    private static List<String> intentViolations(String mention, Resolution resolution, List<ShareClass> all) {
+        Optional<ResolvedCase> found = ResolvedCase.of(mention, resolution, all);
+        if (found.isEmpty()) {
+            return List.of();
+        }
+        ResolvedCase resolved = found.get();
+        List<String> violations = new ArrayList<>();
+        if (!resolved.named().stream().allMatch(shareClass -> matches(resolved.tokens(), shareClass))) {
+            violations.add("a Resolved class the mention does not match: " + resolved.description());
+        }
+        if (resolved.named().size() > 1 || resolved.fundClasses().size() == 1 || resolved.pinned()) {
+            return violations;
+        }
+        if (resolved.fundClasses().stream().anyMatch(shareClass -> containsAll(fundWords(shareClass),
+                resolved.typed()))) {
+            violations.add("one class from a fund name of its fund: " + resolved.description());
+        }
+        if (Collections.disjoint(minus(resolved.typed(), fundWordsOf(resolved.fundClasses())).keySet(),
+                classWords(resolved.only()).keySet())) {
+            violations.add("one class with no word of its name beyond its fund's names: " + resolved.description());
+        }
+        return violations;
+    }
+
+    /** Every typed word is in the class's names, currency or fund type, or starts its ISIN or Valor. */
+    private static boolean matches(List<String> tokens, ShareClass shareClass) {
+        Set<String> text = wordCounts(String.join(" ", shareClass.fundName(), shareClass.umbrellaName().orElse(""),
+                shareClass.shareClassName(), shareClass.currency(), shareClass.fundType().map(FundType::name).orElse(""),
+                shareClass.internalCode().orElse(""))).keySet();
+        return tokens.stream().allMatch(token -> isIdentifierPrefix(token, List.of(shareClass))
+                || text.containsAll(wordCounts(token).keySet()));
+    }
+
+    /** The fund and umbrella name words of the classes of one fund, each counted at the most any one class uses it. */
+    private static Map<String, Long> fundWordsOf(List<ShareClass> fundClasses) {
+        Map<String, Long> union = new HashMap<>();
+        fundClasses.forEach(shareClass -> fundWords(shareClass).forEach((word, count) -> union.merge(word, count,
+                Math::max)));
+        return union;
     }
 
     /**

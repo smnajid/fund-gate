@@ -58,7 +58,7 @@ public final class ShareClassMatcher {
 
     /**
      * A Share Class with the words the matcher reads, split once (the catalog keeps these for every mention): the
-     * words of its fund and umbrella names, counted, of its class name, counted, and the words it carries beyond its
+     * words of its fund and umbrella names, counted (its fund's are all its classes' together, {@link IndexedFund}), of its class name, counted, and the words it carries beyond its
      * fund's: class name, currency, fund type and the bank's own code.
      */
     record IndexedClass(ShareClass shareClass, Set<String> textWords, Map<String, Long> fundWords,
@@ -66,10 +66,13 @@ public final class ShareClassMatcher {
     }
 
     /**
-     * The classes of one fund, under the name of its first class in catalog order, and the words every one of them
-     * carries beyond the fund's (none for a fund of one class): such a word tells no class from another.
+     * The classes of one fund, under the name of its first class in catalog order; the words of the fund and umbrella
+     * names of all of them, each counted at the most any one class uses it (a fund id may group classes under different
+     * fund names, a fund name classes under different umbrellas, and a word of any of them is the fund's); and the
+     * words every class carries beyond those (none for a fund of one class): such a word tells no class from another.
      */
-    record IndexedFund(String fundName, List<IndexedClass> shareClasses, Set<String> wordsEveryClassCarries) {
+    record IndexedFund(String fundName, List<IndexedClass> shareClasses, Map<String, Long> fundWords,
+            Set<String> wordsEveryClassCarries) {
     }
 
     /**
@@ -93,7 +96,10 @@ public final class ShareClassMatcher {
     private static IndexedFund indexedFund(List<IndexedClass> shareClasses) {
         Set<String> carried = new HashSet<>(shareClasses.getFirst().ownWords());
         shareClasses.forEach(shareClass -> carried.retainAll(shareClass.ownWords()));
-        return new IndexedFund(shareClasses.getFirst().shareClass().fundName(), shareClasses,
+        Map<String, Long> fundWords = new HashMap<>();
+        shareClasses.forEach(shareClass -> shareClass.fundWords().forEach((word, count) ->
+                fundWords.merge(word, count, Math::max)));
+        return new IndexedFund(shareClasses.getFirst().shareClass().fundName(), shareClasses, Map.copyOf(fundWords),
                 shareClasses.size() == 1 ? Set.of() : Set.copyOf(carried));
     }
 
@@ -119,13 +125,16 @@ public final class ShareClassMatcher {
 
     /**
      * What the text names of one fund, by the rule of {@link Resolution.Resolved}. The typed words, ISIN and Valor
-     * prefixes aside, less the words of a class's fund and umbrella names (counted: a word typed more often than those
-     * names use it keeps the extra), name that class when they hold its whole class name and one of its words some
-     * class of the fund does not carry. Then:
+     * prefixes aside, less the words of the fund and umbrella names of every class of the fund (counted: a word typed
+     * more often than any one class's names use it keeps the extra), name a class when they hold its whole class name
+     * and one of its words some class of the fund does not carry. A word of a sibling class's fund or umbrella name is
+     * the fund's too: with fund id F1 over "Bond Fund" class I and "Bond Fund I" class R, "Bond Fund I" is the fund,
+     * not class I. Then:
      * <ul>
      * <li>an ISIN or Valor prefix some classes of the fund share and others not: the one class it leaves, or else the
      * classes it leaves as candidates;</li>
-     * <li>no word left beyond the fund and umbrella names: every class of the fund;</li>
+     * <li>no word left beyond the fund and umbrella names, and every class of the fund matched: every class of the
+     * fund (the fan-out);</li>
      * <li>one named class every other named class's name is part of, and no class whose name is typed in full, fund
      * words included, with that name or a longer one containing it: that class;</li>
      * <li>anything else: the matched classes named, or failing those every matched class, as candidates.</li>
@@ -137,27 +146,27 @@ public final class ShareClassMatcher {
         if (matched.isEmpty()) {
             return Optional.empty();
         }
-        boolean narrowedByPrefix = typed.stream()
-                .map(word -> fundClasses.stream().filter(word::isIdentifierPrefixOf).count())
-                .anyMatch(count -> count > 0 && count < fundClasses.size());
+        Map<Typed, List<IndexedClass>> prefixed = typed.stream().distinct().collect(Collectors.toMap(
+                Function.identity(), word -> fundClasses.stream().filter(word::isIdentifierPrefixOf).toList()));
+        boolean narrowedByPrefix = prefixed.values().stream()
+                .anyMatch(classes -> !classes.isEmpty() && classes.size() < fundClasses.size());
         if (narrowedByPrefix) {
-            boolean pinned = matched.size() == 1 && typed.stream().anyMatch(word -> fundClasses.stream()
-                    .filter(word::isIdentifierPrefixOf).toList().equals(matched));
+            boolean pinned = matched.size() == 1 && prefixed.containsValue(matched);
             return Optional.of(fundMatch(fund, matched, pinned));
         }
         Map<String, Long> words = counts(typed.stream()
-                .filter(word -> fundClasses.stream().noneMatch(word::isIdentifierPrefixOf))
+                .filter(word -> prefixed.get(word).isEmpty())
                 .flatMap(word -> word.words().stream()));
-        if (fundClasses.stream().allMatch(shareClass -> minus(words, shareClass.fundWords()).isEmpty())) {
+        Map<String, Long> beyondFund = minus(words, fund.fundWords());
+        if (beyondFund.isEmpty() && matched.size() == fundClasses.size()) {
             return Optional.of(fundMatch(fund, fundClasses, true));
         }
         List<IndexedClass> named = fundClasses.stream()
-                .filter(shareClass -> isNamed(shareClass, words, fund.wordsEveryClassCarries()))
+                .filter(shareClass -> isNamed(shareClass, beyondFund, fund.wordsEveryClassCarries()))
                 .toList();
         Optional<IndexedClass> pick = mostSpecific(named)
-                .filter(shareClass -> matched.contains(shareClass) && fundClasses.stream().noneMatch(other ->
-                        !other.equals(shareClass) && containsAll(words, other.classWords())
-                                && containsAll(other.classWords(), shareClass.classWords())));
+                .filter(matched::contains)
+                .filter(shareClass -> !aLongerNameIsTypedInFull(shareClass, fundClasses, words));
         if (pick.isPresent()) {
             return Optional.of(fundMatch(fund, List.of(pick.get()), true));
         }
@@ -169,10 +178,24 @@ public final class ShareClassMatcher {
         return new FundMatch(fund.fundName(), shareClassesOf(shareClasses), named);
     }
 
-    /** Its whole class name in the words its fund and umbrella names leave, with a word that tells it from another. */
-    private static boolean isNamed(IndexedClass shareClass, Map<String, Long> words, Set<String> everyClassCarries) {
-        return containsAll(minus(words, shareClass.fundWords()), shareClass.classWords())
+    /**
+     * Its whole class name in the words the fund and umbrella names of its fund leave, with a word that tells it from
+     * another.
+     */
+    private static boolean isNamed(IndexedClass shareClass, Map<String, Long> beyondFund,
+            Set<String> everyClassCarries) {
+        return containsAll(beyondFund, shareClass.classWords())
                 && !everyClassCarries.containsAll(shareClass.classWords().keySet());
+    }
+
+    /**
+     * Another class whose name contains this one's is typed in full, fund words included: "Bonds CHF Hedged" may be
+     * class Hedged of fund Bonds CHF, or class CHF Hedged under a shortened fund name.
+     */
+    private static boolean aLongerNameIsTypedInFull(IndexedClass shareClass, List<IndexedClass> fundClasses,
+            Map<String, Long> words) {
+        return fundClasses.stream().anyMatch(other -> !other.equals(shareClass)
+                && containsAll(words, other.classWords()) && containsAll(other.classWords(), shareClass.classWords()));
     }
 
     /** The class whose name contains every other's and is longer: class A AC of A and A AC; none of I and P Cap. */
