@@ -1,7 +1,6 @@
 package com.fundgate.answering;
 
-import com.fundgate.checkrecord.CheckRecords;
-import com.fundgate.checkrecord.memory.InMemoryCheckRecords;
+import com.fundgate.checkrecord.RecordChecks;
 import com.fundgate.clientprofiles.ClientProfiles;
 import com.fundgate.funddocuments.FundDocuments;
 import com.fundgate.fundregistrations.FundRegistrations;
@@ -15,7 +14,6 @@ import com.fundgate.requestparser.stub.StubRequestParser;
 import com.fundgate.rulecard.RuleCards;
 import com.fundgate.ruleengine.FixedRuleEngine;
 import com.fundgate.ruleengine.RuleEngine;
-import java.time.Clock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -47,14 +45,8 @@ public class AnsweringConfiguration {
     }
 
     @Bean
-    CheckRecords checkRecords() {
-        return new InMemoryCheckRecords();
-    }
-
-    @Bean
     AnswerRequests answerRequests(ClientProfiles clientProfiles, PrivacyGate privacyGate, RequestParser requestParser,
-            RuleEngine ruleEngine, ReplyDrafter replyDrafter, CheckRecords checkRecords) {
-        return new AnswerRequests(clientProfiles, privacyGate, requestParser, ruleEngine, replyDrafter, checkRecords,
-                Clock.systemUTC());
+            RuleEngine ruleEngine, ReplyDrafter replyDrafter, RecordChecks recordChecks) {
+        return new AnswerRequests(clientProfiles, privacyGate, requestParser, ruleEngine, replyDrafter, recordChecks);
     }
 }

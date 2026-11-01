@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fundgate.AdaptersConfiguration;
 import com.fundgate.answering.AnsweringConfiguration;
+import com.fundgate.checkrecord.CheckRecordConfiguration;
 import com.fundgate.eligibility.SubscriptionRequest;
 import com.fundgate.clientprofiles.ClientProfile;
 import com.fundgate.clientprofiles.ClientProfiles;
@@ -28,7 +29,7 @@ import tools.jackson.databind.json.JsonMapper;
 /** The validation screen's calls, on the Draft card of Nordea 1 GCE the frozen fixtures hold as version 2 (#66). */
 // The platform reads its own frozen fixtures, never the demo content the team rewrites (#80)
 @WebMvcTest(value = ValidationController.class, properties = "fundeli5.fixtures.dir=src/test/resources/fixtures")
-@Import({AdaptersConfiguration.class, AnsweringConfiguration.class, ValidationConfiguration.class})
+@Import({AdaptersConfiguration.class, AnsweringConfiguration.class, CheckRecordConfiguration.class, ValidationConfiguration.class})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class ValidationControllerTest {
 

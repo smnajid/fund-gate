@@ -29,6 +29,7 @@
       @for (check of answer.checks; track check.checkId) {
         <li [attr.data-verdict]="check.verdict">
           <code>{{ check.portfolioRef }}</code> <strong>{{ verdictPhrase(check.verdict) }}</strong> {{ check.shareClass }}.
+          <button type="button" class="link" (click)="openCheckRecord(check)">What the AI saw</button>
           @for (notice of check.notices; track $index) {
             <span class="notice">{{ notice }}</span>
           }
@@ -66,4 +67,66 @@
       </section>
     }
   }
+}
+
+@if (openedCheck(); as check) {
+  <aside class="check-record" role="dialog" aria-label="Check Record">
+    <header>
+      <h2>What the AI saw <small><code>{{ check.portfolioRef }}</code> {{ check.shareClass }}</small></h2>
+      <button type="button" (click)="closeCheckRecord()">Close</button>
+    </header>
+    @if (checkRecordFailed()) {
+      <p class="failure" role="alert">Could not read this Check Record, try again.</p>
+    } @else if (checkRecord(); as record) {
+      <dl class="record">
+        <dt>Checked</dt>
+        <dd>{{ record.checkedAt }} by {{ record.dealer }}</dd>
+        <dt>Portfolio</dt>
+        <dd><code>{{ record.portfolioRef }}</code>, seen by the LLM as <code>{{ record.request.portfolioId }}</code></dd>
+        <dt>Rule Card</dt>
+        <dd>
+          @if (record.ruleCard; as card) { {{ card.fundName }}, version {{ card.version }} } @else { none }
+        </dd>
+        <dt>Scale Mapping</dt>
+        <dd>{{ record.scaleMappingVersion }}</dd>
+        <dt>Engine</dt>
+        <dd>{{ record.engineVersion }}</dd>
+        <dt>Client Profile fields read</dt>
+        <dd>
+          <ul>
+            @for (read of record.clientProfileFields; track read.field) {
+              <li><code>{{ read.field }} = {{ read.value }}</code></li>
+            }
+          </ul>
+        </dd>
+        @if (record.corrections.length > 0) {
+          <dt>Corrected by the Fund Dealer</dt>
+          <dd>
+            <ul>
+              @for (correction of record.corrections; track $index) {
+                <li>{{ correction.field }}: {{ correction.parsed ?? 'nothing read' }} → {{ correction.corrected }},
+                  by {{ correction.dealer }} at {{ correction.correctedAt }}</li>
+              }
+            </ul>
+          </dd>
+        }
+      </dl>
+      <h3>LLM calls</h3>
+      @for (call of record.llmCalls; track $index) {
+        <section class="llm-call">
+          <h4>{{ call.purpose }} <small>{{ call.model }}, {{ call.calledAt }}</small></h4>
+          <p>Client fields sent: {{ call.fieldsSent.length > 0 ? call.fieldsSent.join(', ') : 'none' }}</p>
+          <pre class="prompt">{{ call.system }}
+
+{{ call.prompt }}</pre>
+          <pre class="response">{{ call.response }}</pre>
+          <small>answered by {{ call.responseModel }}</small>
+        </section>
+      } @empty {
+        <p>No LLM was called for this check.</p>
+      }
+    } @else {
+      <p>Reading the Check Record…</p>
+    }
+  </aside>
 }

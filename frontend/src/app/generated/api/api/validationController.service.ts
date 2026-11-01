@@ -19,11 +19,11 @@ import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 // @ts-ignore
 import { CardView } from '../model/cardView';
 // @ts-ignore
-import { Correction } from '../model/correction';
-// @ts-ignore
 import { Page } from '../model/page';
 // @ts-ignore
 import { ReviewStep } from '../model/reviewStep';
+// @ts-ignore
+import { RuleCorrection } from '../model/ruleCorrection';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -233,15 +233,15 @@ export class ValidationControllerService extends BaseService {
      * @param shareClass 
      * @param version 
      * @param rule 
-     * @param correction 
+     * @param ruleCorrection 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      * @param options additional options
      */
-    public correct(shareClass: string, version: number, rule: number, correction: Correction, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CardView>;
-    public correct(shareClass: string, version: number, rule: number, correction: Correction, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CardView>>;
-    public correct(shareClass: string, version: number, rule: number, correction: Correction, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CardView>>;
-    public correct(shareClass: string, version: number, rule: number, correction: Correction, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+    public correct(shareClass: string, version: number, rule: number, ruleCorrection: RuleCorrection, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<CardView>;
+    public correct(shareClass: string, version: number, rule: number, ruleCorrection: RuleCorrection, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<CardView>>;
+    public correct(shareClass: string, version: number, rule: number, ruleCorrection: RuleCorrection, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<CardView>>;
+    public correct(shareClass: string, version: number, rule: number, ruleCorrection: RuleCorrection, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
         if (shareClass === null || shareClass === undefined) {
             throw new Error('Required parameter shareClass was null or undefined when calling correct.');
         }
@@ -251,8 +251,8 @@ export class ValidationControllerService extends BaseService {
         if (rule === null || rule === undefined) {
             throw new Error('Required parameter rule was null or undefined when calling correct.');
         }
-        if (correction === null || correction === undefined) {
-            throw new Error('Required parameter correction was null or undefined when calling correct.');
+        if (ruleCorrection === null || ruleCorrection === undefined) {
+            throw new Error('Required parameter ruleCorrection was null or undefined when calling correct.');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -294,7 +294,7 @@ export class ValidationControllerService extends BaseService {
         return this.httpClient.request<CardView>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: correction,
+                body: ruleCorrection,
                 responseType: <any>responseType_,
                 ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,

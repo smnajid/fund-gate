@@ -139,6 +139,17 @@ public class AnsweringSteps {
         answer = answerRequests.answer(email);
     }
 
+    @When("the Fund Dealer answers Anna's email")
+    public void theFundDealerAnswersAnnasEmail() {
+        email = ANNAS_EMAIL;
+        answer = answerRequests.answer(email);
+    }
+
+    /** The request form after a Privacy Gate refusal: the Fund Dealer enters the request, and it is checked. */
+    public void theFundDealerEntersByHand(RequestByHand request) {
+        answer = answerRequests.answerByHand(List.of(request));
+    }
+
     @When("the Reply Drafter drafts the reply to Anna's email")
     public void theReplyDrafterDraftsTheReplyToAnnasEmail() {
         email = ANNAS_EMAIL;

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fundgate.checkrecord.CheckRecord;
 import com.fundgate.checkrecord.CheckRecords;
+import com.fundgate.checkrecord.RecordChecks;
 import com.fundgate.checkrecord.memory.InMemoryCheckRecords;
 import com.fundgate.citation.Citation;
 import com.fundgate.clientprofiles.ClientProfiles;
@@ -64,7 +65,7 @@ class AnswerRequestsTest {
 
     private final AnswerRequests answerRequests = new AnswerRequests(clientProfiles,
             new StubPrivacyGate(clientProfiles), new StubRequestParser(), new StubRuleEngine(), new StubReplyDrafter(),
-            checkRecords, clock);
+            recordChecks(checkRecords));
 
     @Test
     void annas_email_gives_one_eligibility_check_per_portfolio_it_names() {
@@ -140,7 +141,7 @@ class AnswerRequestsTest {
         StubRequestParser stubParser = new StubRequestParser();
         AnswerRequests answering = new AnswerRequests(clientProfiles, new StubPrivacyGate(clientProfiles),
                 email -> new ParsedEmail(stubParser.parse(email).requests(), List.of(parsing)), new StubRuleEngine(),
-                (email, facts) -> new DraftedReply("Hello", false, List.of(drafting)), checkRecords, clock);
+                (email, facts) -> new DraftedReply("Hello", false, List.of(drafting)), recordChecks(checkRecords));
 
         Answer.Answered answer = (Answer.Answered) answering.answer(ANNAS_EMAIL);
 
@@ -163,7 +164,7 @@ class AnswerRequestsTest {
                 (email, facts) -> {
                     drafted.set(facts);
                     return new DraftedReply("Hello", false, List.of());
-                }, checkRecords, clock);
+                }, recordChecks(checkRecords));
 
         answering.answer(ANNAS_EMAIL);
 
@@ -187,7 +188,7 @@ class AnswerRequestsTest {
                     checked.add(request);
                     return new StubRuleEngine().check(request, profile);
                 },
-                new StubReplyDrafter(), new CheckRecords() {
+                new StubReplyDrafter(), recordChecks(new CheckRecords() {
                     @Override
                     public void write(CheckRecord record) {
                         written.add(record);
@@ -197,11 +198,16 @@ class AnswerRequestsTest {
                     public Optional<CheckRecord> find(UUID checkId) {
                         return Optional.empty();
                     }
-                }, clock);
+                }));
 
         assertThat(answering.answer(ANNAS_EMAIL)).isInstanceOf(Answer.Refused.class);
         assertThat(checked).as("Eligibility Checks run").isEmpty();
         assertThat(written).as("Check Records written").isEmpty();
+    }
+
+    /** The stub engine reads no Rule Card, so the record names none. */
+    private RecordChecks recordChecks(CheckRecords records) {
+        return new RecordChecks(records, shareClass -> Optional.empty(), "test", clock);
     }
 
     private CheckRecord.LlmCall llmCall(String purpose) {

@@ -71,7 +71,7 @@ public class ValidationController {
     /** Also how an Unmodelled Restriction is marked Blocking or Noted (ADR 0003). */
     @PostMapping("/{shareClass}/versions/{version}/rules/{rule}/correct")
     public CardView correct(@PathVariable String shareClass, @PathVariable int version, @PathVariable int rule,
-            @RequestBody Correction correction) {
+            @RequestBody RuleCorrection correction) {
         validation.correct(new Isin(shareClass), version, rule, conditions.read(correction.condition()),
                 correction.validator());
         return card(shareClass, version);
@@ -129,7 +129,7 @@ public class ValidationController {
     }
 
     /** The condition the validator read on the page, written as a card's JSON writes it. */
-    public record Correction(
+    public record RuleCorrection(
             @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String validator,
             @Schema(requiredMode = Schema.RequiredMode.REQUIRED) Map<String, Object> condition) {
     }

@@ -10,7 +10,20 @@
 
 
 export interface Correction { 
-    validator: string;
-    condition: { [key: string]: any | null; };
+    field: Correction.FieldEnum;
+    parsed?: string;
+    corrected: string;
+    dealer: string;
+    correctedAt: string;
 }
+export namespace Correction {
+    export const FieldEnum = {
+        ShareClass: 'SHARE_CLASS',
+        Amount: 'AMOUNT',
+        Currency: 'CURRENCY',
+        ClientInitiated: 'CLIENT_INITIATED',
+    } as const;
+    export type FieldEnum = typeof FieldEnum[keyof typeof FieldEnum];
+}
+
 
