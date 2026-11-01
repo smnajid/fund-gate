@@ -23,8 +23,8 @@ interface RuleKindPlugin<C extends Condition> {
     Class<C> condition();
 
     /**
-     * The kind's line in the drafting prompt, copied from the pipeline's DraftPrompt (#65, not merged yet), which
-     * will assemble the lines in catalog order.
+     * The kind's line in the drafting prompt, which the pipeline's DraftPrompt assembles in catalog order. It names
+     * the condition's fields as a card's JSON does: the model's answer is read as a card is.
      */
     String prompt();
 

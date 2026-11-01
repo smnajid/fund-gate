@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /** The kinds of rule a Rule Card may hold, one plug-in each (issue #79). Fund Registration is an input, not on the card. */
 public final class RuleCatalog {
@@ -30,7 +31,12 @@ public final class RuleCatalog {
         return types;
     }
 
-    static RuleKindPlugin<?> of(Condition condition) {
+    /** Each kind's line of the drafting prompt, in catalog order: what the Rule Card pipeline asks the model for. */
+    public static String draftingPrompt() {
+        return KINDS.stream().map(RuleKindPlugin::prompt).collect(Collectors.joining("\n"));
+    }
+
+        static RuleKindPlugin<?> of(Condition condition) {
         return KINDS.stream()
                 .filter(plugin -> plugin.condition().isInstance(condition))
                 .findFirst()

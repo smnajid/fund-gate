@@ -11,11 +11,15 @@ import com.fundgate.funddocuments.FundDocuments;
 import com.fundgate.llm.LlmEgress;
 import com.fundgate.llm.LlmRequest;
 import com.fundgate.llm.LlmResponse;
-import com.fundgate.rulecard.Condition;
 import com.fundgate.rulecard.Rule;
 import com.fundgate.rulecard.RuleCard;
-import com.fundgate.rulecard.RuleKind;
 import com.fundgate.rulecardpipeline.Drafted.Draft;
+import com.fundgate.ruleengine.RuleCatalog;
+import com.fundgate.ruleengine.InvestorCategoryKind.InvestorCategory;
+import com.fundgate.ruleengine.MinimumInitialSubscriptionKind.MinimumInitialSubscription;
+import com.fundgate.ruleengine.TargetMarketKind.TargetMarket;
+import com.fundgate.ruleengine.UnmodelledRestrictionKind.UnmodelledRestriction;
+import com.fundgate.ruleengine.UsPersonExclusionKind.UsPersonExclusion;
 import com.fundgate.rulecardpipeline.Drafted.Refused;
 import com.fundgate.shareclasses.Isin;
 import com.fundgate.shareclasses.ShareClass;
@@ -56,21 +60,22 @@ class RuleCardPipelineTest {
     private static final String ANSWER = """
             ```json
             {"rules": [
-              {"share_class": "*", "kind": "us_person_exclusion", "us_person_definition": "reg_s",
-               "excludes_us_citizens": false, "contradiction": false, "confidence": 0.9,
+              {"share_class": "*", "condition": {"kind": "us_person_exclusion", "definition": "reg_s",
+               "excludesUsCitizens": false}, "contradiction": false, "confidence": 0.9,
                "summary": "US persons may not subscribe.",
                "citations": [{"document": "prospectus", "page": 1, "quote": "US persons may not subscribe for shares"}]},
-              {"share_class": "BI-EUR", "kind": "investor_category", "allowed_categories": ["institutional"],
-               "contradiction": false, "confidence": 0.8, "summary": "Institutional investors only.",
+              {"share_class": "BI-EUR", "condition": {"kind": "investor_category", "allowed": ["institutional"],
+               "excluded": []}, "contradiction": false, "confidence": 0.8, "summary": "Institutional investors only.",
                "citations": [{"document": "prospectus", "page": 2, "quote": "I Institutional investors."}]},
-              {"share_class": "BI-EUR", "kind": "minimum_initial_subscription", "amount": 75000, "currency": "EUR",
-               "contradiction": false, "confidence": 0.7, "summary": "EUR 75,000.",
+              {"share_class": "BI-EUR", "condition": {"kind": "minimum_initial_subscription", "amount": 75000,
+               "currency": "EUR"}, "contradiction": false, "confidence": 0.7, "summary": "EUR 75,000.",
                "citations": [{"document": "prospectus", "page": 1, "quote": "Minimum initial investment EUR 75,000"}]},
-              {"share_class": "*", "kind": "unmodelled_restriction", "contradiction": false, "confidence": 0.6,
+              {"share_class": "*", "condition": {"kind": "unmodelled_restriction", "status": "noted",
+               "notedReason": "harmless"}, "contradiction": false, "confidence": 0.6,
                "summary": "The board may reject any application.",
                "citations": [{"document": "prospectus", "page": 2, "quote": "The board may reject any application."}]},
-              {"share_class": "BP-EUR", "kind": "target_market", "dimension": "risk_sri", "polarity": "positive",
-               "value": "4", "contradiction": false, "confidence": 0.9, "summary": "SRI 4.",
+              {"share_class": "BP-EUR", "condition": {"kind": "target_market", "dimension": "risk_sri",
+               "polarity": "positive", "value": "4"}, "contradiction": false, "confidence": 0.9, "summary": "SRI 4.",
                "citations": [{"document": "kid-bp", "page": 1, "quote": "classified this Fund as 4 out of 7"}]}
             ]}
             ```""";
@@ -90,9 +95,9 @@ class RuleCardPipelineTest {
         assertThat(card.drafting()).isEqualTo(new RuleCard.Drafting("model-from-the-egress", "replay", NOW));
         assertThat(card.sources()).extracting(RuleCard.Source::documentId)
                 .containsExactly(new DocumentId("prospectus"), new DocumentId("kid-bp"));
-        assertThat(card.rules()).extracting(rule -> rule.condition().kind()).containsExactly(
-                RuleKind.US_PERSON_EXCLUSION, RuleKind.INVESTOR_CATEGORY, RuleKind.MINIMUM_INITIAL_SUBSCRIPTION,
-                RuleKind.UNMODELLED_RESTRICTION, RuleKind.TARGET_MARKET);
+        assertThat(card.rules()).extracting(rule -> (Object) rule.condition().getClass()).containsExactly(
+                UsPersonExclusion.class, InvestorCategory.class, MinimumInitialSubscription.class,
+                UnmodelledRestriction.class, TargetMarket.class);
         assertThat(card.rules()).flatExtracting(Rule::citations).extracting(Citation.Document::quoteFoundOnPage)
                 .containsExactly(Optional.of(true), Optional.of(true), Optional.of(false), Optional.of(true),
                         Optional.of(true));
@@ -107,7 +112,7 @@ class RuleCardPipelineTest {
             assertThat(citation.quoteFoundOnPage()).contains(false);
         });
         assertThat(draft.card().rules()).anySatisfy(rule ->
-                assertThat(rule.condition()).isEqualTo(new Condition.MinimumInitialSubscription(new BigDecimal("75000"), "EUR")));
+                assertThat(rule.condition()).isEqualTo(new MinimumInitialSubscription(new BigDecimal("75000"), "EUR")));
     }
 
     @Test
@@ -117,14 +122,14 @@ class RuleCardPipelineTest {
         Rule usPerson = card.rules().get(0);
         assertThat(usPerson.scope()).isEqualTo(Rule.Scope.FUND);
         assertThat(usPerson.shareClass()).isEmpty();
-        assertThat(usPerson.condition()).isEqualTo(new Condition.UsPersonExclusion(
-                Condition.UsPersonExclusion.UsPersonDefinition.REG_S, false));
+        assertThat(usPerson.condition()).isEqualTo(new UsPersonExclusion(
+                UsPersonExclusion.UsPersonDefinition.REG_S, false));
         Rule investors = card.rules().get(1);
         assertThat(investors.scope()).isEqualTo(Rule.Scope.SHARE_CLASS);
         assertThat(investors.shareClass()).contains(BI);
-        assertThat(investors.condition()).isEqualTo(new Condition.InvestorCategory(Set.of(InvestorType.INSTITUTIONAL)));
-        assertThat(card.rules().get(4).condition()).isEqualTo(new Condition.TargetMarket(
-                Condition.TargetMarket.Dimension.RISK_SRI, Condition.TargetMarket.Polarity.POSITIVE, "4"));
+        assertThat(investors.condition()).isEqualTo(new InvestorCategory(Set.of(InvestorType.INSTITUTIONAL), Set.of()));
+        assertThat(card.rules().get(4).condition()).isEqualTo(new TargetMarket(
+                TargetMarket.Dimension.RISK_SRI, TargetMarket.Polarity.POSITIVE, "4"));
         assertThat(card.rules()).allSatisfy(rule -> assertThat(rule.history()).singleElement().satisfies(revision -> {
             assertThat(revision.action()).isEqualTo(Rule.Revision.Action.DRAFTED);
             assertThat(revision.at()).isEqualTo(NOW);
@@ -133,13 +138,13 @@ class RuleCardPipelineTest {
     }
 
     @Test
-    void proposes_every_unmodelled_restriction_as_blocking() {
+    void proposes_every_unmodelled_restriction_as_blocking_even_when_the_model_notes_it() {
         RuleCard card = ((Draft) pipeline(documents(prospectus(), kidBp()), answering(ANSWER)).draft(BI)).card();
 
-        assertThat(card.rules()).filteredOn(rule -> rule.condition().kind() == RuleKind.UNMODELLED_RESTRICTION)
+        assertThat(card.rules()).filteredOn(rule -> rule.condition() instanceof UnmodelledRestriction)
                 .singleElement()
-                .satisfies(rule -> assertThat(rule.condition()).isEqualTo(new Condition.UnmodelledRestriction(
-                        Condition.UnmodelledRestriction.Status.BLOCKING, Optional.empty())));
+                .satisfies(rule -> assertThat(rule.condition()).isEqualTo(new UnmodelledRestriction(
+                        UnmodelledRestriction.Status.BLOCKING, Optional.empty())));
     }
 
     @Test
@@ -232,14 +237,47 @@ class RuleCardPipelineTest {
     @Test
     void drafts_nothing_when_the_model_names_a_share_class_the_fund_does_not_have() {
         String answer = """
-                {"rules": [{"share_class": "Z-USD", "kind": "kid_required_for_retail", "kid_available": true,
-                  "contradiction": false, "confidence": 0.9, "summary": "KID.",
+                {"rules": [{"share_class": "Z-USD", "condition": {"kind": "kid_required_for_retail",
+                  "kidAvailable": true}, "contradiction": false, "confidence": 0.9, "summary": "KID.",
                   "citations": [{"document": "kid-bp", "page": 1, "quote": "classified this Fund"}]}]}""";
 
         Drafted drafted = pipeline(documents(prospectus(), kidBp()), answering(answer)).draft(BI);
 
         assertThat(drafted).isInstanceOfSatisfying(Refused.class,
                 refused -> assertThat(refused.reason()).contains("Z-USD"));
+    }
+
+    @Test
+    void drafts_nothing_when_a_condition_has_a_field_its_kind_does_not_have() {
+        String answer = """
+                {"rules": [{"share_class": "*", "condition": {"kind": "kid_required_for_retail",
+                  "kid_available": true}, "contradiction": false, "confidence": 0.9, "summary": "KID.",
+                  "citations": [{"document": "kid-bp", "page": 1, "quote": "classified this Fund"}]}]}""";
+
+        Drafted drafted = pipeline(documents(prospectus(), kidBp()), answering(answer)).draft(BI);
+
+        assertThat(drafted).isInstanceOfSatisfying(Refused.class, refused -> assertThat(refused.reason())
+                .contains("Rule 1").contains("kid_required_for_retail").doesNotContain("kid_available"));
+    }
+
+    @Test
+    void a_quote_citing_a_document_that_was_not_sent_is_flagged() {
+        String answer = """
+                {"rules": [{"share_class": "*", "condition": {"kind": "kid_required_for_retail",
+                  "kidAvailable": true}, "contradiction": false, "confidence": 0.9, "summary": "KID.",
+                  "citations": [{"document": "kid-elsewhere", "page": 1, "quote": "classified this Fund"}]}]}""";
+
+        Draft draft = (Draft) pipeline(documents(prospectus(), kidBp()), answering(answer)).draft(BI);
+
+        assertThat(draft.quotesNotFound()).singleElement()
+                .satisfies(citation -> assertThat(citation.document()).isEqualTo(new DocumentId("kid-elsewhere")));
+    }
+
+    @Test
+    void asks_for_every_kind_of_the_rule_catalog() {
+        pipeline(documents(prospectus(), kidBp()), answering(ANSWER)).draft(BI);
+
+        assertThat(sent.getFirst().system()).contains(RuleCatalog.draftingPrompt());
     }
 
     @Test

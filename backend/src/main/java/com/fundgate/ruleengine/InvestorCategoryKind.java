@@ -44,8 +44,9 @@ public final class InvestorCategoryKind implements RuleKindPlugin<InvestorCatego
 
     @Override
     public String prompt() {
-        return "- investor_category: which investor categories may buy the class; allowed_categories from all, "
-                + "retail, professional, institutional, qualified, well_informed.";
+        return "- investor_category: allowed lists the investor types that may buy the class, from all, retail, "
+                + "professional, institutional, qualified, well_informed; excluded lists the investors of an allowed "
+                + "type the class still excludes, from hnwi_opt_out, cisa_art_10_3ter_mandate_client, else [].";
     }
 
     @Override

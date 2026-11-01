@@ -2,6 +2,7 @@ package com.fundgate.rulecardpipeline;
 
 import com.fundgate.funddocuments.FundDocument;
 import com.fundgate.llm.LlmRequest;
+import com.fundgate.ruleengine.RuleCatalog;
 import com.fundgate.shareclasses.ShareClass;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,41 +14,28 @@ import java.util.stream.Collectors;
  */
 final class DraftPrompt {
 
+    /** The kinds' lines come from the Rule Catalog, so a kind the business adds is asked for with no change here. */
     static final String SYSTEM = """
             You draft a Rule Card from Fund Documentation for a private bank's fund dealing desk.
             A Rule Card is the set of Hard Restrictions and Target Market criteria deciding whether a client may \
             subscribe to one Share Class. A human validator reviews every rule you draft against its quotes.
 
-            Rule kinds (use only these):
-            - investor_category: which investor categories may buy the class; allowed_categories from all, retail, \
-            professional, institutional, qualified, well_informed.
-            - us_person_exclusion: US persons are excluded; us_person_definition is reg_s, fatca, irc_citizenship \
-            or mixed; excludes_us_citizens says whether US citizenship alone excludes.
-            - minimum_initial_subscription: amount and currency, as the document states them (0 if none).
-            - mandate_only_class: the class is reserved to discretionary-mandate clients; manager names the \
-            manager if the document names one, else null. Draft it only for a class that is reserved.
-            - kid_required_for_retail: kid_available says whether a PRIIPs KID exists for the class.
-            - target_market: one rule per dimension: client_type (all, retail, professional, institutional), \
-            knowledge_experience (basic, informed, advanced), loss_bearing (no_loss, limited_loss, full_loss), \
-            risk_sri and horizon_years (plain numbers); polarity is positive (who the fund is for) or negative \
-            (who it is not for).
-            - unmodelled_restriction: any other restriction on who may subscribe, or on accepting a subscription, \
-            that fits none of the kinds above.
+            Rule kinds (use only these), each with the fields of its condition:
+            """ + RuleCatalog.draftingPrompt() + """
+
+
             share_class is the class's name, or "*" for a rule that applies to every class of the fund.
             When two documents contradict each other on a rule, never resolve it: draft each document's rule with \
             the value that document states, set contradiction on both, and cite each passage.
             Ignore fees, investment policy, tax and operations unless they restrict who may subscribe.
-            Fill only the fields relevant to the kind; leave the others out.
+            Give a condition only its kind and the fields its kind names.
 
             Every rule needs at least one citation: the document id, the page number given in the page tag, and a \
             quote copied verbatim from that page (one contiguous passage, no ellipsis).
 
             Answer with JSON only, in this shape:
-            {"rules": [{"share_class": "...", "kind": "...", "allowed_categories": [...], \
-            "us_person_definition": "...", "excludes_us_citizens": false, "amount": 0, "currency": "...", \
-            "manager": null, "kid_available": true, "dimension": "...", "polarity": "...", "value": "...", \
-            "contradiction": false, "confidence": 0.0, "summary": "...", \
-            "citations": [{"document": "...", "page": 1, "quote": "..."}]}]}""";
+            {"rules": [{"share_class": "...", "condition": {"kind": "...", ...}, "contradiction": false, \
+            "confidence": 0.0, "summary": "...", "citations": [{"document": "...", "page": 1, "quote": "..."}]}]}""";
 
     private DraftPrompt() {
     }
