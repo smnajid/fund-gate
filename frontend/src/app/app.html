@@ -1,5 +1,9 @@
 <header>
   <h1>FundEli5</h1>
+  <nav>
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Answer sheet</a>
+    <a routerLink="/validation" routerLinkActive="active">Rule Card validation</a>
+  </nav>
 </header>
 <main>
   <router-outlet />

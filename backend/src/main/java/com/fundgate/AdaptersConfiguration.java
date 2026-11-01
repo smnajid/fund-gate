@@ -10,12 +10,14 @@ import com.fundgate.fxrates.FxRates;
 import com.fundgate.fxrates.fixture.FixtureFxRates;
 import com.fundgate.llm.LlmEgress;
 import com.fundgate.llm.replay.ReplayLlmEgress;
-import com.fundgate.rulecard.RuleCards;
-import com.fundgate.rulecard.fixture.FixtureRuleCards;
+import com.fundgate.rulecard.RuleCard;
 import com.fundgate.ruleengine.RuleCatalog;
 import com.fundgate.shareclasses.ShareClasses;
 import com.fundgate.shareclasses.fixture.FixtureShareClasses;
+import com.fundgate.validation.RuleCardFiles;
+import com.fundgate.validation.RuleCardVersions;
 import java.nio.file.Path;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -48,9 +50,19 @@ public class AdaptersConfiguration {
             return new FixtureFxRates(Path.of(fixtures, "fx-rates.json"));
         }
 
+        /**
+         * The Rule Cards the engine reads and the validator works on: the card files as they are numbered, then each
+         * Draft the pipeline wrote, numbered after its fund's latest version.
+         */
         @Bean
-        RuleCards ruleCards(@Value("${fundeli5.fixtures.dir}") String fixtures) {
-            return new FixtureRuleCards(Path.of(fixtures, "rule-cards"), RuleCatalog.conditionTypes());
+        RuleCardVersions ruleCards(@Value("${fundeli5.fixtures.dir}") String fixtures,
+                @Value("${fundeli5.validation.drafts}") List<String> drafts) {
+            RuleCardFiles files = new RuleCardFiles(RuleCatalog.conditionTypes());
+            RuleCardVersions versions = new RuleCardVersions(files.read(Path.of(fixtures, "rule-cards")));
+            drafts.stream().map(Path::of).map(files::read).flatMap(List::stream)
+                    .filter(card -> card.status() == RuleCard.Status.DRAFT)
+                    .forEach(versions::addDraft);
+            return versions;
         }
     }
 

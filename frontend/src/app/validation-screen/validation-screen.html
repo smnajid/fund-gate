@@ -1,0 +1,137 @@
+@if (cards().length > 1) {
+  <nav class="cards" aria-label="Rule Cards">
+    @for (other of cards(); track other.shareClasses[0]; let index = $index) {
+      <button type="button" [attr.aria-pressed]="other.shareClasses[0] === card()?.shareClasses?.[0]" (click)="open(index)">
+        {{ other.fundName }} <small>v{{ other.version }} {{ other.status === 'DRAFT' ? 'Draft' : 'Validated' }}</small>
+      </button>
+    }
+  </nav>
+}
+
+@if (error(); as error) {
+  <p class="failure" role="alert">{{ error }}</p>
+}
+
+@if (card(); as card) {
+  <header class="card-header">
+    <div>
+      <h2>{{ card.fundName }}</h2>
+      <p>
+        {{ card.shareClasses.join(', ') }} ·
+        @if (card.status === 'DRAFT') {
+          Draft v{{ card.version }}, drafted {{ card.draftedAt.slice(0, 10) }}
+        } @else {
+          <strong>Validated v{{ card.version }} by {{ card.validator }} at {{ card.validatedAt }}</strong>
+          @if (card.inForce) { · in force for Eligibility Checks }
+        }
+      </p>
+      <p class="signals">
+        @if (card.everyQuoteFoundOnPage) { every quote verified on its page } @else { <span class="warn">some quotes not found on their page</span> }
+        · {{ ready() }} of {{ card.rules.length }} rules ready
+      </p>
+    </div>
+    @if (editable()) {
+      <div class="validate">
+        <label for="validator">Validator</label>
+        <input #name id="validator" [value]="validator()" (input)="validator.set(name.value)" />
+        <button type="button" [disabled]="!card.readyToValidate || busy()" (click)="validate()">Validate card</button>
+      </div>
+    }
+  </header>
+
+  @if (openContradictions().length > 0) {
+    <section class="contradictions" role="status">
+      <h3>
+        {{ openContradictions().length }} {{ openContradictions().length === 1 ? 'contradiction needs' : 'contradictions need' }}
+        a decision:
+        @for (contradiction of openContradictions(); track $index) {
+          {{ kindName(contradiction.kind) }}@if (contradiction.shareClass) { ({{ contradiction.shareClass }})}@if (!$last) {, }
+        }
+      </h3>
+      @for (contradiction of openContradictions(); track $index) {
+        <p>{{ readings(contradiction.rules) }}.</p>
+      }
+    </section>
+  }
+
+  <div class="columns">
+    <ol class="rules" aria-label="Rules">
+      @for (rule of card.rules; track rule.index) {
+        <li>
+          <button type="button" [attr.aria-current]="rule.index === selected()" [attr.data-status]="statusName(rule)" (click)="select(rule.index)">
+            <strong>{{ kindName(rule.kind) }}</strong>
+            <span>{{ value(rule) }}</span>
+            <small>{{ rule.shareClass ?? 'all classes' }} · {{ statusName(rule) }}</small>
+          </button>
+        </li>
+      }
+    </ol>
+
+    <section class="document" aria-label="Cited page">
+      @if (rule(); as rule) {
+        @if (rule.citations.length === 0) {
+          <p class="warn">No supporting quote: no page backs this value.</p>
+        } @else {
+          <div class="tabs" aria-label="Citations">
+            @for (cited of rule.citations; track $index) {
+              <button type="button" [attr.aria-pressed]="$index === citation()" (click)="showCitation($index)">
+                {{ documentName(cited) }}
+              </button>
+            }
+          </div>
+          @if (cited(); as cited) {
+            @if (highlighted(); as found) {
+              <pre class="page">{{ found.before }}<mark>{{ found.quote }}</mark>{{ found.after }}</pre>
+            } @else {
+              @if (page() === undefined) {
+                <p>Loading the page…</p>
+              } @else if (page() === null) {
+                <p class="muted">The document's file is not here; the quote as cited:</p>
+              } @else {
+                <p class="warn">The quote is not on the extracted page:</p>
+              }
+              <blockquote><mark>{{ cited.quote }}</mark></blockquote>
+            }
+          }
+        }
+      }
+    </section>
+
+    <section class="decision" aria-label="Decision">
+      @if (rule(); as rule) {
+        <h3>{{ kindName(rule.kind) }} <small>{{ rule.shareClass ?? 'all classes' }}</small></h3>
+        <p>{{ rule.summary }}</p>
+        <ul class="checks">
+          <li [class.warn]="!rule.quoteFoundOnPage">
+            {{ rule.quoteFoundOnPage ? 'Quote found on its page' : rule.noSupportingQuote ? 'No supporting quote' : 'Quote not found on its page' }}
+          </li>
+          @if (rule.unsettledContradiction) {
+            <li class="warn">Contradicts another document</li>
+          }
+        </ul>
+        <p class="muted">Last step: {{ rule.status.toLowerCase() }} by {{ rule.by }}, {{ rule.at }}</p>
+
+        @if (editable()) {
+          @if (rule.unsettledContradiction) {
+            <button type="button" [disabled]="busy()" (click)="follow()">Follow {{ rule.citations[0] ? documentName(rule.citations[0]) : 'this reading' }}</button>
+          }
+          @if (rule.kind === 'unmodelled_restriction') {
+            <label for="reason">Why it sets no condition on the client</label>
+            <input #reason id="reason" [value]="notedReason()" (input)="notedReason.set(reason.value)" />
+            <div class="actions">
+              <button type="button" [disabled]="busy()" (click)="mark('BLOCKING')">Blocking</button>
+              <button type="button" [disabled]="busy()" (click)="mark('NOTED')">Noted</button>
+            </div>
+          }
+          <label for="value">Value</label>
+          <textarea #value id="value" rows="8" [value]="edited()" (input)="edited.set(value.value)"></textarea>
+          <div class="actions">
+            <button type="button" [disabled]="busy()" (click)="accept()">Accept</button>
+            <button type="button" [disabled]="busy()" (click)="saveCorrection()">Save correction</button>
+            <button type="button" [disabled]="busy()" (click)="reject()">Reject</button>
+          </div>
+        }
+      }
+    </section>
+  </div>
+}
