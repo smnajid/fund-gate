@@ -87,6 +87,55 @@ class ShareClassCatalogTest {
                 .containsExactly("XXSLBFP00001");
     }
 
+    /**
+     * A typed word counts toward the class only as often as it is typed beyond the fund name's own uses of it: the
+     * second "CHF" of "Bonds CHF A CHF" belongs to class A CHF.
+     */
+    @Test
+    void a_class_word_that_is_also_a_fund_name_word_names_the_class_when_typed_again() {
+        ShareClassCatalog bondsChf = new ShareClassCatalog(() -> List.of(
+                shareClass("XXBC00000001", Optional.empty(), "Bonds CHF", "A"),
+                shareClass("XXBC00000002", Optional.empty(), "Bonds CHF", "A CHF"),
+                shareClass("XXBC00000003", Optional.empty(), "Bonds CHF", "CHF Hedged"),
+                shareClass("XXBC00000004", Optional.empty(), "Bonds CHF", "EUR Hedged"),
+                shareClass("XXBC00000005", Optional.empty(), "Bonds CHF", "Hedged")));
+        ShareClassCatalog bondFund = new ShareClassCatalog(() -> List.of(
+                shareClass("XXSLBFI00001", Optional.empty(), "Swiss Life Funds (LUX) Bond Fund I", "I Cap"),
+                shareClass("XXSLBFP00001", Optional.empty(), "Swiss Life Funds (LUX) Bond Fund I", "P Cap")));
+
+        assertThat(isinsOf(resolved(bondsChf.resolve("Bonds CHF A CHF")))).containsExactly("XXBC00000002");
+        assertThat(isinsOf(resolved(bondsChf.resolve("Bonds CHF CHF Hedged")))).containsExactly("XXBC00000003");
+        assertThat(isinsOf(resolved(bondFund.resolve("Bond Fund I I Cap")))).containsExactly("XXSLBFI00001");
+    }
+
+    /**
+     * "Bonds CHF Hedged" may be fund Bonds CHF, class Hedged, or a shortened fund name and class CHF Hedged: the
+     * dealer is asked for the ISIN or Valor, never handed the shorter class as if it were certain.
+     */
+    @Test
+    void a_fund_name_word_that_may_complete_a_longer_class_name_leaves_the_class_ambiguous() {
+        ShareClassCatalog bondsChf = new ShareClassCatalog(() -> List.of(
+                shareClass("XXBC00000003", Optional.empty(), "Bonds CHF", "CHF Hedged"),
+                shareClass("XXBC00000005", Optional.empty(), "Bonds CHF", "Hedged")));
+
+        Ambiguous ambiguous = ambiguous(bondsChf.resolve("Bonds CHF Hedged"));
+
+        assertThat(ambiguous.funds()).extracting(fund -> isinsOf(fund.shareClasses()))
+                .containsExactly(List.of("XXBC00000003", "XXBC00000005"));
+    }
+
+    /** Of several matching funds, the one whose whole name the mention gives is the one it means. */
+    @Test
+    void a_mention_that_gives_one_fund_name_in_full_resolves_to_that_fund() {
+        ShareClassCatalog globalBonds = new ShareClassCatalog(() -> List.of(
+                shareClass("XXGB00000001", Optional.empty(), "Global Bond", "A"),
+                shareClass("XXGB00000002", Optional.empty(), "Global Bond", "B"),
+                shareClass("XXGBP0000001", Optional.empty(), "Global Bond Plus", "A")));
+
+        assertThat(isinsOf(resolved(globalBonds.resolve("Global Bond A")))).containsExactly("XXGB00000001");
+        assertThat(resolvedIsins("Placeholder fund without a Rule Card A")).containsExactly(NOT_COVERED_A);
+    }
+
     /** The "a" of "without a Rule Card" is a fund-name word, not class A's name, so neither fund loses a class. */
     @Test
     void a_fund_name_word_does_not_narrow_the_fixture_funds_to_class_a() {
@@ -170,6 +219,25 @@ class ShareClassCatalogTest {
         assertThat(resolvedIsins("XXSLAMCAP0")).containsExactly(SL_AMCAP);
     }
 
+    /** Valors are 6 to 9 digits: a shorter number is a word, never a Valor prefix that picks a class. */
+    @Test
+    void an_all_digit_valor_prefix_needs_six_digits() {
+        ShareClassCatalog withValors = new ShareClassCatalog(() -> List.of(
+                withValor(shareClass("XXBF00000001", Optional.empty(), "Bond Fund", "A"), "1234567"),
+                withValor(shareClass("XXBF00000002", Optional.empty(), "Bond Fund", "B"), "7654321")));
+
+        assertThat(withValors.resolve("Bond Fund 123")).isInstanceOf(NotFound.class);
+        assertThat(isinsOf(resolved(withValors.resolve("Bond Fund 123456")))).containsExactly("XXBF00000001");
+        assertThat(isinsOf(resolved(withValors.resolve("1234567")))).containsExactly("XXBF00000001");
+    }
+
+    @Test
+    void a_resolution_never_names_an_empty_list() {
+        assertThatThrownBy(() -> new Resolved(List.of())).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new Ambiguous(List.of())).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new CandidateFund("Fund", List.of())).isInstanceOf(IllegalArgumentException.class);
+    }
+
     @Test
     void the_catalog_is_read_once_and_kept_in_order() {
         assertThat(catalog.all()).hasSize(11);
@@ -186,6 +254,11 @@ class ShareClassCatalogTest {
     @Test
     void an_empty_catalog_does_not_load() {
         assertThatThrownBy(() -> new ShareClassCatalog(List::of)).isInstanceOf(FundDataUnavailable.class);
+    }
+
+    @Test
+    void a_catalog_source_that_gives_no_list_does_not_load() {
+        assertThatThrownBy(() -> new ShareClassCatalog(() -> null)).isInstanceOf(FundDataUnavailable.class);
     }
 
     private List<String> resolvedIsins(String mention) {
@@ -205,6 +278,12 @@ class ShareClassCatalogTest {
     private static ShareClass shareClass(String isin, Optional<String> fundId, String fundName, String className) {
         return new ShareClass(new Isin(isin), fundId, fundName, Optional.empty(), className, "CHF", Optional.empty(),
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Instant.EPOCH);
+    }
+
+    private static ShareClass withValor(ShareClass shareClass, String valor) {
+        return new ShareClass(shareClass.isin(), shareClass.fundId(), shareClass.fundName(), shareClass.umbrellaName(),
+                shareClass.shareClassName(), shareClass.currency(), shareClass.domicile(), shareClass.fundType(),
+                shareClass.productType(), Optional.of(valor), shareClass.internalCode(), shareClass.retrievedAt());
     }
 
     private static List<String> isinsOf(List<ShareClass> shareClasses) {

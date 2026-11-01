@@ -6,11 +6,10 @@ import com.fundgate.shareclasscatalog.Resolution.CandidateFund;
 import com.fundgate.shareclasscatalog.Resolution.NotFound;
 import com.fundgate.shareclasscatalog.Resolution.Resolved;
 import com.fundgate.shareclasses.ShareClass;
+import com.fundgate.shareclasscatalog.ShareClassMatcher.FundMatch;
+import com.fundgate.shareclasscatalog.ShareClassMatcher.IndexedClass;
 import com.fundgate.shareclasses.ShareClasses;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * The Share Classes the bank distributes, read once and kept in memory, and the matcher that turns a fund or class
@@ -20,16 +19,22 @@ import java.util.Map;
 public final class ShareClassCatalog {
 
     private final List<ShareClass> shareClasses;
+    private final List<IndexedClass> indexed;
 
     /**
      * Throws {@link FundDataUnavailable} when the catalog cannot be read or is empty: an empty catalog would turn every
      * check into "fund not covered" (contracts/share-classes.md).
      */
     public ShareClassCatalog(ShareClasses source) {
-        this.shareClasses = List.copyOf(source.all());
+        List<ShareClass> read = source.all();
+        if (read == null) {
+            throw new FundDataUnavailable("The Share Class catalog source gave no list", null);
+        }
+        this.shareClasses = List.copyOf(read);
         if (shareClasses.isEmpty()) {
             throw new FundDataUnavailable("The Share Class catalog is empty", null);
         }
+        this.indexed = ShareClassMatcher.index(shareClasses);
     }
 
     /** Every Share Class of the catalog, in the order the port gave them. */
@@ -39,20 +44,22 @@ public final class ShareClassCatalog {
 
     /**
      * What a mention or ISIN names: the Share Classes of one fund, in catalog order (a fund named without a class
-     * gives all its classes), the candidate funds when it matches several, or nothing. The reverse-lookup search lists
-     * every match of the same matcher instead ({@link ShareClassMatcher#match}).
+     * gives all its classes), the candidate funds when it matches several, or nothing. Of several funds, the one whose
+     * whole name the mention gives is the one it means; a class the mention leaves in doubt is Ambiguous too. The
+     * reverse-lookup search lists every match of the same matcher instead ({@link ShareClassMatcher#match}).
      */
     public Resolution resolve(String mentionOrIsin) {
-        Map<String, List<ShareClass>> byFund = new LinkedHashMap<>();
-        for (ShareClass shareClass : ShareClassMatcher.match(mentionOrIsin, shareClasses)) {
-            byFund.computeIfAbsent(ShareClassMatcher.fundKey(shareClass), key -> new ArrayList<>()).add(shareClass);
+        List<FundMatch> funds = ShareClassMatcher.matchByFund(mentionOrIsin, indexed);
+        if (funds.isEmpty()) {
+            return new NotFound();
         }
-        return switch (byFund.size()) {
-            case 0 -> new NotFound();
-            case 1 -> new Resolved(byFund.values().iterator().next());
-            default -> new Ambiguous(byFund.values().stream()
-                    .map(classes -> new CandidateFund(classes.getFirst().fundName(), classes))
-                    .toList());
-        };
+        List<FundMatch> namedInFull = funds.stream().filter(FundMatch::fundNamedInFull).toList();
+        List<FundMatch> meant = namedInFull.size() == 1 ? namedInFull : funds;
+        if (meant.size() == 1 && !meant.getFirst().classInDoubt()) {
+            return new Resolved(meant.getFirst().shareClasses());
+        }
+        return new Ambiguous(meant.stream()
+                .map(fund -> new CandidateFund(fund.shareClasses().getFirst().fundName(), fund.shareClasses()))
+                .toList());
     }
 }
