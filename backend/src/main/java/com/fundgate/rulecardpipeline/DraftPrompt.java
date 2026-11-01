@@ -24,14 +24,15 @@ final class DraftPrompt {
             """ + RuleCatalog.draftingPrompt() + """
 
 
-            share_class is the class's name, or "*" for a rule that applies to every class of the fund.
+            share_class is the class's name as listed, its ISIN when two classes share a name, or "*" for a rule \
+            that applies to every class of the fund.
             When two documents contradict each other on a rule, never resolve it: draft each document's rule with \
             the value that document states, set contradiction on both, and cite each passage.
             Ignore fees, investment policy, tax and operations unless they restrict who may subscribe.
             Give a condition only its kind and the fields its kind names.
 
             Every rule needs at least one citation: the document id, the page number given in the page tag, and a \
-            quote copied verbatim from that page (one contiguous passage, no ellipsis).
+            quote copied verbatim from that page (one contiguous passage of at least three words, no ellipsis).
 
             Answer with JSON only, in this shape:
             {"rules": [{"share_class": "...", "condition": {"kind": "...", ...}, "contradiction": false, \
