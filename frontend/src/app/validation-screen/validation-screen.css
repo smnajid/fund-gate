@@ -1,0 +1,174 @@
+:host {
+  display: grid;
+  gap: 1rem;
+  padding: 1.5rem 1rem;
+}
+
+button {
+  padding: 0.4rem 1rem;
+  font: inherit;
+}
+
+input,
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+}
+
+textarea {
+  font-family: ui-monospace, monospace;
+  font-size: 0.875rem;
+}
+
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cards button[aria-pressed='true'] {
+  font-weight: bold;
+}
+
+.card-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.card-header h2,
+.card-header p {
+  margin: 0 0 0.25rem;
+}
+
+.validate {
+  display: grid;
+  gap: 0.25rem;
+  align-content: start;
+  min-width: 14rem;
+}
+
+.contradictions {
+  padding: 0.75rem 1rem;
+  border-left: 4px solid var(--review);
+  background: color-mix(in srgb, var(--review) 10%, transparent);
+}
+
+.contradictions h3,
+.contradictions p {
+  margin: 0 0 0.25rem;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: minmax(14rem, 1fr) minmax(0, 2fr) minmax(16rem, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+@media (max-width: 60rem) {
+  .columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.rules {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rules button {
+  display: grid;
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--rule);
+  background: none;
+  color: inherit;
+}
+
+.rules button[aria-current='true'] {
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+}
+
+.rules button[data-status='accepted'],
+.rules button[data-status='corrected'],
+.rules button[data-status='followed'],
+.rules button[data-status='added by validator'] {
+  border-left-color: var(--eligible);
+}
+
+.rules button[data-status='rejected'] {
+  border-left-color: var(--muted);
+  text-decoration: line-through;
+}
+
+.rules button[data-status='!'] {
+  border-left-color: var(--review);
+}
+
+.rules small,
+.muted {
+  color: var(--muted);
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.tabs button[aria-selected='true'] {
+  font-weight: bold;
+}
+
+.page {
+  max-height: 70vh;
+  overflow: auto;
+  margin: 0;
+  padding: 0.75rem;
+  border: 1px solid var(--rule);
+  white-space: pre-wrap;
+  font-size: 0.8125rem;
+}
+
+mark {
+  background: color-mix(in srgb, var(--review) 35%, transparent);
+  color: inherit;
+}
+
+.decision {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.decision h3,
+.decision p {
+  margin: 0;
+}
+
+.checks {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.warn {
+  color: var(--review);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.failure {
+  color: var(--not-eligible);
+}
